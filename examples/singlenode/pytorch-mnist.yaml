@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: py-torchjob-mnist
+spec:
+  containers:
+  - image: pytorch/pytorch:latest
+    imagePullPolicy: IfNotPresent
+    name: mnist
+    command: ["/bin/bash", "-c", "curl https://raw.githubusercontent.com/pytorch/examples/930ae27d64ceae1c77bbf616e713bc4b7c403849/mnist/main.py > main.py && python main.py --export_dir=/tmp/result"]
+    volumeMounts:
+      - name: training-result
+        mountPath: /tmp/result
+  restartPolicy: OnFailure
+  volumes:
+    - name: training-result
+      emptyDir: {}
+
+  
