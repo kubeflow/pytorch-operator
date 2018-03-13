@@ -30,7 +30,7 @@ spec:
                 name: dist-train
                 defaultMode: 0755
           restartPolicy: OnFailure
-    - replicas: 1
+    - replicas: 3
       replicaType: WORKER
       template:
         spec:
