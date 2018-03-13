@@ -8,7 +8,7 @@ spec:
   masterPort: "23456"
   replicaSpecs:
     - replicas: 1
-      ReplicaType: MASTER
+      replicaType: MASTER
       template:
         spec:
           containers:
@@ -31,7 +31,7 @@ spec:
                 defaultMode: 0755
           restartPolicy: OnFailure
     - replicas: 1
-      ReplicaType: WORKER
+      replicaType: WORKER
       template:
         spec:
           containers:

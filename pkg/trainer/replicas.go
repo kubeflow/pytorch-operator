@@ -168,7 +168,7 @@ func (s *PyTorchReplicaSet) CreatePodWithIndex(index int32, worldSize int32) (*v
 
 	// Configure the PyTorch distributed environment variables
 	masterPort := strconv.Itoa(int(*s.Spec.MasterPort))
-	masterAddr := s.genName(0)
+	masterAddr := fmt.Sprintf("%v-%v-%v-%v", fmt.Sprintf("%.40s", s.Job.job.ObjectMeta.Name), "master", s.Job.job.Spec.RuntimeId, 0)
 	if index == 0 {
 		masterAddr = "localhost"
 	}
@@ -432,6 +432,11 @@ func (s *PyTorchReplicaSet) SyncPods(worldSize int32) error {
 		// Label to get all pods of this PyTorchReplicaType + index
 		labels := s.Labels()
 		labels["task_index"] = fmt.Sprintf("%v", index)
+		rank := index
+		if labels["job_type"] == "WORKER" {
+			rank = index + 1
+		}
+		labels["task_index"] = fmt.Sprintf("%v", rank)
 
 		labelSelector, err := labels.ToSelector()
 		if err != nil {
@@ -439,21 +444,20 @@ func (s *PyTorchReplicaSet) SyncPods(worldSize int32) error {
 		}
 
 		// Filter the unactive pods
-		fieldSelector := "status.phase!=" + string(v1.PodFailed) +
-			",deletionTimestamp!=nil"
+		fieldSelector := "status.phase!=" + string(v1.PodFailed)
+		//",deletionTimestamp!=nil"
 
 		options := meta_v1.ListOptions{
 			LabelSelector: labelSelector,
 			FieldSelector: fieldSelector,
 		}
-
 		// List to get pods
 		pl, err := s.ClientSet.CoreV1().Pods(s.Job.job.ObjectMeta.Namespace).List(options)
 
 		if len(pl.Items) == 0 {
 			log.Infof("Pod  not found, create new one.")
 			// Create the pod
-			createdPod, err := s.CreatePodWithIndex(index, worldSize)
+			createdPod, err := s.CreatePodWithIndex(rank, worldSize)
 
 			// If the pod already exists do nothing.
 			if err != nil {
