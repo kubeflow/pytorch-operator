@@ -17,8 +17,8 @@
 package kubeflow
 
 import (
-	internalinterfaces "github.com/kubeflow/tf-operator/pkg/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/kubeflow/tf-operator/pkg/client/informers/externalversions/kubeflow/v1alpha1"
+	internalinterfaces "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions/kubeflow/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

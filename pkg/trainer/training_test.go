@@ -19,8 +19,8 @@ import (
 	"testing"
 
 	"github.com/gogo/protobuf/proto"
-	tfv1alpha1 "github.com/kubeflow/tf-operator/pkg/apis/tensorflow/v1alpha1"
-	tfJobFake "github.com/kubeflow/tf-operator/pkg/client/clientset/versioned/fake"
+	torchv1alpha1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
+	pytorchJobFake "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned/fake"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -88,67 +88,52 @@ func TestIsRetryableTerminationState(t *testing.T) {
 
 func TestClusterSpec(t *testing.T) {
 	type TestCase struct {
-		Spec     *tfv1alpha1.TFJob
+		Spec     *torchv1alpha1.PyTorchJob
 		Expected map[string][]string
 	}
 
 	cases := []TestCase{
 		{
-			Spec: &tfv1alpha1.TFJob{
+			Spec: &torchv1alpha1.PyTorchJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "myjob",
 				},
-				Spec: tfv1alpha1.TFJobSpec{
+				Spec: torchv1alpha1.PyTorchJobSpec{
 					RuntimeId: "runtime",
-					ReplicaSpecs: []*tfv1alpha1.TFReplicaSpec{
+					ReplicaSpecs: []*torchv1alpha1.PyTorchReplicaSpec{
 						{
-							Replicas: proto.Int32(2),
-							TFPort:   proto.Int32(22),
+							Replicas:   proto.Int32(1),
+							MasterPort: proto.Int32(42),
 							Template: &v1.PodTemplateSpec{
 								Spec: v1.PodSpec{
 									Containers: []v1.Container{
 										{
-											Name: "tensorflow",
+											Name: "pytorch",
 										},
 									},
 								},
 							},
-							TFReplicaType: tfv1alpha1.PS,
+							PyTorchReplicaType: torchv1alpha1.MASTER,
 						},
 						{
-							Replicas: proto.Int32(1),
-							TFPort:   proto.Int32(42),
+							Replicas:   proto.Int32(3),
+							MasterPort: proto.Int32(40),
 							Template: &v1.PodTemplateSpec{
 								Spec: v1.PodSpec{
 									Containers: []v1.Container{
 										{
-											Name: "tensorflow",
+											Name: "pytorch",
 										},
 									},
 								},
 							},
-							TFReplicaType: tfv1alpha1.MASTER,
-						},
-						{
-							Replicas: proto.Int32(3),
-							TFPort:   proto.Int32(40),
-							Template: &v1.PodTemplateSpec{
-								Spec: v1.PodSpec{
-									Containers: []v1.Container{
-										{
-											Name: "tensorflow",
-										},
-									},
-								},
-							},
-							TFReplicaType: tfv1alpha1.WORKER,
+							PyTorchReplicaType: torchv1alpha1.WORKER,
 						},
 					},
 				},
 			},
 
 			Expected: map[string][]string{
-				"ps":     []string{"myjob-ps-runtime-0:22", "myjob-ps-runtime-1:22"},
 				"master": []string{"myjob-master-runtime-0:42"},
 				"worker": []string{"myjob-worker-runtime-0:40", "myjob-worker-runtime-1:40", "myjob-worker-runtime-2:40"},
 			},
@@ -160,13 +145,13 @@ func TestClusterSpec(t *testing.T) {
 		clientSet := fake.NewSimpleClientset()
 
 		recorder := record.NewFakeRecorder(100)
-		job, err := initJob(clientSet, &tfJobFake.Clientset{}, recorder, c.Spec)
+		job, err := initJob(clientSet, &pytorchJobFake.Clientset{}, recorder, c.Spec)
 
 		if err != nil {
 			t.Fatalf("initJob failed: %v", err)
 		}
 
-		job.setup(&tfv1alpha1.ControllerConfig{})
+		job.setup(&torchv1alpha1.ControllerConfig{})
 		job.setupReplicas()
 		actual := job.ClusterSpec()
 
@@ -188,51 +173,51 @@ func TestJobSetup(t *testing.T) {
 	clientSet := fake.NewSimpleClientset()
 
 	type testCase struct {
-		jobSpec      *tfv1alpha1.TFJob
+		jobSpec      *torchv1alpha1.PyTorchJob
 		expectMounts int
-		expectPhase  tfv1alpha1.TFJobPhase
+		expectPhase  torchv1alpha1.PyTorchJobPhase
 		expectReason string
-		expectState  tfv1alpha1.State
+		expectState  torchv1alpha1.State
 	}
 
 	testCases := []testCase{
 		{
-			jobSpec: &tfv1alpha1.TFJob{
-				Spec: tfv1alpha1.TFJobSpec{
-					ReplicaSpecs: []*tfv1alpha1.TFReplicaSpec{
+			jobSpec: &torchv1alpha1.PyTorchJob{
+				Spec: torchv1alpha1.PyTorchJobSpec{
+					ReplicaSpecs: []*torchv1alpha1.PyTorchReplicaSpec{
 						{
-							Replicas: proto.Int32(1),
-							TFPort:   proto.Int32(10),
+							Replicas:   proto.Int32(1),
+							MasterPort: proto.Int32(10),
 							Template: &v1.PodTemplateSpec{
 								Spec: v1.PodSpec{
 									Containers: []v1.Container{
 										{
-											Name: "tensorflow",
+											Name: "pytorch",
 										},
 									},
 								},
 							},
-							TFReplicaType: tfv1alpha1.MASTER,
+							PyTorchReplicaType: torchv1alpha1.MASTER,
 						},
 					},
 				},
 			},
 			expectMounts: 0,
-			expectPhase:  tfv1alpha1.TFJobPhaseCreating,
-			expectState:  tfv1alpha1.StateRunning,
+			expectPhase:  torchv1alpha1.PyTorchJobPhaseCreating,
+			expectState:  torchv1alpha1.StateRunning,
 		},
 		{
-			jobSpec: &tfv1alpha1.TFJob{
-				Spec: tfv1alpha1.TFJobSpec{
-					ReplicaSpecs: []*tfv1alpha1.TFReplicaSpec{
+			jobSpec: &torchv1alpha1.PyTorchJob{
+				Spec: torchv1alpha1.PyTorchJobSpec{
+					ReplicaSpecs: []*torchv1alpha1.PyTorchReplicaSpec{
 						{
-							Replicas: proto.Int32(2),
-							TFPort:   proto.Int32(10),
+							Replicas:   proto.Int32(2),
+							MasterPort: proto.Int32(10),
 							Template: &v1.PodTemplateSpec{
 								Spec: v1.PodSpec{
 									Containers: []v1.Container{
 										{
-											Name: "tensorflow",
+											Name: "pytorch",
 											Resources: v1.ResourceRequirements{
 												Requests: map[v1.ResourceName]resource.Quantity{
 													"nvidia-gpu": resource.MustParse("1"),
@@ -242,34 +227,34 @@ func TestJobSetup(t *testing.T) {
 									},
 								},
 							},
-							TFReplicaType: tfv1alpha1.WORKER,
+							PyTorchReplicaType: torchv1alpha1.WORKER,
 						},
 					},
-					TerminationPolicy: &tfv1alpha1.TerminationPolicySpec{
-						Chief: &tfv1alpha1.ChiefSpec{
-							ReplicaName:  string(tfv1alpha1.WORKER),
-							ReplicaIndex: 0,
+					TerminationPolicy: &torchv1alpha1.TerminationPolicySpec{
+						Master: &torchv1alpha1.MasterSpec{
+							ReplicaName: string(torchv1alpha1.WORKER),
+							ReplicaRank: 0,
 						},
 					},
 				},
 			},
 			expectMounts: 1,
-			expectPhase:  tfv1alpha1.TFJobPhaseCreating,
-			expectState:  tfv1alpha1.StateRunning,
+			expectPhase:  torchv1alpha1.PyTorchJobPhaseCreating,
+			expectState:  torchv1alpha1.StateRunning,
 		},
 		{
 			// The job should fail setup because the spec is invalid.
-			jobSpec: &tfv1alpha1.TFJob{
-				Spec: tfv1alpha1.TFJobSpec{
-					ReplicaSpecs: []*tfv1alpha1.TFReplicaSpec{
+			jobSpec: &torchv1alpha1.PyTorchJob{
+				Spec: torchv1alpha1.PyTorchJobSpec{
+					ReplicaSpecs: []*torchv1alpha1.PyTorchReplicaSpec{
 						{
-							Replicas: proto.Int32(2),
-							TFPort:   proto.Int32(10),
+							Replicas:   proto.Int32(2),
+							MasterPort: proto.Int32(10),
 							Template: &v1.PodTemplateSpec{
 								Spec: v1.PodSpec{
 									Containers: []v1.Container{
 										{
-											Name: "tensorflow",
+											Name: "pytorch",
 											Resources: v1.ResourceRequirements{
 												Requests: map[v1.ResourceName]resource.Quantity{
 													"nvidia-gpu": resource.MustParse("1"),
@@ -279,22 +264,22 @@ func TestJobSetup(t *testing.T) {
 									},
 								},
 							},
-							TFReplicaType: tfv1alpha1.WORKER,
+							PyTorchReplicaType: torchv1alpha1.WORKER,
 						},
 					},
 				},
 			},
 			expectMounts: 0,
-			expectPhase:  tfv1alpha1.TFJobPhaseFailed,
-			expectState:  tfv1alpha1.StateFailed,
-			expectReason: "invalid job spec: Missing ReplicaSpec for chief: MASTER",
+			expectPhase:  torchv1alpha1.PyTorchJobPhaseFailed,
+			expectState:  torchv1alpha1.StateFailed,
+			expectReason: "invalid job spec: Missing ReplicaSpec for master: MASTER",
 		},
 	}
 
-	config := &tfv1alpha1.ControllerConfig{
-		Accelerators: map[string]tfv1alpha1.AcceleratorConfig{
-			"nvidia-gpu": tfv1alpha1.AcceleratorConfig{
-				Volumes: []tfv1alpha1.AcceleratorVolume{
+	config := &torchv1alpha1.ControllerConfig{
+		Accelerators: map[string]torchv1alpha1.AcceleratorConfig{
+			"nvidia-gpu": torchv1alpha1.AcceleratorConfig{
+				Volumes: []torchv1alpha1.AcceleratorVolume{
 					{
 						Name:      "cuda-lib",
 						HostPath:  "/home/cuda",
@@ -308,7 +293,7 @@ func TestJobSetup(t *testing.T) {
 	for _, c := range testCases {
 
 		recorder := record.NewFakeRecorder(100)
-		job, err := initJob(clientSet, &tfJobFake.Clientset{}, recorder, c.jobSpec)
+		job, err := initJob(clientSet, &pytorchJobFake.Clientset{}, recorder, c.jobSpec)
 
 		job.setup(config)
 
@@ -329,7 +314,7 @@ func TestJobSetup(t *testing.T) {
 		}
 
 		// Make sure the runtime id is set if the job didn't fail.
-		if c.expectState != tfv1alpha1.StateFailed && job.job.Spec.RuntimeId == "" {
+		if c.expectState != torchv1alpha1.StateFailed && job.job.Spec.RuntimeId == "" {
 			t.Errorf("RuntimeId should not be empty after calling setup.")
 		}
 

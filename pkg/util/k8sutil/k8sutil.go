@@ -28,7 +28,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
-	tfv1alpha1 "github.com/kubeflow/tf-operator/pkg/apis/tensorflow/v1alpha1"
+	torchv1alpha1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
 )
 
 const RecommendedConfigPathEnvVar = "KUBECONFIG"
@@ -100,8 +100,8 @@ func JobListOpt(clusterName string) metav1.ListOptions {
 func LabelsForJob(jobName string) map[string]string {
 	return map[string]string{
 		// TODO(jlewi): Need to set appropriate labels for TF.
-		"tf_job": jobName,
-		"app":    tfv1alpha1.AppLabel,
+		"pytorch_job": jobName,
+		"app":         torchv1alpha1.AppLabel,
 	}
 }
 

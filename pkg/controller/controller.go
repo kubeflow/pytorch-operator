@@ -35,12 +35,12 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 
-	tfv1alpha1 "github.com/kubeflow/tf-operator/pkg/apis/tensorflow/v1alpha1"
-	tfjobclient "github.com/kubeflow/tf-operator/pkg/client/clientset/versioned"
-	kubeflowscheme "github.com/kubeflow/tf-operator/pkg/client/clientset/versioned/scheme"
-	informers "github.com/kubeflow/tf-operator/pkg/client/informers/externalversions"
-	listers "github.com/kubeflow/tf-operator/pkg/client/listers/kubeflow/v1alpha1"
-	"github.com/kubeflow/tf-operator/pkg/trainer"
+	torchv1alpha1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
+	torchjobclient "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
+	kubeflowscheme "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned/scheme"
+	informers "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions"
+	listers "github.com/kubeflow/pytorch-operator/pkg/client/listers/kubeflow/v1alpha1"
+	"github.com/kubeflow/pytorch-operator/pkg/trainer"
 )
 
 const (
@@ -61,15 +61,15 @@ var (
 )
 
 type Controller struct {
-	KubeClient   kubernetes.Interface
-	APIExtclient apiextensionsclient.Interface
-	TFJobClient  tfjobclient.Interface
+	KubeClient       kubernetes.Interface
+	APIExtclient     apiextensionsclient.Interface
+	PyTorchJobClient torchjobclient.Interface
 
-	config tfv1alpha1.ControllerConfig
+	config torchv1alpha1.ControllerConfig
 	jobs   map[string]*trainer.TrainingJob
 
-	TFJobLister listers.TFJobLister
-	TFJobSynced cache.InformerSynced
+	PyTorchJobLister listers.PyTorchJobLister
+	PyTorchJobSynced cache.InformerSynced
 
 	// WorkQueue is a rate limited work queue. This is used to queue work to be
 	// processed instead of performing it as soon as a change happens. This
@@ -85,9 +85,9 @@ type Controller struct {
 	syncHandler func(jobKey string) (bool, error)
 }
 
-func New(kubeClient kubernetes.Interface, APIExtclient apiextensionsclient.Interface, tfJobClient tfjobclient.Interface,
-	config tfv1alpha1.ControllerConfig, tfJobInformerFactory informers.SharedInformerFactory) (*Controller, error) {
-	tfJobInformer := tfJobInformerFactory.Kubeflow().V1alpha1().TFJobs()
+func New(kubeClient kubernetes.Interface, APIExtclient apiextensionsclient.Interface, tfJobClient torchjobclient.Interface,
+	config torchv1alpha1.ControllerConfig, tfJobInformerFactory informers.SharedInformerFactory) (*Controller, error) {
+	tfJobInformer := tfJobInformerFactory.Kubeflow().V1alpha1().PyTorchJobs()
 
 	kubeflowscheme.AddToScheme(scheme.Scheme)
 	log.Debug("Creating event broadcaster")
@@ -97,11 +97,11 @@ func New(kubeClient kubernetes.Interface, APIExtclient apiextensionsclient.Inter
 	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, v1.EventSource{Component: controllerName})
 
 	controller := &Controller{
-		KubeClient:   kubeClient,
-		APIExtclient: APIExtclient,
-		TFJobClient:  tfJobClient,
-		WorkQueue:    workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "TFjobs"),
-		recorder:     recorder,
+		KubeClient:       kubeClient,
+		APIExtclient:     APIExtclient,
+		PyTorchJobClient: tfJobClient,
+		WorkQueue:        workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "PyTorchjobs"),
+		recorder:         recorder,
 		// TODO(jlewi)): What to do about cluster.Cluster?
 		jobs:   make(map[string]*trainer.TrainingJob),
 		config: config,
@@ -113,7 +113,7 @@ func New(kubeClient kubernetes.Interface, APIExtclient apiextensionsclient.Inter
 		cache.FilteringResourceEventHandler{
 			FilterFunc: func(obj interface{}) bool {
 				switch t := obj.(type) {
-				case *tfv1alpha1.TFJob:
+				case *torchv1alpha1.PyTorchJob:
 					log.Debugf("filter tfjob name: %v", t.Name)
 					return true
 				default:
@@ -129,9 +129,9 @@ func New(kubeClient kubernetes.Interface, APIExtclient apiextensionsclient.Inter
 			},
 		})
 
-	controller.TFJobLister = tfJobInformer.Lister()
-	controller.TFJobSynced = tfJobInformer.Informer().HasSynced
-	controller.syncHandler = controller.syncTFJob
+	controller.PyTorchJobLister = tfJobInformer.Lister()
+	controller.PyTorchJobSynced = tfJobInformer.Informer().HasSynced
+	controller.syncHandler = controller.syncPyTorchJob
 
 	return controller, nil
 }
@@ -145,16 +145,16 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) error {
 	defer c.WorkQueue.ShutDown()
 
 	// Start the informer factories to begin populating the informer caches
-	log.Info("Starting TFJob controller")
+	log.Info("Starting PyTorchJob controller")
 
 	// Wait for the caches to be synced before starting workers
 	log.Info("Waiting for informer caches to sync")
-	if ok := cache.WaitForCacheSync(stopCh, c.TFJobSynced); !ok {
+	if ok := cache.WaitForCacheSync(stopCh, c.PyTorchJobSynced); !ok {
 		return fmt.Errorf("failed to wait for caches to sync")
 	}
 
 	log.Infof("Starting %v workers", threadiness)
-	// Launch workers to process TFJob resources
+	// Launch workers to process PyTorchJob resources
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
@@ -197,12 +197,12 @@ func (c *Controller) processNextWorkItem() bool {
 	return true
 }
 
-// syncTFJob will sync the job with the given. This function is not meant to be invoked
+// syncPyTorchJob will sync the job with the given. This function is not meant to be invoked
 // concurrently with the same key.
 //
 // When a job is completely processed it will return true indicating that its ok to forget about this job since
 // no more processing will occur for it.
-func (c *Controller) syncTFJob(key string) (bool, error) {
+func (c *Controller) syncPyTorchJob(key string) (bool, error) {
 	startTime := time.Now()
 	defer func() {
 		log.Debugf("Finished syncing job %q (%v)", key, time.Since(startTime))
@@ -216,7 +216,7 @@ func (c *Controller) syncTFJob(key string) (bool, error) {
 		return false, fmt.Errorf("invalid job key %q: either namespace or name is missing", key)
 	}
 
-	tfJob, err := c.TFJobLister.TFJobs(ns).Get(name)
+	tfJob, err := c.PyTorchJobLister.PyTorchJobs(ns).Get(name)
 
 	if err != nil {
 		if apierrors.IsNotFound(err) {
@@ -229,7 +229,7 @@ func (c *Controller) syncTFJob(key string) (bool, error) {
 	// Create a new TrainingJob if there is no TrainingJob stored for it in the jobs map or if the UID's don't match.
 	// The UID's won't match in the event we deleted the job and then recreated the job with the same name.
 	if cJob, ok := c.jobs[key]; !ok || cJob.UID() != tfJob.UID {
-		nc, err := trainer.NewJob(c.KubeClient, c.TFJobClient, c.recorder, tfJob, &c.config)
+		nc, err := trainer.NewJob(c.KubeClient, c.PyTorchJobClient, c.recorder, tfJob, &c.config)
 
 		if err != nil {
 			return false, err
@@ -243,7 +243,7 @@ func (c *Controller) syncTFJob(key string) (bool, error) {
 		return false, err
 	}
 
-	tfJob, err = c.TFJobClient.KubeflowV1alpha1().TFJobs(tfJob.ObjectMeta.Namespace).Get(tfJob.ObjectMeta.Name, metav1.GetOptions{})
+	tfJob, err = c.PyTorchJobClient.KubeflowV1alpha1().PyTorchJobs(tfJob.ObjectMeta.Namespace).Get(tfJob.ObjectMeta.Name, metav1.GetOptions{})
 
 	if err != nil {
 		return false, err
@@ -251,11 +251,10 @@ func (c *Controller) syncTFJob(key string) (bool, error) {
 
 	// TODO(jlewi): This logic will need to change when/if we get rid of phases and move to conditions. At that
 	// case we should forget about a job when the appropriate condition is reached.
-	if tfJob.Status.Phase == tfv1alpha1.TFJobPhaseCleanUp {
+	if tfJob.Status.Phase == torchv1alpha1.PyTorchJobPhaseCleanUp {
 		return true, nil
-	} else {
-		return false, nil
 	}
+	return false, nil
 
 }
 

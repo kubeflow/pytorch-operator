@@ -17,13 +17,13 @@
 package v1alpha1
 
 import (
-	internalinterfaces "github.com/kubeflow/tf-operator/pkg/client/informers/externalversions/internalinterfaces"
+	internalinterfaces "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions/internalinterfaces"
 )
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// TFJobs returns a TFJobInformer.
-	TFJobs() TFJobInformer
+	// PyTorchJobs returns a PyTorchJobInformer.
+	PyTorchJobs() PyTorchJobInformer
 }
 
 type version struct {
@@ -35,7 +35,7 @@ func New(f internalinterfaces.SharedInformerFactory) Interface {
 	return &version{f}
 }
 
-// TFJobs returns a TFJobInformer.
-func (v *version) TFJobs() TFJobInformer {
-	return &tFJobInformer{factory: v.SharedInformerFactory}
+// PyTorchJobs returns a PyTorchJobInformer.
+func (v *version) PyTorchJobs() PyTorchJobInformer {
+	return &pyTorchJobInformer{factory: v.SharedInformerFactory}
 }

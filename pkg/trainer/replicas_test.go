@@ -29,45 +29,45 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/tools/record"
 
-	tfv1alpha1 "github.com/kubeflow/tf-operator/pkg/apis/tensorflow/v1alpha1"
-	tfJobFake "github.com/kubeflow/tf-operator/pkg/client/clientset/versioned/fake"
-	"github.com/kubeflow/tf-operator/pkg/util"
+	torchv1alpha1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
+	pytorchJobFake "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned/fake"
+	"github.com/kubeflow/pytorch-operator/pkg/util"
 )
 
 var (
 	groupVersionKind = schema.GroupVersionKind{
-		Group:   tfv1alpha1.GroupName,
-		Version: tfv1alpha1.GroupVersion,
-		Kind:    tfv1alpha1.TFJobResourceKind,
+		Group:   torchv1alpha1.GroupName,
+		Version: torchv1alpha1.GroupVersion,
+		Kind:    torchv1alpha1.ResourceKind,
 	}
 )
 
-func TestTFReplicaSet(t *testing.T) {
+func TestPyTorchReplicaSet(t *testing.T) {
 	clientSet := fake.NewSimpleClientset()
 
 	testSchedulerName := "test-scheduler"
 
-	jobSpec := &tfv1alpha1.TFJob{
+	jobSpec := &torchv1alpha1.PyTorchJob{
 		ObjectMeta: meta_v1.ObjectMeta{
 			Name: "some-job",
 			UID:  "some-uid",
 		},
-		Spec: tfv1alpha1.TFJobSpec{
+		Spec: torchv1alpha1.PyTorchJobSpec{
 			RuntimeId: "some-runtime",
-			ReplicaSpecs: []*tfv1alpha1.TFReplicaSpec{
+			ReplicaSpecs: []*torchv1alpha1.PyTorchReplicaSpec{
 				{
-					Replicas: proto.Int32(2),
-					TFPort:   proto.Int32(10),
+					Replicas:   proto.Int32(2),
+					MasterPort: proto.Int32(10),
 					Template: &v1.PodTemplateSpec{
 						Spec: v1.PodSpec{
 							Containers: []v1.Container{
 								{
-									Name: "tensorflow",
+									Name: "pytorch",
 								},
 							},
 						},
 					},
-					TFReplicaType: tfv1alpha1.PS,
+					PyTorchReplicaType: torchv1alpha1.WORKER,
 				},
 			},
 			SchedulerName: testSchedulerName,
@@ -75,19 +75,19 @@ func TestTFReplicaSet(t *testing.T) {
 	}
 
 	recorder := record.NewFakeRecorder(100)
-	job, err := initJob(clientSet, &tfJobFake.Clientset{}, recorder, jobSpec)
+	job, err := initJob(clientSet, &pytorchJobFake.Clientset{}, recorder, jobSpec)
 
 	if err != nil {
 		t.Fatalf("initJob failed: %v", err)
 	}
 
-	replica, err := NewTFReplicaSet(clientSet, recorder, *jobSpec.Spec.ReplicaSpecs[0], job)
+	replica, err := NewPyTorchReplicaSet(clientSet, recorder, *jobSpec.Spec.ReplicaSpecs[0], job)
 
 	if err != nil {
-		t.Fatalf("NewTFReplicaSet failed: %v", err)
+		t.Fatalf("NewPyTorchReplicaSet failed: %v", err)
 	}
-
-	if err := replica.Create(&tfv1alpha1.ControllerConfig{}); err != nil {
+	worldSize := int32(2)
+	if err := replica.Create(&torchv1alpha1.ControllerConfig{}, worldSize); err != nil {
 		t.Fatalf("replica.Create() error; %v", err)
 	}
 
@@ -104,11 +104,11 @@ func TestTFReplicaSet(t *testing.T) {
 	for index := 0; index < 2; index++ {
 		// Expected labels
 		expectedLabels := map[string]string{
-			"kubeflow.org": "",
-			"task_index":   fmt.Sprintf("%v", index),
-			"job_type":     "PS",
-			"runtime_id":   "some-runtime",
-			"tf_job_name":  "some-job",
+			"kubeflow.org":     "",
+			"task_index":       fmt.Sprintf("%v", index),
+			"job_type":         "WORKER",
+			"runtime_id":       "some-runtime",
+			"pytorch_job_name": "some-job",
 		}
 
 		// Check that a service was created.
@@ -127,7 +127,7 @@ func TestTFReplicaSet(t *testing.T) {
 			t.Fatalf("Service Labels; Got %v Want: %v", s.ObjectMeta.Labels, expectedLabels)
 		}
 
-		name := fmt.Sprintf("some-job-ps-some-runtime-%v", index)
+		name := fmt.Sprintf("some-job-worker-some-runtime-%v", index)
 		if s.ObjectMeta.Name != name {
 			t.Fatalf("Job.ObjectMeta.Name = %v; want %v", s.ObjectMeta.Name, name)
 		}
@@ -169,7 +169,7 @@ func TestTFReplicaSet(t *testing.T) {
 		}
 
 		c := p.Spec.Containers[0]
-		if len(c.Env) != 1 {
+		if len(c.Env) != 5 {
 			t.Fatalf("Expected 1 environment variable got %v", len(c.Env))
 		}
 
@@ -177,22 +177,22 @@ func TestTFReplicaSet(t *testing.T) {
 			t.Fatalf("p.Spec.Template.Spec.SchedulerName; Got %v; want %v", p.Spec.SchedulerName, testSchedulerName)
 		}
 
-		actualTFConfig := &TFConfig{}
-		if err := json.Unmarshal([]byte(c.Env[0].Value), actualTFConfig); err != nil {
-			t.Fatalf("Could not unmarshal TFConfig %v", err)
+		actualPyTorchConfig := &PyTorchConfig{}
+		if err := json.Unmarshal([]byte(c.Env[0].Value), actualPyTorchConfig); err != nil {
+			t.Fatalf("Could not unmarshal PyTorchConfig %v", err)
 		}
 
-		expectedTFConfig := &TFConfig{
+		expectedPyTorchConfig := &PyTorchConfig{
 			Cluster: ClusterSpec{},
 			Task: TaskSpec{
-				Type:  "ps",
+				Type:  "worker",
 				Index: index,
 			},
 			Environment: "cloud",
 		}
 
-		if !reflect.DeepEqual(expectedTFConfig, actualTFConfig) {
-			t.Fatalf("Got %v, Want %v", actualTFConfig, expectedTFConfig)
+		if !reflect.DeepEqual(expectedPyTorchConfig, actualPyTorchConfig) {
+			t.Fatalf("Got %v, Want %v", actualPyTorchConfig, expectedPyTorchConfig)
 		}
 	}
 	// Delete the job.
@@ -205,11 +205,11 @@ func TestTFReplicaSet(t *testing.T) {
 	}
 }
 
-func TestTFReplicaSetStatusFromPodList(t *testing.T) {
+func TestPyTorchReplicaSetStatusFromPodList(t *testing.T) {
 	type TestCase struct {
 		PodList  v1.PodList
 		Name     string
-		Expected tfv1alpha1.ReplicaState
+		Expected torchv1alpha1.ReplicaState
 	}
 
 	cases := []TestCase{
@@ -231,7 +231,7 @@ func TestTFReplicaSetStatusFromPodList(t *testing.T) {
 				},
 			},
 			Name:     "master",
-			Expected: tfv1alpha1.ReplicaStateRunning,
+			Expected: torchv1alpha1.ReplicaStateRunning,
 		},
 		{
 			PodList: v1.PodList{
@@ -253,7 +253,7 @@ func TestTFReplicaSetStatusFromPodList(t *testing.T) {
 				},
 			},
 			Name:     "master",
-			Expected: tfv1alpha1.ReplicaStateSucceeded,
+			Expected: torchv1alpha1.ReplicaStateSucceeded,
 		},
 		{
 			// Multiple containers; make sure we match by name.
@@ -282,7 +282,7 @@ func TestTFReplicaSetStatusFromPodList(t *testing.T) {
 				},
 			},
 			Name:     "master",
-			Expected: tfv1alpha1.ReplicaStateSucceeded,
+			Expected: torchv1alpha1.ReplicaStateSucceeded,
 		},
 		{
 			// Container failed with permanent error and then got restarted.
@@ -309,7 +309,7 @@ func TestTFReplicaSetStatusFromPodList(t *testing.T) {
 				},
 			},
 			Name:     "master",
-			Expected: tfv1alpha1.ReplicaStateFailed,
+			Expected: torchv1alpha1.ReplicaStateFailed,
 		},
 		{
 			// Multiple Pods; check we get the most recent.
@@ -351,7 +351,7 @@ func TestTFReplicaSetStatusFromPodList(t *testing.T) {
 				},
 			},
 			Name:     "master",
-			Expected: tfv1alpha1.ReplicaStateFailed,
+			Expected: torchv1alpha1.ReplicaStateFailed,
 		},
 	}
 

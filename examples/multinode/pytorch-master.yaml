@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: py-torchjob-master
+  labels:
+    app: pytorchmaster
+spec:
+  containers:
+  - image: pytorch/pytorch:latest
+    imagePullPolicy: IfNotPresent
+    name: master
+    volumeMounts:
+      - name: training-result
+        mountPath: /tmp/result
+      - name: entrypoint
+        mountPath: /tmp/entrypoint
+    command: [/tmp/entrypoint/dist_train.py]
+    env:
+      - name: MASTER_PORT
+        value: "23456"
+      - name: MASTER_ADDR
+        value: "localhost"
+      - name: WORLD_SIZE
+        value: "3"
+        # Rank 0 is the master
+      - name: RANK
+        value: "0"
+    ports:
+      - name: api
+        containerPort: 23456
+  restartPolicy: OnFailure
+  volumes:
+    - name: training-result
+      emptyDir: {}
+    - name: entrypoint
+      configMap:
+        name: dist-train
+        defaultMode: 0755

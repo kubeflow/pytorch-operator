@@ -15,7 +15,7 @@ package versioned
 
 import (
 	glog "github.com/golang/glog"
-	kubeflowv1alpha1 "github.com/kubeflow/tf-operator/pkg/client/clientset/versioned/typed/kubeflow/v1alpha1"
+	kubeflowv1alpha1 "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned/typed/kubeflow/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

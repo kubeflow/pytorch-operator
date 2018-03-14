@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package trainer is to manage TensorFlow training jobs.
+// Package trainer is to manage pytorch training jobs.
 package trainer
 
 import (
@@ -26,35 +26,36 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 
-	"github.com/kubeflow/tf-operator/pkg/apis/tensorflow/helper"
-	tfv1alpha1 "github.com/kubeflow/tf-operator/pkg/apis/tensorflow/v1alpha1"
-	"github.com/kubeflow/tf-operator/pkg/apis/tensorflow/validation"
-	tfjobclient "github.com/kubeflow/tf-operator/pkg/client/clientset/versioned"
-	"github.com/kubeflow/tf-operator/pkg/client/clientset/versioned/scheme"
-	"github.com/kubeflow/tf-operator/pkg/util"
+	"github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/helper"
+	torchv1alpha1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
+	"github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/validation"
+	pytorchclient "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
+	"github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned/scheme"
+	"github.com/kubeflow/pytorch-operator/pkg/util"
 )
 
 // TODO(jlewi): We should switch a New pattern and make trainingJob private so we can
 // ensure correctness on creation.
 type TrainingJob struct {
-	job *tfv1alpha1.TFJob
+	job *torchv1alpha1.PyTorchJob
 
 	KubeCli kubernetes.Interface
 
 	recorder record.EventRecorder
 
-	Replicas []*TFReplicaSet
+	Replicas []*PyTorchReplicaSet
 
-	tfJobClient tfjobclient.Interface
+	torchJobClient pytorchclient.Interface
 
 	// in memory state of the job.
 	// status is the source of truth after job struct is materialized. Changes to the status to be persisted
 	// should be made here.
-	status tfv1alpha1.TFJobStatus
+	status torchv1alpha1.PyTorchJobStatus
 
 	memberCounter int
 }
 
+// TODO(jose5918): We don't really need the cluster spec for this operator but no harm in leaving it for POC
 // ClusterSpec represents a cluster TensorFlow specification.
 // https://www.tensorflow.org/deploy/distributed#create_a_tftrainclusterspec_to_describe_the_cluster
 // It is a map from job names to network addresses.
@@ -65,21 +66,21 @@ type TaskSpec struct {
 	Index int    `json:"index"`
 }
 
-func initJob(kubeCli kubernetes.Interface, tfJobClient tfjobclient.Interface, recorder record.EventRecorder, job *tfv1alpha1.TFJob) (*TrainingJob, error) {
+func initJob(kubeCli kubernetes.Interface, torchJobClient pytorchclient.Interface, recorder record.EventRecorder, job *torchv1alpha1.PyTorchJob) (*TrainingJob, error) {
 	j := &TrainingJob{
-		KubeCli:     kubeCli,
-		tfJobClient: tfJobClient,
-		recorder:    recorder,
-		Replicas:    make([]*TFReplicaSet, 0),
-		job:         job,
-		status:      *job.Status.DeepCopy(),
+		KubeCli:        kubeCli,
+		torchJobClient: torchJobClient,
+		recorder:       recorder,
+		Replicas:       make([]*PyTorchReplicaSet, 0),
+		job:            job,
+		status:         *job.Status.DeepCopy(),
 	}
 
 	return j, nil
 }
 
-func NewJob(kubeCli kubernetes.Interface, tfJobClient tfjobclient.Interface, recorder record.EventRecorder, job *tfv1alpha1.TFJob, config *tfv1alpha1.ControllerConfig) (*TrainingJob, error) {
-	j, err := initJob(kubeCli, tfJobClient, recorder, job)
+func NewJob(kubeCli kubernetes.Interface, torchJobClient pytorchclient.Interface, recorder record.EventRecorder, job *torchv1alpha1.PyTorchJob, config *torchv1alpha1.ControllerConfig) (*TrainingJob, error) {
+	j, err := initJob(kubeCli, torchJobClient, recorder, job)
 	if err != nil {
 		return nil, err
 	}
@@ -98,19 +99,25 @@ func (j *TrainingJob) ClusterSpec() ClusterSpec {
 		replicaNames := make([]string, 0, *p.Spec.Replicas)
 
 		for i := int32(0); i < *p.Spec.Replicas; i++ {
-			replicaNames = append(replicaNames, fmt.Sprintf("%v:%v", p.genName(i), *p.Spec.TFPort))
+			replicaNames = append(replicaNames, fmt.Sprintf("%v:%v", p.genName(i), *p.Spec.MasterPort))
 		}
 
-		clusterSpec[strings.ToLower(string(p.Spec.TFReplicaType))] = replicaNames
+		clusterSpec[strings.ToLower(string(p.Spec.PyTorchReplicaType))] = replicaNames
 	}
 
 	return clusterSpec
 }
 
 // createResources creates all the replicas if requested
-func (j *TrainingJob) createResources(config *tfv1alpha1.ControllerConfig) error {
+func (j *TrainingJob) createResources(config *torchv1alpha1.ControllerConfig) error {
+	// TODO(jose5918) Need to figure out where it is best to add worldSize logic
+	// Get PyTorch worldSize by adding replicas
+	worldSize := int32(0)
 	for _, r := range j.Replicas {
-		if err := r.Create(config); err != nil {
+		worldSize = worldSize + *r.Spec.Replicas
+	}
+	for _, r := range j.Replicas {
+		if err := r.Create(config, worldSize); err != nil {
 			return err
 		}
 	}
@@ -129,38 +136,38 @@ func (j *TrainingJob) deleteResources() error {
 	return nil
 }
 
-func (j *TrainingJob) GetStatus() (tfv1alpha1.State, []*tfv1alpha1.TFReplicaStatus, error) {
-	chief := j.job.Spec.TerminationPolicy.Chief
-	chiefState := tfv1alpha1.ReplicaStateUnknown
+func (j *TrainingJob) GetStatus() (torchv1alpha1.State, []*torchv1alpha1.PyTorchReplicaStatus, error) {
+	master := j.job.Spec.TerminationPolicy.Master
+	masterState := torchv1alpha1.ReplicaStateUnknown
 
-	state := tfv1alpha1.StateUnknown
-	replicaStatuses := make([]*tfv1alpha1.TFReplicaStatus, 0)
+	state := torchv1alpha1.StateUnknown
+	replicaStatuses := make([]*torchv1alpha1.PyTorchReplicaStatus, 0)
 
 	// The state for each replica.
 	// TODO(jlewi): We will need to modify this code if we want to allow multiples of a given type of replica.
-	replicaSetStates := make(map[tfv1alpha1.TFReplicaType]tfv1alpha1.ReplicaState)
+	replicaSetStates := make(map[torchv1alpha1.PyTorchReplicaType]torchv1alpha1.ReplicaState)
 
 	for _, r := range j.Replicas {
 		rStatus, err := r.GetStatus()
 		if err != nil {
-			log.Errorf("GetStatus() for %v returned error; %v", r.Spec.TFReplicaType, err)
+			log.Errorf("GetStatus() for %v returned error; %v", r.Spec.PyTorchReplicaType, err)
 		}
 
-		replicaSetStates[r.Spec.TFReplicaType] = rStatus.State
+		replicaSetStates[r.Spec.PyTorchReplicaType] = rStatus.State
 
 		replicaStatuses = append(replicaStatuses, &rStatus)
 
-		if string(r.Spec.TFReplicaType) == chief.ReplicaName {
-			chiefState = r.GetSingleReplicaStatus(int32(chief.ReplicaIndex))
+		if string(r.Spec.PyTorchReplicaType) == master.ReplicaName {
+			masterState = r.GetSingleReplicaStatus(int32(master.ReplicaRank))
 		}
 	}
 
-	if chiefState == tfv1alpha1.ReplicaStateRunning {
-		state = tfv1alpha1.StateRunning
-	} else if chiefState == tfv1alpha1.ReplicaStateFailed {
-		state = tfv1alpha1.StateFailed
-	} else if chiefState == tfv1alpha1.ReplicaStateSucceeded {
-		state = tfv1alpha1.StateSucceeded
+	if masterState == torchv1alpha1.ReplicaStateRunning {
+		state = torchv1alpha1.StateRunning
+	} else if masterState == torchv1alpha1.ReplicaStateFailed {
+		state = torchv1alpha1.StateFailed
+	} else if masterState == torchv1alpha1.ReplicaStateSucceeded {
+		state = torchv1alpha1.StateSucceeded
 	}
 
 	return state, replicaStatuses, nil
@@ -210,10 +217,10 @@ func (j *TrainingJob) masterName() string {
 }
 
 // setup the training job.
-func (j *TrainingJob) setup(config *tfv1alpha1.ControllerConfig) {
+func (j *TrainingJob) setup(config *torchv1alpha1.ControllerConfig) {
 	err := func() error {
 		// If the job has already started we shouldn't set it up again.
-		if j.status.Phase != tfv1alpha1.TFJobPhaseNone {
+		if j.status.Phase != torchv1alpha1.PyTorchJobPhaseNone {
 			log.Warningf("Job %v has already been setup.", j.name())
 			return nil
 		}
@@ -221,12 +228,12 @@ func (j *TrainingJob) setup(config *tfv1alpha1.ControllerConfig) {
 		// Set defaults.
 		scheme.Scheme.Default(j.job)
 
-		err := validation.ValidateTFJobSpec(&j.job.Spec)
+		err := validation.ValidatePyTorchJobSpec(&j.job.Spec)
 		if err != nil {
 			return fmt.Errorf("invalid job spec: %v", err)
 		}
 
-		if err := helper.ConfigureAcceleratorsForTFJobSpec(&j.job.Spec, config.Accelerators); err != nil {
+		if err := helper.ConfigureAcceleratorsForPyTorchJobSpec(&j.job.Spec, config.Accelerators); err != nil {
 			return fmt.Errorf("ConfigureAccelerators(...) error; %v", err)
 		}
 
@@ -238,11 +245,11 @@ func (j *TrainingJob) setup(config *tfv1alpha1.ControllerConfig) {
 
 	if err != nil {
 		j.status.Reason = err.Error()
-		j.status.Phase = tfv1alpha1.TFJobPhaseFailed
-		j.status.State = tfv1alpha1.StateFailed
+		j.status.Phase = torchv1alpha1.PyTorchJobPhaseFailed
+		j.status.State = torchv1alpha1.StateFailed
 	} else {
-		j.status.Phase = tfv1alpha1.TFJobPhaseCreating
-		j.status.State = tfv1alpha1.StateRunning
+		j.status.Phase = torchv1alpha1.PyTorchJobPhaseCreating
+		j.status.State = torchv1alpha1.StateRunning
 	}
 }
 
@@ -250,9 +257,9 @@ func (j *TrainingJob) setup(config *tfv1alpha1.ControllerConfig) {
 func (j *TrainingJob) setupReplicas() error {
 
 	if len(j.Replicas) != len(j.job.Spec.ReplicaSpecs) {
-		j.Replicas = make([]*TFReplicaSet, 0, len(j.job.Spec.ReplicaSpecs))
+		j.Replicas = make([]*PyTorchReplicaSet, 0, len(j.job.Spec.ReplicaSpecs))
 		for _, t := range j.job.Spec.ReplicaSpecs {
-			r, err := NewTFReplicaSet(j.KubeCli, j.recorder, *t, j)
+			r, err := NewPyTorchReplicaSet(j.KubeCli, j.recorder, *t, j)
 			if err != nil {
 				return err
 			}
@@ -268,15 +275,15 @@ func (j *TrainingJob) Delete() {
 	// we shouldn't delete the pods when the jobs finish because leaving the pods
 	// allows us to get the logs from the pods after the job finishes.
 	//
-	log.Infof("TFJob %v deleted by the user", j.fullname())
+	log.Infof("PyTorchJob %v deleted by the user", j.fullname())
 	// TODO(jlewi): This logic is probably insufficient.
-	if j.job.Status.Phase != tfv1alpha1.TFJobPhaseCleanUp {
-		j.status.Phase = tfv1alpha1.TFJobPhaseCleanUp
+	if j.job.Status.Phase != torchv1alpha1.PyTorchJobPhaseCleanUp {
+		j.status.Phase = torchv1alpha1.PyTorchJobPhaseCleanUp
 	}
 
 	// TODO(jlewi): Does it make sense to explicitly delete the resources? Should
 	// we just rely on K8s garbage collection to delete the resources before
-	// deleting TFJob?
+	// deleting PyTorchJob?
 	if cErr := j.deleteResources(); cErr != nil {
 		log.Errorf("trainingJob.deleteResources() error; %v", cErr)
 	}
@@ -291,7 +298,7 @@ func (j *TrainingJob) updateCRDStatus() error {
 
 	newJob := j.job
 	newJob.Status = j.status
-	newJob, err := j.tfJobClient.KubeflowV1alpha1().TFJobs(j.job.ObjectMeta.Namespace).Update(newJob)
+	newJob, err := j.torchJobClient.KubeflowV1alpha1().PyTorchJobs(j.job.ObjectMeta.Namespace).Update(newJob)
 	if err != nil {
 		return err
 	}
@@ -302,11 +309,10 @@ func (j *TrainingJob) updateCRDStatus() error {
 }
 
 // reconcile tries to get the job into the desired state.
-func (j *TrainingJob) Reconcile(config *tfv1alpha1.ControllerConfig) error {
-	if j.job.Status.Phase == tfv1alpha1.TFJobPhaseNone {
+func (j *TrainingJob) Reconcile(config *torchv1alpha1.ControllerConfig) error {
+	if j.job.Status.Phase == torchv1alpha1.PyTorchJobPhaseNone {
 		// The job hasn't been setup.
 		j.setup(config)
-
 		if err := j.updateCRDStatus(); err != nil {
 			log.Warningf("failed to update CRD status: %v", err)
 			return err
@@ -328,7 +334,7 @@ func (j *TrainingJob) Reconcile(config *tfv1alpha1.ControllerConfig) error {
 	// TODO(jlewi): Can we determine from the CRD status whether we should
 	// Create the resources or not? We need to ensure the resources exist so for
 	// now we always call Create.
-	if j.job.Status.Phase == tfv1alpha1.TFJobPhaseCreating || j.job.Status.Phase == tfv1alpha1.TFJobPhaseRunning {
+	if j.job.Status.Phase == torchv1alpha1.PyTorchJobPhaseCreating || j.job.Status.Phase == torchv1alpha1.PyTorchJobPhaseRunning {
 		// We call Create to make sure all the resources exist and are running.
 		if cErr := j.createResources(config); cErr != nil {
 			// TODO(jlewi): Should we eventually give up and mark the job as failed if we can't create the resources?
@@ -349,22 +355,28 @@ func (j *TrainingJob) Reconcile(config *tfv1alpha1.ControllerConfig) error {
 			return err
 		}
 		// TODO(jlewi): We should update the Phase if we detect the job is done.
-		if state == tfv1alpha1.StateFailed {
+		if state == torchv1alpha1.StateFailed {
 			log.Errorf("Master failed Job: %v.", j.job.ObjectMeta.Name)
-			j.status.Phase = tfv1alpha1.TFJobPhaseDone
-			j.status.State = tfv1alpha1.StateFailed
-		} else if state == tfv1alpha1.StateSucceeded {
+			j.status.Phase = torchv1alpha1.PyTorchJobPhaseDone
+			j.status.State = torchv1alpha1.StateFailed
+		} else if state == torchv1alpha1.StateSucceeded {
 			log.Infof("Master succeeded Job: %v.", j.job.ObjectMeta.Name)
-			j.status.Phase = tfv1alpha1.TFJobPhaseDone
-			j.status.State = tfv1alpha1.StateSucceeded
+			j.status.Phase = torchv1alpha1.PyTorchJobPhaseDone
+			j.status.State = torchv1alpha1.StateSucceeded
 		} else {
 			log.Infof("Job %v status=%v", j.job.ObjectMeta.Name, util.Pformat(j.status))
 		}
 	}
+	// TODO(jose5918) Need to figure out where it is best to add worldSize logic
+	// Get PyTorch worldSize by adding replicas
+	worldSize := int32(0)
+	for _, r := range j.Replicas {
+		worldSize = worldSize + *r.Spec.Replicas
+	}
 
 	// sync pods
 	for _, rc := range j.Replicas {
-		err := rc.SyncPods()
+		err := rc.SyncPods(worldSize)
 		if err != nil {
 			log.Errorf("SyncPods error: %v", err)
 		}
@@ -384,11 +396,11 @@ func (j *TrainingJob) Reconcile(config *tfv1alpha1.ControllerConfig) error {
 		return err
 	}
 
-	if j.job.Status.Phase == tfv1alpha1.TFJobPhaseCleanUp {
+	if j.job.Status.Phase == torchv1alpha1.PyTorchJobPhaseCleanUp {
 		if cErr := j.deleteResources(); cErr != nil {
 			log.Errorf("Job %v trainingJob.Delete() error; %v", j.job.ObjectMeta.Name, cErr)
 		}
-		// j.status.SetPhase(spec.TFJobPhaseDone)
+		// j.status.SetPhase(spec.PyTorchJobPhaseDone)
 		// Return from run because we want to stop reconciling the object.
 		return nil
 	}

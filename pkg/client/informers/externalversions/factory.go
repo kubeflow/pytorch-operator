@@ -17,15 +17,16 @@
 package externalversions
 
 import (
-	versioned "github.com/kubeflow/tf-operator/pkg/client/clientset/versioned"
-	internalinterfaces "github.com/kubeflow/tf-operator/pkg/client/informers/externalversions/internalinterfaces"
-	kubeflow "github.com/kubeflow/tf-operator/pkg/client/informers/externalversions/kubeflow"
-	runtime "k8s.io/apimachinery/pkg/runtime"
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
-	cache "k8s.io/client-go/tools/cache"
 	reflect "reflect"
 	sync "sync"
 	time "time"
+
+	versioned "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
+	internalinterfaces "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions/internalinterfaces"
+	kubeflow "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions/kubeflow"
+	runtime "k8s.io/apimachinery/pkg/runtime"
+	schema "k8s.io/apimachinery/pkg/runtime/schema"
+	cache "k8s.io/client-go/tools/cache"
 )
 
 type sharedInformerFactory struct {
