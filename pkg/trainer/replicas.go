@@ -29,11 +29,11 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 
-	torchv1alpha1 "github.com/jose5918/pytorch-operator/pkg/apis/pytorch/v1alpha1"
-	"github.com/jose5918/pytorch-operator/pkg/util/k8sutil"
+	torchv1alpha1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
+	"github.com/kubeflow/pytorch-operator/pkg/util/k8sutil"
 	// TOOO(jlewi): Rename to apiErrors
-	"github.com/jose5918/pytorch-operator/pkg/apis/pytorch/helper"
-	"github.com/jose5918/pytorch-operator/pkg/util"
+	"github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/helper"
+	"github.com/kubeflow/pytorch-operator/pkg/util"
 )
 
 const (

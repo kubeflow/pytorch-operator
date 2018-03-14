@@ -31,15 +31,15 @@ import (
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"k8s.io/client-go/tools/record"
 
-	"github.com/jose5918/pytorch-operator/cmd/pytorch-operator/app/options"
-	"github.com/jose5918/pytorch-operator/pkg/apis/pytorch/v1alpha1"
-	torchjobclient "github.com/jose5918/pytorch-operator/pkg/client/clientset/versioned"
-	"github.com/jose5918/pytorch-operator/pkg/client/clientset/versioned/scheme"
-	informers "github.com/jose5918/pytorch-operator/pkg/client/informers/externalversions"
-	"github.com/jose5918/pytorch-operator/pkg/controller"
-	"github.com/jose5918/pytorch-operator/pkg/util"
-	"github.com/jose5918/pytorch-operator/pkg/util/k8sutil"
-	"github.com/jose5918/pytorch-operator/version"
+	"github.com/kubeflow/pytorch-operator/cmd/pytorch-operator/app/options"
+	"github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
+	torchjobclient "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
+	"github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned/scheme"
+	informers "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions"
+	"github.com/kubeflow/pytorch-operator/pkg/controller"
+	"github.com/kubeflow/pytorch-operator/pkg/util"
+	"github.com/kubeflow/pytorch-operator/pkg/util/k8sutil"
+	"github.com/kubeflow/pytorch-operator/version"
 )
 
 var (

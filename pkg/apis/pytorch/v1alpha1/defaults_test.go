@@ -19,7 +19,7 @@ import (
 	"testing"
 
 	"github.com/gogo/protobuf/proto"
-	"github.com/jose5918/pytorch-operator/pkg/util"
+	"github.com/kubeflow/pytorch-operator/pkg/util"
 	"k8s.io/api/core/v1"
 )
 

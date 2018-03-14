@@ -35,12 +35,12 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 
-	torchv1alpha1 "github.com/jose5918/pytorch-operator/pkg/apis/pytorch/v1alpha1"
-	torchjobclient "github.com/jose5918/pytorch-operator/pkg/client/clientset/versioned"
-	kubeflowscheme "github.com/jose5918/pytorch-operator/pkg/client/clientset/versioned/scheme"
-	informers "github.com/jose5918/pytorch-operator/pkg/client/informers/externalversions"
-	listers "github.com/jose5918/pytorch-operator/pkg/client/listers/kubeflow/v1alpha1"
-	"github.com/jose5918/pytorch-operator/pkg/trainer"
+	torchv1alpha1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
+	torchjobclient "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
+	kubeflowscheme "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned/scheme"
+	informers "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions"
+	listers "github.com/kubeflow/pytorch-operator/pkg/client/listers/kubeflow/v1alpha1"
+	"github.com/kubeflow/pytorch-operator/pkg/trainer"
 )
 
 const (

@@ -19,8 +19,8 @@ import (
 	"testing"
 
 	"github.com/gogo/protobuf/proto"
-	torchv1alpha1 "github.com/jose5918/pytorch-operator/pkg/apis/pytorch/v1alpha1"
-	pytorchJobFake "github.com/jose5918/pytorch-operator/pkg/client/clientset/versioned/fake"
+	torchv1alpha1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
+	pytorchJobFake "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned/fake"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

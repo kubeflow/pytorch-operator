@@ -26,12 +26,12 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 
-	"github.com/jose5918/pytorch-operator/pkg/apis/pytorch/helper"
-	torchv1alpha1 "github.com/jose5918/pytorch-operator/pkg/apis/pytorch/v1alpha1"
-	"github.com/jose5918/pytorch-operator/pkg/apis/pytorch/validation"
-	pytorchclient "github.com/jose5918/pytorch-operator/pkg/client/clientset/versioned"
-	"github.com/jose5918/pytorch-operator/pkg/client/clientset/versioned/scheme"
-	"github.com/jose5918/pytorch-operator/pkg/util"
+	"github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/helper"
+	torchv1alpha1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
+	"github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/validation"
+	pytorchclient "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
+	"github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned/scheme"
+	"github.com/kubeflow/pytorch-operator/pkg/util"
 )
 
 // TODO(jlewi): We should switch a New pattern and make trainingJob private so we can
@@ -313,7 +313,6 @@ func (j *TrainingJob) Reconcile(config *torchv1alpha1.ControllerConfig) error {
 	if j.job.Status.Phase == torchv1alpha1.PyTorchJobPhaseNone {
 		// The job hasn't been setup.
 		j.setup(config)
-
 		if err := j.updateCRDStatus(); err != nil {
 			log.Warningf("failed to update CRD status: %v", err)
 			return err

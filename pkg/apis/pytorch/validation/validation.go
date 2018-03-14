@@ -18,8 +18,8 @@ import (
 	"errors"
 	"fmt"
 
-	torchv1 "github.com/jose5918/pytorch-operator/pkg/apis/pytorch/v1alpha1"
-	"github.com/jose5918/pytorch-operator/pkg/util"
+	torchv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
+	"github.com/kubeflow/pytorch-operator/pkg/util"
 )
 
 // ValidatePyTorchJobSpec checks that the PyTorchJobSpec is valid.

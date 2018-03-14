@@ -17,7 +17,7 @@ package validation
 import (
 	"testing"
 
-	torchv1 "github.com/jose5918/pytorch-operator/pkg/apis/pytorch/v1alpha1"
+	torchv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
 
 	"github.com/gogo/protobuf/proto"
 	"k8s.io/api/core/v1"

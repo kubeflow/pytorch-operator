@@ -17,8 +17,8 @@ package helper
 import (
 	"fmt"
 
-	torchv1 "github.com/jose5918/pytorch-operator/pkg/apis/pytorch/v1alpha1"
-	"github.com/jose5918/pytorch-operator/pkg/util"
+	torchv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
+	"github.com/kubeflow/pytorch-operator/pkg/util"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"

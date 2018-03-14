@@ -17,8 +17,8 @@ package main
 import (
 	"flag"
 
-	"github.com/jose5918/pytorch-operator/cmd/pytorch-operator/app"
-	"github.com/jose5918/pytorch-operator/cmd/pytorch-operator/app/options"
+	"github.com/kubeflow/pytorch-operator/cmd/pytorch-operator/app"
+	"github.com/kubeflow/pytorch-operator/cmd/pytorch-operator/app/options"
 	"github.com/onrik/logrus/filename"
 	log "github.com/sirupsen/logrus"
 )

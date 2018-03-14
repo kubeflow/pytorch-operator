@@ -29,9 +29,9 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/tools/record"
 
-	torchv1alpha1 "github.com/jose5918/pytorch-operator/pkg/apis/pytorch/v1alpha1"
-	pytorchJobFake "github.com/jose5918/pytorch-operator/pkg/client/clientset/versioned/fake"
-	"github.com/jose5918/pytorch-operator/pkg/util"
+	torchv1alpha1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
+	pytorchJobFake "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned/fake"
+	"github.com/kubeflow/pytorch-operator/pkg/util"
 )
 
 var (
