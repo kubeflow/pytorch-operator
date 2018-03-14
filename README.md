@@ -20,7 +20,7 @@ kubectl create -f examples/multinode/configmap.yaml
 ```
 Create a PyTorchJob resource to start training:
 ```
-kubectl create -f examples/crd.yaml
+kubectl create -f examples/pytorchjob.yaml
 ```
 You should now be able to see the job running based on the specified number of replicas.
 ```

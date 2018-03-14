@@ -1,4 +1,3 @@
-# WIP
 apiVersion: "kubeflow.org/v1alpha1"
 kind: "PyTorchJob"
 metadata:
