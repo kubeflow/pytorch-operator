@@ -103,7 +103,14 @@ func TestPyTorchReplicaSet(t *testing.T) {
 
 	for index := 0; index < 2; index++ {
 		// Expected labels
-		expectedLabels := map[string]string{
+		expectedPodLabels := map[string]string{
+			"kubeflow.org":     "",
+			"task_index":       fmt.Sprintf("%v", index+1),
+			"job_type":         "WORKER",
+			"runtime_id":       "some-runtime",
+			"pytorch_job_name": "some-job",
+		}
+		expectedServiceLabels := map[string]string{
 			"kubeflow.org":     "",
 			"task_index":       fmt.Sprintf("%v", index),
 			"job_type":         "WORKER",
@@ -123,8 +130,8 @@ func TestPyTorchReplicaSet(t *testing.T) {
 
 		s := sList.Items[index]
 
-		if !reflect.DeepEqual(expectedLabels, s.ObjectMeta.Labels) {
-			t.Fatalf("Service Labels; Got %v Want: %v", s.ObjectMeta.Labels, expectedLabels)
+		if !reflect.DeepEqual(expectedServiceLabels, s.ObjectMeta.Labels) {
+			t.Fatalf("Service Labels; Got %v Want: %v", s.ObjectMeta.Labels, expectedServiceLabels)
 		}
 
 		name := fmt.Sprintf("some-job-worker-some-runtime-%v", index)
@@ -152,8 +159,8 @@ func TestPyTorchReplicaSet(t *testing.T) {
 
 		p := l.Items[index]
 
-		if !reflect.DeepEqual(expectedLabels, p.ObjectMeta.Labels) {
-			t.Fatalf("Pod Labels; Got %v Want: %v", expectedLabels, p.ObjectMeta.Labels)
+		if !reflect.DeepEqual(expectedPodLabels, p.ObjectMeta.Labels) {
+			t.Fatalf("Pod Labels; Got %v Want: %v", p.ObjectMeta.Labels, expectedPodLabels)
 		}
 
 		if len(p.Spec.Containers) != 1 {
@@ -186,7 +193,7 @@ func TestPyTorchReplicaSet(t *testing.T) {
 			Cluster: ClusterSpec{},
 			Task: TaskSpec{
 				Type:  "worker",
-				Index: index,
+				Index: index + 1,
 			},
 			Environment: "cloud",
 		}
