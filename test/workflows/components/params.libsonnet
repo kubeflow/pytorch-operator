@@ -13,13 +13,13 @@
       prow_env: "JOB_NAME=tf-k8s-presubmit-test,JOB_TYPE=presubmit,PULL_NUMBER=374,REPO_NAME=k8s,REPO_OWNER=tensorflow,BUILD_NUMBER=6e32",
       versionTag: null,
     },
-    simple_tfjob: {
-      name: "simple-001",
+    simple_pytorchjob: {
+      name: "simple-pytorch-001",
       namespace: "kubeflow-test-infra",
       image: "",
     },
-    gpu_tfjob: {
-      name: "gpu-simple-001",
+    gpu_pytorchjob: {
+      name: "simple-pytorch-gpu-001",
       namespace: "kubeflow-test-infra",
       image: "",
     },

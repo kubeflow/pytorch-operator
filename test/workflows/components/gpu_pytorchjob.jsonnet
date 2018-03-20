@@ -1,15 +1,15 @@
-local params = std.extVar("__ksonnet/params").components.gpu_tfjob;
+local params = std.extVar("__ksonnet/params").components.gpu_pytorchjob;
 
 local k = import 'k.libsonnet';
 
-local defaultTestImage = "gcr.io/tf-on-k8s-dogfood/tf_sample_gpu:dc944ff";
+local defaultTestImage = "pytorch/pytorch:v0.2";
 local parts(namespace, name, image) = {
   local actualImage = if image != "" then
     image
   else defaultTestImage,
   job:: {
     apiVersion: "kubeflow.org/v1alpha1",
-    kind: "TFJob",
+    kind: "PyTorchJob",
     metadata: {
       name: name,
       namespace: namespace,
@@ -22,7 +22,7 @@ local parts(namespace, name, image) = {
               containers: [
                 {
                   image: actualImage,
-                  name: "tensorflow",
+                  name: "pytorch",
                   resources: {
                     limits: {
                       "nvidia.com/gpu": 1,
@@ -33,7 +33,7 @@ local parts(namespace, name, image) = {
               restartPolicy: "OnFailure",
             },
           },
-          tfReplicaType: "MASTER",
+          replicaType: "MASTER",
         },
       ],
     },
