@@ -54,7 +54,8 @@
       local srcRootDir = testDir + "/src";
       // The directory containing the kubeflow/pytorch-operator repo
       local srcDir = srcRootDir + "/kubeflow/pytorch-operator";
-      local image = "gcr.io/mlkube-testing/test-worker";
+      local testWorkerImage = "gcr.io/mlkube-testing/test-worker";
+      local golangImage = "golang:1.9.4-stretch";
       // The name of the NFS volume claim to use for test files.
       // local nfsVolumeClaim = "kubeflow-testing";
       local nfsVolumeClaim = "nfs-external";
@@ -91,7 +92,7 @@
         // Build an Argo template to execute a particular command.
         // step_name: Name for the template
         // command: List to pass as the container command.
-        buildTemplate(step_name, command):: {
+        buildTemplate(step_name, image, command):: {
           name: step_name,
           container: {
             command: command,
@@ -179,30 +180,22 @@
                   template: "checkout",
                 }],
                 [
-                  // {
-                  //   name: "build",
-                  //   template: "build",
-                  // },
+                  {
+                    name: "build",
+                    template: "build",
+                  },
                   {
                     name: "create-pr-symlink",
                     template: "create-pr-symlink",
                   },
-                  // {
-                  //   name: "py-test",
-                  //   template: "py-test",
-                  // },
-                  // {
-                  //   name: "py-lint",
-                  //   template: "py-lint",
-                  // },
                 ],
-                // [  // Setup cluster needs to run after build because we depend on the chart
-                //   // created by the build statement.
-                //   {
-                //     name: "setup-cluster",
-                //     template: "setup-cluster",
-                //   },
-                // ],
+                [  // Setup cluster needs to run after build because we depend on the chart
+                  // created by the build statement.
+                  {
+                    name: "setup-cluster",
+                    template: "setup-cluster",
+                  },
+                ],
                 // [
                 //   {
                 //     name: "run-tests",
@@ -218,11 +211,11 @@
             {
               name: "exit-handler",
               steps: [
-                // [{
-                //   name: "teardown-cluster",
-                //   template: "teardown-cluster",
+                [{
+                  name: "teardown-cluster",
+                  template: "teardown-cluster",
 
-                // }],
+                }],
                 [{
                   name: "copy-artifacts",
                   template: "copy-artifacts",
@@ -240,7 +233,7 @@
                   name: "EXTRA_REPOS",
                   value: "kubeflow/testing@HEAD",
                 }],
-                image: image,
+                image: testWorkerImage,
                 volumeMounts: [
                   {
                     name: dataVolume,
@@ -249,49 +242,15 @@
                 ],
               },
             },  // checkout
-            // TODO(jose5918) Testing code needs to be moved to a shared repo or clone from tf-operator
-            // $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("build", [
-            //   "python",
-            //   "-m",
-            //   "py.release",
-            //   "build",
-            //   "--src_dir=" + srcDir,
-            //   "--registry=" + params.registry,
-            //   "--project=" + project,
-            //   "--version_tag=" + versionTag,
-            // ]),  // build
-            // $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("py-test", [
-            //   "python",
-            //   "-m",
-            //   "py.py_checks",
-            //   "test",
-            //   "--src_dir=" + srcDir,
-            //   "--project=" + project,
-            //   "--junit_path=" + artifactsDir + "/junit_pycheckstest.xml",
-            // ]),  // py test
-            // $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("py-lint", [
-            //   "python",
-            //   "-m",
-            //   "py.py_checks",
-            //   "lint",
-            //   "--src_dir=" + srcDir,
-            //   "--project=" + project,
-            //   "--junit_path=" + artifactsDir + "/junit_pycheckslint.xml",
-            // ]),  // py lint
-            // $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("setup-cluster", [
-            //   "python",
-            //   "-m",
-            //   "py.deploy",
-            //   "setup",
-            //   "--cluster=" + cluster,
-            //   "--zone=" + zone,
-            //   "--project=" + project,
-            //   "--namespace=" + deployNamespace,
-            //   "--image=" + pytorchJobImage,
-            //   "--accelerator=nvidia-tesla-k80=1",
-            //   "--test_app_dir=" + srcDir + "/test/test-app",
-            //   "--junit_path=" + artifactsDir + "/junit_setupcluster.xml",
-            // ]),  // setup cluster
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("setup-cluster",testWorkerImage, [
+              "/bin/bash",
+              "-c",
+              "scripts/create-cluster.sh",
+              cluster,
+              zone,
+              project,
+              deployNamespace,
+            ]),  // setup cluster
             // $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-tests", [
             //   "python",
             //   "-m",
@@ -318,7 +277,7 @@
             //   "--params=name=gpu-tfjob,namespace=default",
             //   "--junit_path=" + artifactsDir + "/junit_gpu-tests.xml",
             // ]),  // run gpu_tests
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", [
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", testWorkerImage, [
               "python",
               "-m",
               "kubeflow.testing.prow_artifacts",
@@ -326,17 +285,16 @@
               "create_pr_symlink",
               "--bucket=" + bucket,
             ]),  // create-pr-symlink
-            // $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("teardown-cluster", [
-            //   "python",
-            //   "-m",
-            //   "py.deploy",
-            //   "teardown",
-            //   "--cluster=" + cluster,
-            //   "--zone=" + zone,
-            //   "--project=" + project,
-            //   "--junit_path=" + artifactsDir + "/junit_teardown.xml",
-            // ]),  // setup cluster
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("copy-artifacts", [
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("teardown-cluster",testWorkerImage, [
+              "gcloud",
+              "container",
+              "clusters",
+              "delete",
+              cluster,
+              "--zone=" + zone,
+              "--project=" + project,
+             ]),  // teardown cluster
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("copy-artifacts", testWorkerImage, [
               "python",
               "-m",
               "kubeflow.testing.prow_artifacts",
@@ -344,6 +302,11 @@
               "copy_artifacts",
               "--bucket=" + bucket,
             ]),  // copy-artifacts
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("build", golangImage, [
+              "/bin/bash",
+              "-c",
+              "export REGISTRY="+ params.registry + "; export PROJECT="+ project +"; make push-image",
+            ]),  // build
           ],  // templates
         },
       },  // e2e
