@@ -3,4 +3,4 @@
 workflows:
   - app_dir: kubeflow/pytorch-operator/test/workflows
     component: workflows
-    name: torch-e2e
+    name: e2e
