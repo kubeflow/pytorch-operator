@@ -305,7 +305,7 @@
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("build", golangImage, [
               "/bin/bash",
               "-c",
-              "export REGISTRY="+ params.registry + "; export PROJECT="+ project +"; make push-image",
+              "export REGISTRY="+ params.registry + "; export PROJECT="+ project +"; export PATH=$GOPATH/bin:/usr/local/go/bin:$PATH; make push-image",
             ]),  // build
           ],  // templates
         },
