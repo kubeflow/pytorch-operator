@@ -19,7 +19,7 @@ prereq:
 		github.com/kubernetes/gengo/examples/deepcopy-gen
 	gometalinter --install
 
-build: prereq code-generation lint test
+build: prereq lint test
 	go build -gcflags "-N -l" github.com/kubeflow/pytorch-operator/cmd/pytorch-operator
 
 lint:
