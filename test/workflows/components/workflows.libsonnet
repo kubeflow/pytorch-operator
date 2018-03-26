@@ -243,8 +243,6 @@
               },
             },  // checkout
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("setup-cluster",testWorkerImage, [
-              "/bin/bash",
-              "-c",
               "scripts/create-cluster.sh",
               cluster,
               zone,
@@ -303,9 +301,9 @@
               "--bucket=" + bucket,
             ]),  // copy-artifacts
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("build", golangImage, [
-              "/bin/bash",
-              "-c",
-              "export REGISTRY="+ params.registry + "; export PROJECT="+ project +"; export PATH=$GOPATH/bin:/usr/local/go/bin:$PATH; make push-image",
+              "scripts/build.sh",
+              params.registry,
+              project,
             ]),  // build
           ],  // templates
         },

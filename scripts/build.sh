@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2018 The Kubernetes Authors.
+# Copyright 2018 The Kubeflow Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,28 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This shell script is used to build a cluster and create a namespace from our
-# argo workflow
-
+# This shell script is used to build an image from our argo workflow
 
 set -o errexit
 set -o nounset
 set -o pipefail
 
-CLUSTER_NAME=$1
-ZONE=$2
-PROJECT=$3
-NAMESPACE=$4
-
+export PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
+export REGISTRY=$1
+export PROJECT=$2
 echo "Activating service-account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
-echo "Creating GPU cluster"
-gcloud --project ${PROJECT} beta container clusters create ${CLUSTER_NAME} \
-    --zone ${ZONE} \
-    --accelerator type=nvidia-tesla-k80,count=1 \
-    --cluster-version 1.9
-echo "Configuring kubectl"
-gcloud --project ${PROJECT} container clusters get-credentials ${CLUSTER_NAME} \
-    --zone ${ZONE}
-echo "Create Namespace"
-kubectl create ns ${NAMESPACE}
+echo "Create symlink to GOPATH"
+mkdir -p ${GOPATH}/src/github.com/${REPO_OWNER}
+ln -s ${PWD} ../go/src/github.com/${REPO_OWNER}/${REPO_NAME}
+make push-image
