@@ -31,10 +31,3 @@ test:
 
 code-generation:
 	./hack/update-codegen.sh
-
-push-image:
-	go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator
-	@ echo "activating service-account"
-	gcloud auth activate-service-account --key-file=$(GOOGLE_APPLICATION_CREDENTIALS)
-	@ echo "building container in gcloud"
-	gcloud container builds submit . --tag=$(REGISTRY)/$(IMAGE_NAME):$(VERSION) --project=$(PROJECT)

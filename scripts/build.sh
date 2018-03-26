@@ -20,10 +20,11 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-export PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
-export REGISTRY=$1
-export PROJECT=$2
+export PATH=${GOPATH}/bin:/usr/local/go/bin:$PATH
+REGISTRY=$1
+PROJECT=$2
 GO_DIR=${GOPATH}/src/github.com/${REPO_OWNER}/${REPO_NAME}
+VERSION=$(git describe --tags --always --dirty)
 
 echo "Activating service-account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
@@ -31,4 +32,8 @@ echo "Create symlink to GOPATH"
 mkdir -p ${GOPATH}/src/github.com/${REPO_OWNER}
 ln -s ${PWD} ${GO_DIR}
 cd ${GO_DIR}
-make push-image
+ls
+echo "Build operator binary"
+go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator
+echo "building container in gcloud"
+gcloud container builds submit . --tag=${REGISTRY}/${REPO_NAME}:${VERSION} --project=${PROJECT}
