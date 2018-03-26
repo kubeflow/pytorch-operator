@@ -34,6 +34,5 @@ ln -s ${PWD} ${GO_DIR}
 cd ${GO_DIR}
 echo "Build operator binary"
 go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator
-ls
 echo "building container in gcloud"
 gcloud container builds submit . --tag=${REGISTRY}/${REPO_NAME}:${VERSION} --project=${PROJECT}
