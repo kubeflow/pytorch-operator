@@ -300,7 +300,7 @@
               "copy_artifacts",
               "--bucket=" + bucket,
             ]),  // copy-artifacts
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("build", golangImage, [
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("build", testWorkerImage, [
               "scripts/build.sh",
               params.registry,
               project,
