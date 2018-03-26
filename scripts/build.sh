@@ -23,13 +23,12 @@ set -o pipefail
 export PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
 export REGISTRY=$1
 export PROJECT=$2
+GO_DIR=${GOPATH}/src/github.com/${REPO_OWNER}/${REPO_NAME}
+
 echo "Activating service-account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
 echo "Create symlink to GOPATH"
 mkdir -p ${GOPATH}/src/github.com/${REPO_OWNER}
-cd ..
-pwd
-echo ${GOPATH}
-ls
-ln -s src/${REPO_NAME} go/src/github.com/${REPO_OWNER}/${REPO_NAME}
+ln -s ${PWD} ${GO_DIR}
+cd ${GO_DIR}
 make push-image
