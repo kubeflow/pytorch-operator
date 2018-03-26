@@ -284,13 +284,10 @@
               "--bucket=" + bucket,
             ]),  // create-pr-symlink
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("teardown-cluster",testWorkerImage, [
-              "gcloud",
-              "container",
-              "clusters",
-              "delete",
+              "scripts/delete-cluster.sh",
               cluster,
-              "--zone=" + zone,
-              "--project=" + project,
+              zone,
+              project,
              ]),  // teardown cluster
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("copy-artifacts", testWorkerImage, [
               "python",
