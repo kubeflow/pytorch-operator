@@ -27,5 +27,9 @@ echo "Activating service-account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
 echo "Create symlink to GOPATH"
 mkdir -p ${GOPATH}/src/github.com/${REPO_OWNER}
-ln -s ${PWD} ../go/src/github.com/${REPO_OWNER}/${REPO_NAME}
+cd ..
+pwd
+echo ${GOPATH}
+ls
+ln -s src/${REPO_NAME} go/src/github.com/${REPO_OWNER}/${REPO_NAME}
 make push-image
