@@ -252,6 +252,7 @@
               cluster,
               zone,
               project,
+              deployNamespace,
             ]),  // run tests
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", testWorkerImage, [
               "python",
