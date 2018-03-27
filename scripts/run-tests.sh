@@ -39,7 +39,7 @@ kubectl create clusterrolebinding tiller-cluster-admin-binding --clusterrole=clu
 helm init --service-account tiller
 echo "Waiting for tiller"
 TIMEOUT=30
-until kubectl get pods -n kube-system | grep tiller-deploy | grep Running || [[ $TIMEOUT -eq 1 ]]; do
+until kubectl get pods -n kube-system | grep tiller-deploy | grep 1/1 || [[ $TIMEOUT -eq 1 ]]; do
   sleep 10
   TIMEOUT=$(( TIMEOUT - 1 ))
 done
