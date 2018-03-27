@@ -56,6 +56,8 @@
       local srcDir = srcRootDir + "/kubeflow/pytorch-operator";
       local testWorkerImage = "gcr.io/mlkube-testing/test-worker";
       local golangImage = "golang:1.9.4-stretch";
+      // TODO(jose5918) Build our own helm image
+      local helmImage = "volumecontroller/golang:1.9.2";
       // The name of the NFS volume claim to use for test files.
       // local nfsVolumeClaim = "kubeflow-testing";
       local nfsVolumeClaim = "nfs-external";
@@ -196,16 +198,12 @@
                     template: "setup-cluster",
                   },
                 ],
-                // [
-                //   {
-                //     name: "run-tests",
-                //     template: "run-tests",
-                //   },
-                //   {
-                //     name: "run-gpu-tests",
-                //     template: "run-gpu-tests",
-                //   },
-                // ],
+                [
+                  {
+                    name: "run-tests",
+                    template: "run-tests",
+                  },
+                ],
               ],
             },
             {
@@ -249,32 +247,12 @@
               project,
               deployNamespace,
             ]),  // setup cluster
-            // $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-tests", [
-            //   "python",
-            //   "-m",
-            //   "py.test_runner",
-            //   "test",
-            //   "--cluster=" + cluster,
-            //   "--zone=" + zone,
-            //   "--project=" + project,
-            //   "--app_dir=" + srcDir + "/test/workflows",
-            //   "--component=simple_tfjob",
-            //   "--params=name=simple-tfjob,namespace=default",
-            //   "--junit_path=" + artifactsDir + "/junit_e2e.xml",
-            // ]),  // run tests
-            // $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-gpu-tests", [
-            //   "python",
-            //   "-m",
-            //   "py.test_runner",
-            //   "test",
-            //   "--cluster=" + cluster,
-            //   "--zone=" + zone,
-            //   "--project=" + project,
-            //   "--app_dir=" + srcDir + "/test/workflows",
-            //   "--component=gpu_tfjob",
-            //   "--params=name=gpu-tfjob,namespace=default",
-            //   "--junit_path=" + artifactsDir + "/junit_gpu-tests.xml",
-            // ]),  // run gpu_tests
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-tests", helmImage, [
+              "scripts/run-tests.sh",
+              cluster,
+              zone,
+              project,
+            ]),  // run tests
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", testWorkerImage, [
               "python",
               "-m",
