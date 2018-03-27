@@ -26,6 +26,7 @@ CLUSTER_NAME=$1
 ZONE=$2
 PROJECT=$3
 NAMESPACE=$4
+GO_DIR=${GOPATH}/src/github.com/${REPO_OWNER}/${REPO_NAME}
 
 echo "Activating service-account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
@@ -46,9 +47,11 @@ done
 
 echo "Install the operator"
 helm install pytorch-operator-chart -n pytorch-operator \
-    --namespace ${NAMESPACE}
+    --namespace ${NAMESPACE} \
     --set rbac.install=true \
     --set image=$(git describe --tags --always --dirty) \
     --wait --replace
+
 echo "Run go tests"
+cd ${GO_DIR}
 go run ./test/e2e/main.go --namespace=${NAMESPACE}
