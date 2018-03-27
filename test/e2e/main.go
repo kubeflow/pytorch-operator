@@ -52,9 +52,11 @@ func run() (string, error) {
 	}
 	// Create PyTorchJob from examples
 	cmd := exec.Command(
-		"kubectl", "create",
+		"kubectl", "apply",
 		"-f",
 		"examples/multinode/configmap.yaml",
+		"-n",
+		*namespace,
 	)
 	err = runCmd(cmd)
 	if err != nil {
@@ -65,6 +67,8 @@ func run() (string, error) {
 		"kubectl", "create",
 		"-f",
 		"examples/pytorchjob.yaml",
+		"-n",
+		*namespace,
 	)
 	err = runCmd(cmd)
 	if err != nil {
