@@ -13,7 +13,7 @@ import (
 	log "github.com/golang/glog"
 	torchv1alpha1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
 	torchjobclient "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
-	"github.com/kubeflow/tf-operator/pkg/util"
+	"github.com/kubeflow/pytorch-operator/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	// Uncomment the following line to load the gcp plugin (only required to authenticate against GKE clusters).
