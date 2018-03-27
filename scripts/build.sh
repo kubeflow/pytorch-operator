@@ -35,4 +35,6 @@ cd ${GO_DIR}
 echo "Build operator binary"
 go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator
 echo "building container in gcloud"
-gcloud container builds submit . --tag=${REGISTRY}/${REPO_NAME}:${VERSION} --project=${PROJECT} --verbosity=debug
+gcloud version
+gcloud components update -q
+gcloud container builds submit . --tag=${REGISTRY}/${REPO_NAME}:${VERSION} --project=${PROJECT}
