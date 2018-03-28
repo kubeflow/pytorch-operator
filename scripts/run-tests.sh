@@ -22,11 +22,11 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-CLUSTER_NAME=$1
-ZONE=$2
-PROJECT=$3
-NAMESPACE=$4
-REGISTRY=$5
+CLUSTER_NAME="${CLUSTER_NAME}"
+ZONE="${GCP_ZONE}"
+PROJECT="${GCP_PROJECT}"
+NAMESPACE="${DEPLOY_NAMESPACE}"
+REGISTRY="${GCP_REGISTRY}"
 VERSION=$(git describe --tags --always --dirty)
 GO_DIR=${GOPATH}/src/github.com/${REPO_OWNER}/${REPO_NAME}
 

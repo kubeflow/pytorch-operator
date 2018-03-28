@@ -20,9 +20,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-export PATH=${GOPATH}/bin:/usr/local/go/bin:$PATH
-REGISTRY=$1
-PROJECT=$2
+export PATH=${GOPATH}/bin:/usr/local/go/bin:${PATH}
+REGISTRY="${GCP_REGISTRY}"
+PROJECT="${GCP_PROJECT}"
 GO_DIR=${GOPATH}/src/github.com/${REPO_OWNER}/${REPO_NAME}
 VERSION=$(git describe --tags --always --dirty)
 
@@ -36,5 +36,5 @@ echo "Build operator binary"
 go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator
 echo "building container in gcloud"
 gcloud version
-gcloud components update -q
+# gcloud components update -q
 gcloud container builds submit . --tag=${REGISTRY}/${REPO_NAME}:${VERSION} --project=${PROJECT}

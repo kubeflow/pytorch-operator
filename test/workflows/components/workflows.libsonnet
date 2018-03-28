@@ -89,6 +89,7 @@
         else
           name;
       local zone = params.zone;
+      local registry = params.registry;
       local chart = srcDir + "/pytorch-operator-chart";
       {
         // Build an Argo template to execute a particular command.
@@ -110,6 +111,26 @@
                 // Set the GOPATH
                 name: "GOPATH",
                 value: goDir,
+              },
+              {
+                name: "CLUSTER_NAME",
+                value: cluster,
+              },
+              {
+                name: "GCP_ZONE",
+                value: zone,
+              },
+              {
+                name: "GCP_PROJECT",
+                value: project,
+              },
+              {
+                name: "GCP_REGISTRY",
+                value: registry,
+              },
+              {
+                name: "DEPLOY_NAMESPACE",
+                value: deployNamespace,
               },
               {
                 name: "GOOGLE_APPLICATION_CREDENTIALS",
@@ -242,18 +263,9 @@
             },  // checkout
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("setup-cluster",testWorkerImage, [
               "scripts/create-cluster.sh",
-              cluster,
-              zone,
-              project,
-              deployNamespace,
             ]),  // setup cluster
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-tests", helmImage, [
               "scripts/run-tests.sh",
-              cluster,
-              zone,
-              project,
-              deployNamespace,
-              params.registry,
             ]),  // run tests
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", testWorkerImage, [
               "python",
@@ -265,9 +277,6 @@
             ]),  // create-pr-symlink
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("teardown-cluster",testWorkerImage, [
               "scripts/delete-cluster.sh",
-              cluster,
-              zone,
-              project,
              ]),  // teardown cluster
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("copy-artifacts", testWorkerImage, [
               "python",
@@ -279,8 +288,6 @@
             ]),  // copy-artifacts
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("build", testWorkerImage, [
               "scripts/build.sh",
-              params.registry,
-              project,
             ]),  // build
           ],  // templates
         },

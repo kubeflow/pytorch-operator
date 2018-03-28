@@ -22,10 +22,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-CLUSTER_NAME=$1
-ZONE=$2
-PROJECT=$3
-NAMESPACE=$4
+CLUSTER_NAME="${CLUSTER_NAME}"
+ZONE="${GCP_ZONE}"
+PROJECT="${GCP_PROJECT}"
+NAMESPACE="${DEPLOY_NAMESPACE}"
 
 echo "Activating service-account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
