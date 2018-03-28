@@ -26,6 +26,8 @@ CLUSTER_NAME=$1
 ZONE=$2
 PROJECT=$3
 NAMESPACE=$4
+REGISTRY=$5
+VERSION=$(git describe --tags --always --dirty)
 GO_DIR=${GOPATH}/src/github.com/${REPO_OWNER}/${REPO_NAME}
 
 echo "Activating service-account"
@@ -49,7 +51,7 @@ echo "Install the operator"
 helm install pytorch-operator-chart -n pytorch-operator \
     --namespace ${NAMESPACE} \
     --set rbac.install=true \
-    --set image=$(git describe --tags --always --dirty) \
+    --set image=${REGISTRY}/${REPO_NAME}:${VERSION} \
     --wait --replace
 
 echo "Run go tests"
