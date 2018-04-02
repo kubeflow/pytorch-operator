@@ -221,6 +221,10 @@ func (s *PyTorchReplicaSet) CreatePodWithIndex(index int32, worldSize int32) (*v
 			Name:  "RANK",
 			Value: rank,
 		})
+		c.Env = append(c.Env, v1.EnvVar{
+			Name:  "PYTHONUNBUFFERED",
+			Value: "0",
+		})
 	}
 
 	log.Infof("Creating pod: %v", pod.ObjectMeta.Name)
