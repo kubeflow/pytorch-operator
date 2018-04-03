@@ -316,7 +316,7 @@ func TestPyTorchReplicaSetStatusFromPodList(t *testing.T) {
 				},
 			},
 			Name:     "master",
-			Expected: torchv1alpha1.ReplicaStateFailed,
+			Expected: torchv1alpha1.ReplicaStateRunning,
 		},
 		{
 			// Multiple Pods; check we get the most recent.
