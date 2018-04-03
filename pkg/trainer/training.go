@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
@@ -90,6 +89,15 @@ func NewJob(kubeCli kubernetes.Interface, torchJobClient pytorchclient.Interface
 
 func (j *TrainingJob) UID() types.UID {
 	return j.job.ObjectMeta.UID
+}
+
+// Update replaces the PyTorchJob corresponding to TrainingJob with the provided job.
+// This function is used when the Spec/Status of the job is modified outside the controller.
+// For example, if the user issues a delete request. This will update the metadata on the object
+// so we need to replace the spec.
+func (j *TrainingJob) Update(newJob *torchv1alpha1.PyTorchJob) {
+	log.Info("Updating job to %+v", *newJob)
+	j.job = newJob
 }
 
 func (j *TrainingJob) ClusterSpec() ClusterSpec {
@@ -171,45 +179,6 @@ func (j *TrainingJob) GetStatus() (torchv1alpha1.State, []*torchv1alpha1.PyTorch
 	}
 
 	return state, replicaStatuses, nil
-}
-
-// isRetryableTerminationState returns true if a container terminated in a state
-// that we consider retryable.
-func isRetryableTerminationState(s *v1.ContainerStateTerminated) bool {
-	// TODO(jlewi): Need to match logic in
-	// https://cs.corp.google.com/piper///depot/google3/cloud/ml/beta/job/training_job_state_util.cc?l=88
-	if s.Reason == "OOMKilled" {
-		// If the user's process causes an OOM and Docker kills the container,
-		// the termination reason of ContainerState will be specified to
-		// 'OOMKilled'. In this case, we can't assume this to be a retryable error.
-		//
-		// This check should happen before checking the termination log, since
-		// if the container terminated with an OOM, the termination log may not
-		// be written.
-		return false
-	}
-
-	// TODO(jlewi): Should we use the exit code reported in the termination
-	// log message and not the ExitCode reported by the container.
-
-	if s.ExitCode >= 0 && s.ExitCode <= 127 {
-		// For the exit_code in [0, 127]:
-		//   0 means success,
-		//   1 - 127 corresponds to permanent user errors.
-		// We don't want to retry for both cases.
-		// More info about exit status can be found in:
-		// https://www.gnu.org/software/bash/manual/html_node/Exit-Status.html
-		return false
-	}
-
-	// For the remaining cases that exit_code from workers that doesn't
-	// fall into [0, 127]. They can be:
-	//   137 corresponds to SIGKILL,
-	//   143 corresponds to SIGTERM,
-	//   other values that have undefined behavior.
-	// We treat them as internal errors for now and all the internal errors
-	// will be retired.
-	return true
 }
 
 func (j *TrainingJob) masterName() string {
@@ -310,6 +279,12 @@ func (j *TrainingJob) updateCRDStatus() error {
 
 // reconcile tries to get the job into the desired state.
 func (j *TrainingJob) Reconcile(config *torchv1alpha1.ControllerConfig) error {
+	if j.job.ObjectMeta.DeletionTimestamp != nil {
+		log.Info("Deletion timestamp set; skipping reconcile")
+		// Job is in the process of being deleted so do nothing.
+		// We especially don't want to create new resources as that could block deletion.
+		return nil
+	}
 	if j.job.Status.Phase == torchv1alpha1.PyTorchJobPhaseNone {
 		// The job hasn't been setup.
 		j.setup(config)
@@ -374,19 +349,22 @@ func (j *TrainingJob) Reconcile(config *torchv1alpha1.ControllerConfig) error {
 		worldSize = worldSize + *r.Spec.Replicas
 	}
 
-	// sync pods
-	for _, rc := range j.Replicas {
-		err := rc.SyncPods(worldSize)
-		if err != nil {
-			log.Errorf("SyncPods error: %v", err)
+	// Only sync pods and services if we are running.
+	if j.status.Phase == torchv1alpha1.PyTorchJobPhaseCreating || j.status.Phase == torchv1alpha1.PyTorchJobPhaseRunning {
+		// sync pods
+		for _, rc := range j.Replicas {
+			err := rc.SyncPods(worldSize)
+			if err != nil {
+				log.Errorf("SyncPods error: %v", err)
+			}
 		}
-	}
 
-	// sync services
-	for _, rc := range j.Replicas {
-		err := rc.SyncServices()
-		if err != nil {
-			log.Errorf("SyncServices error: %v", err)
+		// sync services
+		for _, rc := range j.Replicas {
+			err := rc.SyncServices()
+			if err != nil {
+				log.Errorf("SyncServices error: %v", err)
+			}
 		}
 	}
 

@@ -235,6 +235,10 @@ func (c *Controller) syncPyTorchJob(key string) (bool, error) {
 			return false, err
 		}
 		c.jobs[key] = nc
+	} else {
+		// Replace the TFJob stored inside TrainingJob with the latest job.
+		// We need to do this to pull in the latest changes to the spec/status.
+		c.jobs[key].Update(tfJob)
 	}
 
 	nc := c.jobs[key]
