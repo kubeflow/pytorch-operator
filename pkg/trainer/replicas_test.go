@@ -176,8 +176,8 @@ func TestPyTorchReplicaSet(t *testing.T) {
 		}
 
 		c := p.Spec.Containers[0]
-		if len(c.Env) != 5 {
-			t.Fatalf("Expected 1 environment variable got %v", len(c.Env))
+		if len(c.Env) != 6 {
+			t.Fatalf("Expected 6 environment variables got %v", len(c.Env))
 		}
 
 		if strings.Compare(p.Spec.SchedulerName, testSchedulerName) != 0 {
