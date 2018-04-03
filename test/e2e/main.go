@@ -54,7 +54,7 @@ func run() (string, error) {
 	cmd := exec.Command(
 		"kubectl", "apply",
 		"-f",
-		"examples/multinode/configmap.yaml",
+		"examples/mnist/multinode/configmap.yaml",
 		"-n",
 		*namespace,
 	)
@@ -66,7 +66,7 @@ func run() (string, error) {
 	cmd = exec.Command(
 		"kubectl", "create",
 		"-f",
-		"examples/pytorchjob.yaml",
+		"examples/mnist/pytorchjob.yaml",
 		"-n",
 		*namespace,
 	)
