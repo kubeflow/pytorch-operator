@@ -26,9 +26,9 @@ You should now be able to see the job running based on the specified number of r
 ```
 kubectl get pods -a -l pytorch_job_name=example-job
 ```
-Training should run for about 10 epochs and takes 5-10 minutes on a cpu cluster. Logs don't appear until job is completed. (TODO(jose5918) Find a better example for distributed training)
+Training should run for about 10 epochs and takes 5-10 minutes on a cpu cluster. Logs can be inspected while the job runs. (TODO(jose5918) Find a better example for distributed training)
 
-Tail the logs and once the training job is completed the logs will show up:
+Tail the logs for a pod to see its training progress or final status:
 ```
 PODNAME=$(kubectl  get pods -a -l pytorch_job_name=example-job,task_index=0 -o name)
 kubectl logs -f ${PODNAME}

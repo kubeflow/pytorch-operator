@@ -29,9 +29,6 @@ spec:
                 name: dist-train
                 defaultMode: 0755
           restartPolicy: OnFailure
-          env:
-          - name: PYTHONUNBUFFERED
-            value: "0"
     - replicas: 3
       replicaType: WORKER
       template:
@@ -55,6 +52,3 @@ spec:
                 name: dist-train
                 defaultMode: 0755
           restartPolicy: OnFailure
-          env:
-          - name: PYTHONUNBUFFERED
-            value: "0"
