@@ -322,12 +322,6 @@ func replicaStatusFromPodList(l v1.PodList, name string) torchv1alpha1.ReplicaSt
 
 		// We need to decide whether to use the current state or the previous termination state.
 		tfState = i.State
-
-		// If the container previously terminated we will look at the termination to decide whether it is a retryable
-		// or permanenent error.
-		if i.LastTerminationState.Terminated != nil {
-			tfState = i.LastTerminationState
-		}
 	}
 
 	if tfState.Running != nil || tfState.Waiting != nil {
@@ -338,13 +332,6 @@ func replicaStatusFromPodList(l v1.PodList, name string) torchv1alpha1.ReplicaSt
 		if tfState.Terminated.ExitCode == 0 {
 			return torchv1alpha1.ReplicaStateSucceeded
 		}
-
-		if isRetryableTerminationState(tfState.Terminated) {
-			// Since its a retryable error just return RUNNING.
-			// We can just let Kubernetes restart the container to retry.
-			return torchv1alpha1.ReplicaStateRunning
-		}
-
 		return torchv1alpha1.ReplicaStateFailed
 	}
 
@@ -352,16 +339,6 @@ func replicaStatusFromPodList(l v1.PodList, name string) torchv1alpha1.ReplicaSt
 }
 
 func (s *PyTorchReplicaSet) GetSingleReplicaStatus(index int32) torchv1alpha1.ReplicaState {
-	p, err := s.ClientSet.CoreV1().Pods(s.Job.job.ObjectMeta.Namespace).Get(s.genName(index), meta_v1.GetOptions{})
-
-	if err != nil {
-		return torchv1alpha1.ReplicaStateUnknown
-	}
-
-	if v1.PodSucceeded == p.Status.Phase {
-		return torchv1alpha1.ReplicaStateSucceeded
-	}
-
 	labels := s.Labels()
 	labels["task_index"] = fmt.Sprintf("%v", index)
 	selector, err := labels.ToSelector()

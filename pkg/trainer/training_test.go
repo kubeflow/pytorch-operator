@@ -28,64 +28,6 @@ import (
 	"k8s.io/client-go/tools/record"
 )
 
-func TestIsRetryableTerminationState(t *testing.T) {
-	type TestCase struct {
-		State    v1.ContainerStateTerminated
-		Expected bool
-	}
-
-	cases := []TestCase{
-		{
-			// Since reason is empty we don't trust the exit code.
-			State: v1.ContainerStateTerminated{
-				ExitCode: 0,
-			},
-			Expected: false,
-		},
-		{
-			State: v1.ContainerStateTerminated{
-				ExitCode: 0,
-				Message:  "some reason",
-			},
-			Expected: false,
-		},
-		{
-			State: v1.ContainerStateTerminated{
-				ExitCode: 1,
-				Message:  "some reason",
-			},
-			Expected: false,
-		},
-		{
-			State: v1.ContainerStateTerminated{
-				ExitCode: 1,
-			},
-			Expected: false,
-		},
-		{
-			State: v1.ContainerStateTerminated{
-				ExitCode: 244,
-				Message:  "some reason",
-			},
-			Expected: true,
-		},
-		{
-			State: v1.ContainerStateTerminated{
-				ExitCode: 244,
-				Reason:   "OOMKilled",
-			},
-			Expected: false,
-		},
-	}
-
-	for _, c := range cases {
-		actual := isRetryableTerminationState(&c.State)
-		if actual != c.Expected {
-			t.Errorf("isRetryableTerminationState(%+v)=%v want %v", c.State, actual, c.Expected)
-		}
-	}
-}
-
 func TestClusterSpec(t *testing.T) {
 	type TestCase struct {
 		Spec     *torchv1alpha1.PyTorchJob
@@ -96,10 +38,12 @@ func TestClusterSpec(t *testing.T) {
 		{
 			Spec: &torchv1alpha1.PyTorchJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "myjob",
+					Name:      "myjob",
+					Namespace: "kubeflow",
 				},
 				Spec: torchv1alpha1.PyTorchJobSpec{
-					RuntimeId: "runtime",
+					SchedulerName: "sched",
+					RuntimeId:     "runtime",
 					ReplicaSpecs: []*torchv1alpha1.PyTorchReplicaSpec{
 						{
 							Replicas:   proto.Int32(1),
@@ -165,6 +109,36 @@ func TestClusterSpec(t *testing.T) {
 				t.Errorf("Key %v got %v want %v", k, actualV, v)
 			}
 		}
+
+		name := job.name()
+		expectedName := "myjob"
+		if !reflect.DeepEqual(expectedName, name) {
+			t.Errorf("Got name %v want %v", name, expectedName)
+		}
+
+		fullname := job.fullname()
+		expectedFullname := "kubeflow:myjob"
+		if !reflect.DeepEqual(expectedFullname, fullname) {
+			t.Errorf("Got fullname %v want %v", fullname, expectedFullname)
+		}
+
+		scheduler := job.SchedulerName()
+		expectedScheduler := "sched"
+		if !reflect.DeepEqual(expectedScheduler, scheduler) {
+			t.Errorf("Got name %v want %v", scheduler, expectedScheduler)
+		}
+
+		c.Spec.ObjectMeta.Namespace = "update"
+		job_updated, err := initJob(clientSet, &pytorchJobFake.Clientset{}, recorder, c.Spec)
+		if err != nil {
+			t.Fatalf("initJob failed: %v", err)
+		}
+		job.Update(job_updated.job)
+		fullname = job.fullname()
+		expectedFullname = "update:myjob"
+		if !reflect.DeepEqual(expectedFullname, fullname) {
+			t.Errorf("Got fullname %v want %v", fullname, expectedFullname)
+		}
 	}
 }
 
@@ -211,8 +185,6 @@ func TestJobSetup(t *testing.T) {
 				Spec: torchv1alpha1.PyTorchJobSpec{
 					ReplicaSpecs: []*torchv1alpha1.PyTorchReplicaSpec{
 						{
-							Replicas:   proto.Int32(2),
-							MasterPort: proto.Int32(10),
 							Template: &v1.PodTemplateSpec{
 								Spec: v1.PodSpec{
 									Containers: []v1.Container{

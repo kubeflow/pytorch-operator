@@ -85,7 +85,7 @@ func run() (string, error) {
 			log.Warningf("There was a problem getting PyTorchJob: %v; error %v", *name, err)
 		}
 
-		if tfJob.Status.State == torchv1alpha1.StateRunning || tfJob.Status.State == torchv1alpha1.StateFailed {
+		if tfJob.Status.State == torchv1alpha1.StateSucceeded || tfJob.Status.State == torchv1alpha1.StateFailed {
 			log.Infof("job %v finished:\n%v", *name, util.Pformat(tfJob))
 			break
 		}
@@ -97,7 +97,7 @@ func run() (string, error) {
 		return *name, fmt.Errorf("Failed to get PyTorchJob %v", *name)
 	}
 
-	if tfJob.Status.State != torchv1alpha1.StateRunning {
+	if tfJob.Status.State != torchv1alpha1.StateSucceeded {
 		// TODO(jlewi): Should we clean up the job.
 		return *name, fmt.Errorf("PyTorchJob %v did not succeed;\n %v", *name, util.Pformat(tfJob))
 	}
