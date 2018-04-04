@@ -63,20 +63,26 @@ data:
     class Net(nn.Module):
         def __init__(self):
             super(Net, self).__init__()
-            self.conv1 = nn.Conv2d(3, 6, 5)
+            self.conv1 = nn.Conv2d(3, 8, 5)
+            self.bn1 = nn.BatchNorm2d(8)
             self.pool = nn.MaxPool2d(2, 2)
-            self.conv2 = nn.Conv2d(6, 16, 5)
-            self.fc1 = nn.Linear(16 * 5 * 5, 120)
-            self.fc2 = nn.Linear(120, 84)
-            self.fc3 = nn.Linear(84, 10)
+            self.conv2 = nn.Conv2d(8, 16, 5)
+            self.bn2 = nn.BatchNorm2d(16)
+            self.fc1 = nn.Linear(16 * 5 * 5, 256)
+            self.bn3 = nn.BatchNorm2d(256)
+            self.fc2 = nn.Linear(256, 128)
+            self.bn4 = nn.BatchNorm2d(128)
+            self.fc3 = nn.Linear(128, 64)
+            self.fc4 = nn.Linear(64, 10)
 
         def forward(self, x):
-            x = self.pool(F.relu(self.conv1(x)))
-            x = self.pool(F.relu(self.conv2(x)))
+            x = self.pool(F.relu(self.bn1(self.conv1(x))))
+            x = self.pool(F.relu(self.bn2(self.conv2(x))))
             x = x.view(-1, 16 * 5 * 5)
-            x = F.relu(self.fc1(x))
-            x = F.relu(self.fc2(x))
-            x = self.fc3(x)
+            x = F.relu(self.bn3(self.fc1(x)))
+            x = F.relu(self.bn4(self.fc2(x)))
+            x = F.relu(self.fc3(x))
+            x = self.fc4(x)
             return x
 
 
@@ -126,7 +132,6 @@ data:
         torch.manual_seed(1234)
         train_set, test_set, bsz = partition_dataset()
         model = Net()
-        model.train()
         criterion = nn.CrossEntropyLoss()
         num_batches = ceil(len(train_set.dataset) / float(bsz))
 
@@ -136,6 +141,7 @@ data:
 
         for epoch in range(NUM_EPOCHS):
             running_loss = 0.0
+            model.train()
             for i, data in enumerate(train_set, 0):
                 inputs, labels = data
                 inputs, labels = Variable(inputs), Variable(labels)
@@ -156,6 +162,7 @@ data:
             if dist.get_rank() == 0:
                 correct = 0
                 total = 0
+                model.eval()
                 for data in test_set:
                     images, labels = data
                     outputs = model(Variable(images))

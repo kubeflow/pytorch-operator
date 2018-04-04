@@ -1,24 +1,15 @@
 ## PyTorch distributed examples
 
-Here are examples of jobs we would aim to run with the operator.
+Here are examples of jobs that use the operator.
 
-1. A simple example of distributed MNIST with pytorch on kubernetes:
-   ```
-   kubectl apply -f mnist/multinode/
-   ```
-
-   The configmap used in the example was created using the distributed training script found in the mnist directory:
-   ```
-   kubectl create configmap dist-train --from-file=mnist/dist_train.py
-   ```
-
-2. An example of distributed CIFAR10 with pytorch on kubernetes:
+1. An example of distributed CIFAR10 with pytorch on kubernetes:
    ```
    kubectl apply -f cifar10/
    ```
 
    For faster execution, pre-download the dataset to each of your cluster nodes and edit the
-   cifar10/pytorchjob_cifar.yaml file to include the below "predownload" entries in the spec containers:
+   cifar10/pytorchjob_cifar.yaml file to include the below "predownload" entries in the spec containers.
+   The extra entries will need to be present for both MASTER and WORKER replica types.
    ```
     spec:
       containers:
@@ -47,4 +38,7 @@ Here are examples of jobs we would aim to run with the operator.
       restartPolicy: OnFailure
     ```
 
-    The extra entries will need to be present for both MASTER and WORKER replica types.
+2. A simple example of distributed MNIST with pytorch on kubernetes:
+   ```
+   kubectl apply -f mnist/
+   ```

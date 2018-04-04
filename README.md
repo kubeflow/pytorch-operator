@@ -16,7 +16,7 @@ helm install pytorch-operator-chart -n pytorch-operator --set rbac.install=${RBA
 ```
 For this POC example we will use a configmap that contains our distributed training script.
 ```
-kubectl create -f examples/mnist/multinode/configmap.yaml
+kubectl create -f examples/mnist/configmap.yaml
 ```
 Create a PyTorchJob resource to start training:
 ```

@@ -54,7 +54,7 @@ func run() (string, error) {
 	cmd := exec.Command(
 		"kubectl", "apply",
 		"-f",
-		"examples/mnist/multinode/configmap.yaml",
+		"examples/mnist/configmap.yaml",
 		"-n",
 		*namespace,
 	)
