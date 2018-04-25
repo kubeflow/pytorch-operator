@@ -1,4 +1,4 @@
-# Releasing the TFJob operator
+# Releasing the PyTorch operator
 
 Permissions
 
@@ -8,11 +8,12 @@ Permissions
 	* You need write permissions on the repository to create a release branch.
 
 Use the GitHub UI to cut a release branch
+
 	* Name the release branch v{MAJOR}.${MINOR}-branch
 
 Checkout the release branch
 
-We build TFJob operator by running the E2E test workflow.
+We build the PyTorch operator by running the E2E test workflow.
 
 Look at the [postsubmit dashboard](https://k8s-testgrid.appspot.com/sig-big-data#kubeflow-pytorch-operator-postsubmit)
 to find the latest green postsubmit.
@@ -37,7 +38,7 @@ kubectl -n kubeflow-releasing port-forward `kubectl -n kubeflow-releasing get po
 
 Make sure the Argo workflow completes successfully.
 Check the junit files to make sure there were no actual test failures.
-The junit files will be in [gs://kubeflow-releasing-artifacts](https://console.cloud.google.com/storage/browser/kubeflow-releasing-artifacts/logs/kubeflow_tf-operator/tf-operator-release/?project=kubeflow-releasing).
+The junit files will be in [gs://kubeflow-releasing-artifacts](https://console.cloud.google.com/storage/browser/kubeflow-releasing-artifacts/logs/kubeflow_pytorch-operator/pytorch-operator-release/?project=kubeflow-releasing).
 	* The build artifacts will be in a directory named after the build number
 
 If the tests pass use the GitHub UI to create a release tagged v{MAJOR}-{MINOR}-{PATCH}
