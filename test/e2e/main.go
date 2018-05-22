@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -14,7 +15,9 @@ import (
 	torchv1alpha1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
 	torchjobclient "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
 	"github.com/kubeflow/pytorch-operator/pkg/util"
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	// Uncomment the following line to load the gcp plugin (only required to authenticate against GKE clusters).
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -27,7 +30,58 @@ var (
 	timeout   = flag.Duration("timeout", 10*time.Minute, "The timeout for the test")
 )
 
-type tfReplicaType torchv1alpha1.PyTorchReplicaType
+type torchReplicaType torchv1alpha1.PyTorchReplicaType
+
+func (torchrt torchReplicaType) toSpec() *torchv1alpha1.PyTorchReplicaSpec {
+	return &torchv1alpha1.PyTorchReplicaSpec{
+		Replicas:           proto.Int32(1),
+		MasterPort:         proto.Int32(23456),
+		PyTorchReplicaType: torchv1alpha1.PyTorchReplicaType(torchrt),
+		Template: &v1.PodTemplateSpec{
+			Spec: v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Name:            "pytorch",
+						Image:           "pytorch/pytorch:latest",
+						ImagePullPolicy: "IfNotPresent",
+						VolumeMounts: []v1.VolumeMount{
+							{
+								Name:      "training-result",
+								MountPath: "/tmp/result",
+							},
+							{
+								Name:      "entrypoint",
+								MountPath: "/tmp/entrypoint",
+							},
+						},
+						Command: []string{"/tmp/entrypoint/dist_train.py"},
+					},
+				},
+				RestartPolicy: v1.RestartPolicyOnFailure,
+				Volumes: []v1.Volume{
+					{
+						Name: "entrypoint",
+						VolumeSource: v1.VolumeSource{
+							ConfigMap: &v1.ConfigMapVolumeSource{
+								LocalObjectReference: v1.LocalObjectReference{
+									Name: "dist-train",
+								},
+								DefaultMode: proto.Int32(0755),
+							},
+						},
+					},
+					{
+						Name: "training-result",
+						VolumeSource: v1.VolumeSource{
+							EmptyDir: &v1.EmptyDirVolumeSource{},
+						},
+					},
+				},
+			},
+		},
+	}
+
+}
 
 func run() (string, error) {
 	var kubeconfig *string
@@ -46,31 +100,50 @@ func run() (string, error) {
 		panic(err.Error())
 	}
 
-	tfJobClient, err := torchjobclient.NewForConfig(config)
+	// create the clientset
+	client := kubernetes.NewForConfigOrDie(config)
+
+	torchJobClient, err := torchjobclient.NewForConfig(config)
 	if err != nil {
 		return "", err
 	}
-	// Create PyTorchJob from examples
-	cmd := exec.Command(
-		"kubectl", "apply",
-		"-f",
-		"examples/mnist/configmap.yaml",
-		"-n",
-		*namespace,
-	)
-	err = runCmd(cmd)
+
+	original := &torchv1alpha1.PyTorchJob{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: *name,
+			Labels: map[string]string{
+				"test.mlkube.io": "",
+			},
+		},
+		Spec: torchv1alpha1.PyTorchJobSpec{
+			ReplicaSpecs: []*torchv1alpha1.PyTorchReplicaSpec{
+				torchReplicaType(torchv1alpha1.MASTER).toSpec(),
+				torchReplicaType(torchv1alpha1.WORKER).toSpec(),
+			},
+		},
+	}
+
+	code, err := ioutil.ReadFile("mnist.py")
+	if err != nil {
+		fmt.Print(err)
+	}
+
+	confCode := &v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "dist-train",
+			Namespace: *namespace,
+		},
+		Data: map[string]string{
+			"dist_train.py": string(code),
+		},
+	}
+	_, err = client.CoreV1().ConfigMaps(*namespace).Create(confCode)
 	if err != nil {
 		log.Errorf("Creating the configmap failed; %v", err)
 		return *name, err
 	}
-	cmd = exec.Command(
-		"kubectl", "create",
-		"-f",
-		"examples/mnist/pytorchjob.yaml",
-		"-n",
-		*namespace,
-	)
-	err = runCmd(cmd)
+	// Create PyTorchJob
+	_, err = torchJobClient.KubeflowV1alpha1().PyTorchJobs(*namespace).Create(original)
 	if err != nil {
 		log.Errorf("Creating the job failed; %v", err)
 		return *name, err
@@ -80,7 +153,7 @@ func run() (string, error) {
 	// Wait for operator to reach running state
 	var tfJob *torchv1alpha1.PyTorchJob
 	for endTime := time.Now().Add(*timeout); time.Now().Before(endTime); {
-		tfJob, err = tfJobClient.KubeflowV1alpha1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
+		tfJob, err = torchJobClient.KubeflowV1alpha1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
 		if err != nil {
 			log.Warningf("There was a problem getting PyTorchJob: %v; error %v", *name, err)
 		}
