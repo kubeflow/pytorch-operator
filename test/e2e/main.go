@@ -52,21 +52,9 @@ func run() (string, error) {
 	}
 	// Create PyTorchJob from examples
 	cmd := exec.Command(
-		"kubectl", "apply",
-		"-f",
-		"examples/mnist/configmap.yaml",
-		"-n",
-		*namespace,
-	)
-	err = runCmd(cmd)
-	if err != nil {
-		log.Errorf("Creating the configmap failed; %v", err)
-		return *name, err
-	}
-	cmd = exec.Command(
 		"kubectl", "create",
 		"-f",
-		"examples/mnist/pytorchjob.yaml",
+		"examples/dist-mnist/pytorch_job_mnist.yaml",
 		"-n",
 		*namespace,
 	)
