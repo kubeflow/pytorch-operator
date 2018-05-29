@@ -25,6 +25,7 @@ REGISTRY="${GCP_REGISTRY}"
 PROJECT="${GCP_PROJECT}"
 GO_DIR=${GOPATH}/src/github.com/${REPO_OWNER}/${REPO_NAME}
 VERSION=$(git describe --tags --always --dirty)
+TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
 
 echo "Activating service-account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
@@ -37,4 +38,7 @@ go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator
 echo "building container in gcloud"
 gcloud version
 # gcloud components update -q
+# build pytorch operator image
 gcloud container builds submit . --tag=${REGISTRY}/${REPO_NAME}:${VERSION} --project=${PROJECT}
+# build a mnist testing image for our smoke test
+gcloud container builds submit ./examples/dist-mnist/ --tag=${REGISTRY}/${TEST_IMAGE_TAG} --project=${PROJECT}
