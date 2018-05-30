@@ -11,7 +11,7 @@ spec:
       template:
         spec:
           containers:
-          - image: kubeflow/pytorch-dist-mnist_test:1.0
+          - image: gcr.io/kubeflow-ci/pytorch-dist-mnist_test:1.0
             imagePullPolicy: IfNotPresent
             name: pytorch
           restartPolicy: OnFailure
@@ -20,7 +20,7 @@ spec:
       template:
         spec:
           containers:
-          - image: kubeflow/pytorch-dist-mnist_test:1.0
+          - image: gcr.io/kubeflow-ci/pytorch-dist-mnist_test:1.0
             imagePullPolicy: IfNotPresent
             name: pytorch
           restartPolicy: OnFailure
