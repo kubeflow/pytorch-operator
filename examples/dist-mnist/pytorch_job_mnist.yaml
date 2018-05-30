@@ -11,7 +11,7 @@ spec:
       template:
         spec:
           containers:
-          - image: kubeflow/pytorch-dist-mnist-test:1.0
+          - image: gcr.io/kubeflow-ci/pytorch-dist-mnist-test:1.0
             imagePullPolicy: IfNotPresent
             name: pytorch
             volumeMounts:
@@ -27,7 +27,7 @@ spec:
       template:
         spec:
           containers:
-          - image: kubeflow/pytorch-dist-mnist-test:1.0
+          - image: gcr.io/kubeflow-ci/pytorch-dist-mnist-test:1.0
             imagePullPolicy: IfNotPresent
             name: pytorch
             volumeMounts:
