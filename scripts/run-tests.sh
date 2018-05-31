@@ -56,5 +56,4 @@ helm install pytorch-operator-chart -n pytorch-operator \
 
 echo "Run go tests"
 cd ${GO_DIR}
-kubectl apply -f examples/mnist/configmap.yaml -n ${NAMESPACE}
 go run ./test/e2e/main.go --namespace=${NAMESPACE}
