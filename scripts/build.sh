@@ -38,3 +38,7 @@ echo "building container in gcloud"
 gcloud version
 # gcloud components update -q
 gcloud container builds submit . --tag=${REGISTRY}/${REPO_NAME}:${VERSION} --project=${PROJECT}
+
+#Image for minimal smoke test
+SMOKE_TEST_IMAGE_TAG="pytorch-smoke-test:1.0"
+gcloud container builds submit ./examples/pytorch_sample/ --tag=${REGISTRY}/${SMOKE_TEST_IMAGE_TAG} --project=${PROJECT}
