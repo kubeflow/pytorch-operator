@@ -94,7 +94,7 @@ func run() (string, error) {
 	}
 	flag.Parse()
 	if *name == "" {
-		name = proto.String("example-job")
+		name = proto.String("example-job-231")
 	}
 
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
