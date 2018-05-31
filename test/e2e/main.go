@@ -94,7 +94,7 @@ func run() (string, error) {
 	}
 	flag.Parse()
 	if *name == "" {
-		name = proto.String("example-job-231")
+		name = proto.String("example-job")
 	}
 
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
@@ -125,7 +125,7 @@ func run() (string, error) {
 		},
 	}
 
-	code, err := ioutil.ReadFile("mnist.py")
+	code, err := ioutil.ReadFile("test/e2e/mnist.py")
 	if err != nil {
 		fmt.Print(err)
 	}
