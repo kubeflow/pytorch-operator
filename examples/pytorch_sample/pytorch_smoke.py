@@ -41,9 +41,6 @@ def init_processes(fn, backend='tcp'):
 def main():
     logging.info("Torch version: %s", torch.__version__)
     
-    config_json = os.environ.get("TF_CONFIG", "{}")
-    logging.info("Config Json: %s", config_json)
-
     port = os.environ.get("MASTER_PORT", "{}")
     logging.info("MASTER_PORT: %s", port)
     
