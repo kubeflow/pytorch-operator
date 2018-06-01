@@ -3,9 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
@@ -14,7 +16,10 @@ import (
 	torchv1alpha1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
 	torchjobclient "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
 	"github.com/kubeflow/pytorch-operator/pkg/util"
+	"k8s.io/api/core/v1"
+	k8s_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	// Uncomment the following line to load the gcp plugin (only required to authenticate against GKE clusters).
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -27,7 +32,58 @@ var (
 	timeout   = flag.Duration("timeout", 10*time.Minute, "The timeout for the test")
 )
 
-type tfReplicaType torchv1alpha1.PyTorchReplicaType
+type torchReplicaType torchv1alpha1.PyTorchReplicaType
+
+func (torchrt torchReplicaType) toSpec(replica int32) *torchv1alpha1.PyTorchReplicaSpec {
+	return &torchv1alpha1.PyTorchReplicaSpec{
+		Replicas:           proto.Int32(replica),
+		MasterPort:         proto.Int32(23456),
+		PyTorchReplicaType: torchv1alpha1.PyTorchReplicaType(torchrt),
+		Template: &v1.PodTemplateSpec{
+			Spec: v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Name:            "pytorch",
+						Image:           "pytorch/pytorch:latest",
+						ImagePullPolicy: "IfNotPresent",
+						VolumeMounts: []v1.VolumeMount{
+							{
+								Name:      "training-result",
+								MountPath: "/tmp/result",
+							},
+							{
+								Name:      "entrypoint",
+								MountPath: "/tmp/entrypoint",
+							},
+						},
+						Command: []string{"/tmp/entrypoint/dist_train.py"},
+					},
+				},
+				RestartPolicy: v1.RestartPolicyOnFailure,
+				Volumes: []v1.Volume{
+					{
+						Name: "entrypoint",
+						VolumeSource: v1.VolumeSource{
+							ConfigMap: &v1.ConfigMapVolumeSource{
+								LocalObjectReference: v1.LocalObjectReference{
+									Name: "dist-train",
+								},
+								DefaultMode: proto.Int32(0755),
+							},
+						},
+					},
+					{
+						Name: "training-result",
+						VolumeSource: v1.VolumeSource{
+							EmptyDir: &v1.EmptyDirVolumeSource{},
+						},
+					},
+				},
+			},
+		},
+	}
+
+}
 
 func run() (string, error) {
 	var kubeconfig *string
@@ -46,31 +102,50 @@ func run() (string, error) {
 		panic(err.Error())
 	}
 
-	tfJobClient, err := torchjobclient.NewForConfig(config)
+	// create the clientset
+	client := kubernetes.NewForConfigOrDie(config)
+
+	torchJobClient, err := torchjobclient.NewForConfig(config)
 	if err != nil {
 		return "", err
 	}
-	// Create PyTorchJob from examples
-	cmd := exec.Command(
-		"kubectl", "apply",
-		"-f",
-		"examples/mnist/configmap.yaml",
-		"-n",
-		*namespace,
-	)
-	err = runCmd(cmd)
+
+	original := &torchv1alpha1.PyTorchJob{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: *name,
+			Labels: map[string]string{
+				"test.mlkube.io": "",
+			},
+		},
+		Spec: torchv1alpha1.PyTorchJobSpec{
+			ReplicaSpecs: []*torchv1alpha1.PyTorchReplicaSpec{
+				torchReplicaType(torchv1alpha1.MASTER).toSpec(1),
+				torchReplicaType(torchv1alpha1.WORKER).toSpec(3),
+			},
+		},
+	}
+
+	code, err := ioutil.ReadFile("test/e2e/mnist.py")
+	if err != nil {
+		fmt.Print(err)
+	}
+
+	confCode := &v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "dist-train",
+			Namespace: *namespace,
+		},
+		Data: map[string]string{
+			"dist_train.py": string(code),
+		},
+	}
+	_, err = client.CoreV1().ConfigMaps(*namespace).Create(confCode)
 	if err != nil {
 		log.Errorf("Creating the configmap failed; %v", err)
 		return *name, err
 	}
-	cmd = exec.Command(
-		"kubectl", "create",
-		"-f",
-		"examples/mnist/pytorchjob.yaml",
-		"-n",
-		*namespace,
-	)
-	err = runCmd(cmd)
+	// Create PyTorchJob
+	_, err = torchJobClient.KubeflowV1alpha1().PyTorchJobs(*namespace).Create(original)
 	if err != nil {
 		log.Errorf("Creating the job failed; %v", err)
 		return *name, err
@@ -78,32 +153,94 @@ func run() (string, error) {
 
 	// TODO(jose5918) Wait for completed state
 	// Wait for operator to reach running state
-	var tfJob *torchv1alpha1.PyTorchJob
+	var torchJob *torchv1alpha1.PyTorchJob
 	for endTime := time.Now().Add(*timeout); time.Now().Before(endTime); {
-		tfJob, err = tfJobClient.KubeflowV1alpha1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
+		torchJob, err = torchJobClient.KubeflowV1alpha1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
 		if err != nil {
 			log.Warningf("There was a problem getting PyTorchJob: %v; error %v", *name, err)
 		}
 
-		if tfJob.Status.State == torchv1alpha1.StateSucceeded || tfJob.Status.State == torchv1alpha1.StateFailed {
-			log.Infof("job %v finished:\n%v", *name, util.Pformat(tfJob))
+		if torchJob.Status.State == torchv1alpha1.StateSucceeded || torchJob.Status.State == torchv1alpha1.StateFailed {
+			log.Infof("job %v finished:\n%v", *name, util.Pformat(torchJob))
 			break
 		}
-		log.Infof("Waiting for job %v to finish:\n%v", *name, util.Pformat(tfJob))
+		log.Infof("Waiting for job %v to finish:\n%v", *name, util.Pformat(torchJob))
 		time.Sleep(5 * time.Second)
 	}
 
-	if tfJob == nil {
+	if torchJob == nil {
 		return *name, fmt.Errorf("Failed to get PyTorchJob %v", *name)
 	}
 
-	if tfJob.Status.State != torchv1alpha1.StateSucceeded {
+	if torchJob.Status.State != torchv1alpha1.StateSucceeded {
 		// TODO(jlewi): Should we clean up the job.
-		return *name, fmt.Errorf("PyTorchJob %v did not succeed;\n %v", *name, util.Pformat(tfJob))
+		return *name, fmt.Errorf("PyTorchJob %v did not succeed;\n %v", *name, util.Pformat(torchJob))
 	}
 
-	if tfJob.Spec.RuntimeId == "" {
+	if torchJob.Spec.RuntimeId == "" {
 		return *name, fmt.Errorf("PyTorchJob %v doesn't have a RuntimeId", *name)
+	}
+
+	// Loop over each replica and make sure the expected resources were created.
+	for _, r := range original.Spec.ReplicaSpecs {
+		baseName := strings.ToLower(string(r.PyTorchReplicaType))
+
+		for i := 0; i < int(*r.Replicas); i++ {
+			jobName := fmt.Sprintf("%v-%v-%v-%v", fmt.Sprintf("%.40s", original.ObjectMeta.Name), baseName, torchJob.Spec.RuntimeId, i)
+
+			_, err := torchJobClient.KubeflowV1alpha1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
+
+			if err != nil {
+				return *name, fmt.Errorf("PyTorchJob %v did not create Job %v for ReplicaType %v Index %v", *name, jobName, r.PyTorchReplicaType, i)
+			}
+		}
+	}
+
+	// Delete the job and make sure all subresources are properly garbage collected.
+	if err := torchJobClient.KubeflowV1alpha1().PyTorchJobs(*namespace).Delete(*name, &metav1.DeleteOptions{}); err != nil {
+		log.Fatalf("Failed to delete PyTorchJob %v; error %v", *name, err)
+	}
+
+	// Delete the job and make sure all subresources are properly garbage collected.
+	if err := client.CoreV1().ConfigMaps(*namespace).Delete("dist-train", &metav1.DeleteOptions{}); err != nil {
+		log.Fatalf("Failed to delete Configmap %v; error %v", *name, err)
+	}
+
+	// Define sets to keep track of Job controllers corresponding to Replicas
+	// that still exist.
+	jobs := make(map[string]bool)
+
+	// Loop over each replica and make sure the expected resources are being deleted.
+	for _, r := range original.Spec.ReplicaSpecs {
+		baseName := strings.ToLower(string(r.PyTorchReplicaType))
+
+		for i := 0; i < int(*r.Replicas); i++ {
+			jobName := fmt.Sprintf("%v-%v-%v-%v", fmt.Sprintf("%.40s", original.ObjectMeta.Name), baseName, torchJob.Spec.RuntimeId, i)
+
+			jobs[jobName] = true
+		}
+	}
+
+	// Wait for all jobs and deployment to be deleted.
+	for endTime := time.Now().Add(*timeout); time.Now().Before(endTime) && len(jobs) > 0; {
+		for k := range jobs {
+			_, err := client.BatchV1().Jobs(*namespace).Get(k, metav1.GetOptions{})
+			if k8s_errors.IsNotFound(err) {
+				// Deleting map entry during loop is safe.
+				// See: https://stackoverflow.com/questions/23229975/is-it-safe-to-remove-selected-keys-from-golang-map-within-a-range-loop
+				delete(jobs, k)
+			} else {
+				log.Infof("Job %v still exists", k)
+			}
+		}
+
+		if len(jobs) > 0 {
+			time.Sleep(5 * time.Second)
+		}
+	}
+
+	if len(jobs) > 0 {
+		return *name, fmt.Errorf("Not all Job controllers were successfully deleted for PyTorchJob %v.", *name)
 	}
 
 	return *name, nil
