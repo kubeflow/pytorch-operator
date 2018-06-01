@@ -203,7 +203,7 @@ func run() (string, error) {
 
 	// Delete the job and make sure all subresources are properly garbage collected.
 	if err := client.CoreV1().ConfigMaps(*namespace).Delete("dist-train", &metav1.DeleteOptions{}); err != nil {
-		log.Fatalf("Failed to delete PyTorchJob %v; error %v", *name, err)
+		log.Fatalf("Failed to delete Configmap %v; error %v", *name, err)
 	}
 
 	// Define sets to keep track of Job controllers corresponding to Replicas
