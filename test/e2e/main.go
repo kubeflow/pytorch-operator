@@ -29,7 +29,7 @@ var (
 	namespace = flag.String("namespace", "kubeflow", "The namespace to create the test job in.")
 	numJobs   = flag.Int("num_jobs", 1, "The number of jobs to run.")
 	timeout   = flag.Duration("timeout", 10*time.Minute, "The timeout for the test")
-        image     = flag.String("image", "", "The Test image to run")
+	image     = flag.String("image", "", "The Test image to run")
 )
 
 type torchReplicaType torchv1alpha1.PyTorchReplicaType
@@ -73,7 +73,7 @@ func run() (string, error) {
 	}
 	if *image == "" {
 		log.Fatalf("--image must be provided.")
-        }
+	}
 
 	// create the clientset
 	client := kubernetes.NewForConfigOrDie(config)
