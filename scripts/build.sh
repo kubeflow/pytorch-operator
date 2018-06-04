@@ -43,6 +43,6 @@ gcloud container builds submit . --tag=${REGISTRY}/${REPO_NAME}:${VERSION} --pro
 MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
 gcloud container builds submit ./examples/dist-mnist/ --tag=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --project=${PROJECT}
 
-#Image for minimal smoke test
-SMOKE_TEST_IMAGE_TAG="pytorch-dist-smoke-test:1.0"
-gcloud container builds submit ./examples/dist-sendrecv/ --tag=${REGISTRY}/${SMOKE_TEST_IMAGE_TAG} --project=${PROJECT}
+#Image for minimal dist sendrecv test
+SENDRECV_TEST_IMAGE_TAG="pytorch-dist-sendrecv-test:1.0"
+gcloud container builds submit ./examples/dist-sendrecv/ --tag=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --project=${PROJECT}

@@ -60,5 +60,5 @@ MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
 go run ./test/e2e/main.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob
 
 
-SENDRECV_TEST_IMAGE_TAG="pytorch-dist-sendrecv_test:1.0"
+SENDRECV_TEST_IMAGE_TAG="pytorch-dist-sendrecv-test:1.0"
 go run ./test/e2e/main.go --namespace=${NAMESPACE} --image=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --name=sendrecvjob
