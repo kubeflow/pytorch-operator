@@ -29,7 +29,6 @@ NAMESPACE="${DEPLOY_NAMESPACE}"
 REGISTRY="${GCP_REGISTRY}"
 VERSION=$(git describe --tags --always --dirty)
 GO_DIR=${GOPATH}/src/github.com/${REPO_OWNER}/${REPO_NAME}
-TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
 
 echo "Activating service-account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
@@ -57,4 +56,9 @@ helm install pytorch-operator-chart -n pytorch-operator \
 
 echo "Run go tests"
 cd ${GO_DIR}
-go run ./test/e2e/main.go --namespace=${NAMESPACE} --image=${REGISTRY}/${TEST_IMAGE_TAG}
+MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
+go run ./test/e2e/main.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob
+
+
+SENDRECV_TEST_IMAGE_TAG="pytorch-dist-sendrecv-test:1.0"
+go run ./test/e2e/main.go --namespace=${NAMESPACE} --image=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --name=sendrecvjob

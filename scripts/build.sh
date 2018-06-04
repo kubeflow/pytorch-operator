@@ -25,7 +25,6 @@ REGISTRY="${GCP_REGISTRY}"
 PROJECT="${GCP_PROJECT}"
 GO_DIR=${GOPATH}/src/github.com/${REPO_OWNER}/${REPO_NAME}
 VERSION=$(git describe --tags --always --dirty)
-TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
 
 echo "Activating service-account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
@@ -41,4 +40,9 @@ gcloud version
 # build pytorch operator image
 gcloud container builds submit . --tag=${REGISTRY}/${REPO_NAME}:${VERSION} --project=${PROJECT}
 # build a mnist testing image for our smoke test
-gcloud container builds submit ./examples/dist-mnist/ --tag=${REGISTRY}/${TEST_IMAGE_TAG} --project=${PROJECT}
+MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
+gcloud container builds submit ./examples/dist-mnist/ --tag=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --project=${PROJECT}
+
+#Image for minimal dist sendrecv test
+SENDRECV_TEST_IMAGE_TAG="pytorch-dist-sendrecv-test:1.0"
+gcloud container builds submit ./examples/dist-sendrecv/ --tag=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --project=${PROJECT}
