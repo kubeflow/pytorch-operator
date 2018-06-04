@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -30,6 +29,7 @@ var (
 	namespace = flag.String("namespace", "kubeflow", "The namespace to create the test job in.")
 	numJobs   = flag.Int("num_jobs", 1, "The number of jobs to run.")
 	timeout   = flag.Duration("timeout", 10*time.Minute, "The timeout for the test")
+        image     = flag.String("image", "", "The Test image to run")
 )
 
 type torchReplicaType torchv1alpha1.PyTorchReplicaType
@@ -44,41 +44,11 @@ func (torchrt torchReplicaType) toSpec(replica int32) *torchv1alpha1.PyTorchRepl
 				Containers: []v1.Container{
 					{
 						Name:            "pytorch",
-						Image:           "pytorch/pytorch:latest",
+						Image:           *image,
 						ImagePullPolicy: "IfNotPresent",
-						VolumeMounts: []v1.VolumeMount{
-							{
-								Name:      "training-result",
-								MountPath: "/tmp/result",
-							},
-							{
-								Name:      "entrypoint",
-								MountPath: "/tmp/entrypoint",
-							},
-						},
-						Command: []string{"/tmp/entrypoint/dist_train.py"},
 					},
 				},
 				RestartPolicy: v1.RestartPolicyOnFailure,
-				Volumes: []v1.Volume{
-					{
-						Name: "entrypoint",
-						VolumeSource: v1.VolumeSource{
-							ConfigMap: &v1.ConfigMapVolumeSource{
-								LocalObjectReference: v1.LocalObjectReference{
-									Name: "dist-train",
-								},
-								DefaultMode: proto.Int32(0755),
-							},
-						},
-					},
-					{
-						Name: "training-result",
-						VolumeSource: v1.VolumeSource{
-							EmptyDir: &v1.EmptyDirVolumeSource{},
-						},
-					},
-				},
 			},
 		},
 	}
@@ -101,6 +71,9 @@ func run() (string, error) {
 	if err != nil {
 		panic(err.Error())
 	}
+	if *image == "" {
+		log.Fatalf("--image must be provided.")
+        }
 
 	// create the clientset
 	client := kubernetes.NewForConfigOrDie(config)
@@ -125,25 +98,6 @@ func run() (string, error) {
 		},
 	}
 
-	code, err := ioutil.ReadFile("test/e2e/mnist.py")
-	if err != nil {
-		fmt.Print(err)
-	}
-
-	confCode := &v1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "dist-train",
-			Namespace: *namespace,
-		},
-		Data: map[string]string{
-			"dist_train.py": string(code),
-		},
-	}
-	_, err = client.CoreV1().ConfigMaps(*namespace).Create(confCode)
-	if err != nil {
-		log.Errorf("Creating the configmap failed; %v", err)
-		return *name, err
-	}
 	// Create PyTorchJob
 	_, err = torchJobClient.KubeflowV1alpha1().PyTorchJobs(*namespace).Create(original)
 	if err != nil {
@@ -199,11 +153,6 @@ func run() (string, error) {
 	// Delete the job and make sure all subresources are properly garbage collected.
 	if err := torchJobClient.KubeflowV1alpha1().PyTorchJobs(*namespace).Delete(*name, &metav1.DeleteOptions{}); err != nil {
 		log.Fatalf("Failed to delete PyTorchJob %v; error %v", *name, err)
-	}
-
-	// Delete the job and make sure all subresources are properly garbage collected.
-	if err := client.CoreV1().ConfigMaps(*namespace).Delete("dist-train", &metav1.DeleteOptions{}); err != nil {
-		log.Fatalf("Failed to delete Configmap %v; error %v", *name, err)
 	}
 
 	// Define sets to keep track of Job controllers corresponding to Replicas
