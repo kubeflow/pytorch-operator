@@ -11,7 +11,7 @@ CONTEXT_DIR=$(dirname "$DOCKERFILE")
 IMAGE=$2
 TAG=$3
 ROOT_DIR=$4
-GOPATH=${ROOT_DIR}
+export GOPATH=${ROOT_DIR}
 GO_DIR=${GOPATH}/src/github.com/kubeflow/pytorch-operator
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
 
@@ -25,4 +25,4 @@ go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator
 
 echo "Building container in gcloud"
 gcloud container builds submit . --tag=${IMAGE}:${TAG}
-
+echo "Image built successfully"
