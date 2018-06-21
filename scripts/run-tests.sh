@@ -40,6 +40,7 @@ gcloud --project ${PROJECT} container clusters get-credentials ${CLUSTER_NAME} \
     --zone ${ZONE}
 
 account=`gcloud config get-value account --quiet`
+echo "Setting account ${account}"
 kubectl create clusterrolebinding default-admin --clusterrole=cluster-admin --user=account
 
 echo "Install ksonnet app"
