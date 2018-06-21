@@ -31,7 +31,7 @@ VERSION=$(git describe --tags --always --dirty)
 GO_DIR=${GOPATH}/src/github.com/${REPO_OWNER}/${REPO_NAME}
 APP_NAME=test-app
 KUBEFLOW_VERSION=master
-KF_ENV=default
+KF_ENV=pytorch
 
 echo "Activating service-account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
@@ -39,19 +39,21 @@ echo "Configuring kubectl"
 gcloud --project ${PROJECT} container clusters get-credentials ${CLUSTER_NAME} \
     --zone ${ZONE}
 
-account=`gcloud config get-value account --quiet`
-kubectl create clusterrolebinding default-admin --clusterrole=cluster-admin --user=account
+ACCOUNT=`gcloud config get-value account --quiet`
+echo "Setting account ${ACCOUNT}"
+kubectl create clusterrolebinding default-admin --clusterrole=cluster-admin --user=${ACCOUNT}
 
-echo "Install ksonnet app"
-ks init ${APP_NAME}
+echo "Install ksonnet app in namespace ${NAMESPACE}"
+/usr/local/bin/ks init ${APP_NAME}
 cd ${APP_NAME}
-ks env set ${KF_ENV} --namespace ${NAMESPACE}
-ks registry add kubeflow github.com/kubeflow/kubeflow/tree/${KUBEFLOW_VERSION}/kubeflow
+/usr/local/bin/ks env add ${KF_ENV}
+/usr/local/bin/ks env set ${KF_ENV} --namespace ${NAMESPACE}
+/usr/local/bin/ks registry add kubeflow github.com/kubeflow/kubeflow/tree/${KUBEFLOW_VERSION}/kubeflow
 
 echo "Install the operator"
-ks pkg install kubeflow/pytorch-job@${KUBEFLOW_VERSION}
-ks generate pytorch-operator pytorch-operator --pytorchJobImage=${REGISTRY}/${REPO_NAME}:${VERSION}
-ks apply ${KF_ENV} -c pytorch-operator
+/usr/local/bin/ks pkg install kubeflow/pytorch-job@${KUBEFLOW_VERSION}
+/usr/local/bin/ks generate pytorch-operator pytorch-operator --pytorchJobImage=${REGISTRY}/${REPO_NAME}:${VERSION}
+/usr/local/bin/ks apply ${KF_ENV} -c pytorch-operator
 
 TIMEOUT=30
 until kubectl get pods -n ${NAMESPACE} | grep pytorch-operator | grep 1/1 || [[ $TIMEOUT -eq 1 ]]; do
