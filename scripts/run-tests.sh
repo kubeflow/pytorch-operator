@@ -31,7 +31,7 @@ VERSION=$(git describe --tags --always --dirty)
 GO_DIR=${GOPATH}/src/github.com/${REPO_OWNER}/${REPO_NAME}
 APP_NAME=test-app
 KUBEFLOW_VERSION=master
-KF_ENV=default
+KF_ENV=pytorch
 
 echo "Activating service-account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
@@ -39,13 +39,14 @@ echo "Configuring kubectl"
 gcloud --project ${PROJECT} container clusters get-credentials ${CLUSTER_NAME} \
     --zone ${ZONE}
 
-account=`gcloud config get-value account --quiet`
+ACCOUNT=`gcloud config get-value account --quiet`
 echo "Setting account ${account}"
-kubectl create clusterrolebinding default-admin --clusterrole=cluster-admin --user=account
+kubectl create clusterrolebinding default-admin --clusterrole=cluster-admin --user=${ACCOUNT}
 
-echo "Install ksonnet app"
+echo "Install ksonnet app in namespace ${NAMESPACE}"
 /usr/local/bin/ks init ${APP_NAME}
 cd ${APP_NAME}
+/usr/local/bin/ks env add ${KF_ENV}
 /usr/local/bin/ks env set ${KF_ENV} --namespace ${NAMESPACE}
 /usr/local/bin/ks registry add kubeflow github.com/kubeflow/kubeflow/tree/${KUBEFLOW_VERSION}/kubeflow
 
