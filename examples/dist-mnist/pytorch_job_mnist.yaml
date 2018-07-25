@@ -11,7 +11,7 @@ spec:
       template:
         spec:
           containers:
-          - image: gcr.io/kubeflow-examples/pytorch-dist-mnist:v20180702-4996efd
+          - image: gcr.io/kubeflow-examples/pytorch-dist-mnist:v20180702-a57993c
             imagePullPolicy: IfNotPresent
             name: pytorch
           restartPolicy: OnFailure
@@ -20,7 +20,7 @@ spec:
       template:
         spec:
           containers:
-          - image: gcr.io/kubeflow-examples/pytorch-dist-mnist:v20180702-4996efd
+          - image: gcr.io/kubeflow-examples/pytorch-dist-mnist:v20180702-a57993c
             imagePullPolicy: IfNotPresent
             name: pytorch
           restartPolicy: OnFailure
