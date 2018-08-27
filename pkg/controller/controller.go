@@ -22,7 +22,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
@@ -62,7 +61,6 @@ var (
 
 type Controller struct {
 	KubeClient       kubernetes.Interface
-	APIExtclient     apiextensionsclient.Interface
 	PyTorchJobClient torchjobclient.Interface
 
 	config torchv1alpha1.ControllerConfig
@@ -85,7 +83,7 @@ type Controller struct {
 	syncHandler func(jobKey string) (bool, error)
 }
 
-func New(kubeClient kubernetes.Interface, APIExtclient apiextensionsclient.Interface, tfJobClient torchjobclient.Interface,
+func New(kubeClient kubernetes.Interface, tfJobClient torchjobclient.Interface,
 	config torchv1alpha1.ControllerConfig, tfJobInformerFactory informers.SharedInformerFactory) (*Controller, error) {
 	tfJobInformer := tfJobInformerFactory.Kubeflow().V1alpha1().PyTorchJobs()
 
@@ -98,7 +96,6 @@ func New(kubeClient kubernetes.Interface, APIExtclient apiextensionsclient.Inter
 
 	controller := &Controller{
 		KubeClient:       kubeClient,
-		APIExtclient:     APIExtclient,
 		PyTorchJobClient: tfJobClient,
 		WorkQueue:        workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "PyTorchjobs"),
 		recorder:         recorder,

@@ -131,10 +131,6 @@ type conversionFuncMap map[conversionPair]*types.Type
 
 // Returns all manually-defined conversion functions in the package.
 func getManualConversionFunctions(context *generator.Context, pkg *types.Package, manualMap conversionFuncMap) {
-	if pkg == nil {
-		glog.Warningf("Skipping nil package passed to getManualConversionFunctions")
-		return
-	}
 	glog.V(5).Infof("Scanning for conversion functions in %v", pkg.Name)
 
 	scopeName := types.Ref(conversionPackagePath, "Scope").Name
@@ -295,7 +291,11 @@ func Packages(context *generator.Context, arguments *args.GeneratorArgs) generat
 		// Make sure our peer-packages are added and fully parsed.
 		for _, pp := range peerPkgs {
 			context.AddDir(pp)
-			getManualConversionFunctions(context, context.Universe[pp], manualConversions)
+			p := context.Universe[pp]
+			if nil == p {
+				glog.Fatalf("failed to find pkg: %s", pp)
+			}
+			getManualConversionFunctions(context, p, manualConversions)
 		}
 
 		unsafeEquality := TypesEqual(memoryEquivalentTypes)
