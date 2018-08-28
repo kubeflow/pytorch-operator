@@ -16,6 +16,7 @@
 package pytorch
 
 import (
+	"errors"
 	"fmt"
 
 	"k8s.io/api/core/v1"
@@ -73,29 +74,8 @@ func updateStatusSingle(job *v1alpha2.PyTorchJob, rtype v1alpha2.PyTorchReplicaT
 			}
 		}
 	} else {
-		if rtype == v1alpha2.PyTorchReplicaTypeWorker {
-			// Some workers are still running, leave a running condition.
-			if running > 0 {
-				msg := fmt.Sprintf("PyTorchJob %s is running.", job.Name)
-				err := updatePyTorchJobConditions(job, v1alpha2.PyTorchJobRunning, pytorchJobRunningReason, msg)
-				if err != nil {
-					pylogger.LoggerForJob(job).Infof("Append job condition error: %v", err)
-					return err
-				}
-			}
-
-			// All workers are succeeded, leave a succeeded condition.
-			if expected == 0 {
-				msg := fmt.Sprintf("PyTorchJob %s is successfully completed.", job.Name)
-				now := metav1.Now()
-				job.Status.CompletionTime = &now
-				err := updatePyTorchJobConditions(job, v1alpha2.PyTorchJobSucceeded, pytorchJobSucceededReason, msg)
-				if err != nil {
-					pylogger.LoggerForJob(job).Infof("Append job condition error: %v", err)
-					return err
-				}
-			}
-		}
+		pylogger.LoggerForJob(job).Info("Invalid config: Job must contain master replica spec")
+		return errors.New("Invalid config: Job must contain master replica spec")
 	}
 
 	if failed > 0 {
