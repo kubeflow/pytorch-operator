@@ -81,10 +81,12 @@ func (pc *PyTorchController) reconcilePods(
 					// Get the exit code of the pytorch container.
 					if status.Name == v1alpha2.DefaultContainerName && state.Terminated != nil {
 						exitCode = state.Terminated.ExitCode
+						logger.Infof("Pod: %v.%v exited with code %v", pod.Namespace, pod.Name, exitCode)
+						pc.Recorder.Eventf(job, v1.EventTypeNormal, "Pod: %v.%v exited with code %v", pod.Namespace, pod.Name, exitCode)
 					}
 				}
 				if pod.Status.Phase == v1.PodFailed && train_util.IsRetryableExitCode(exitCode) {
-					logger.Infof("Need to restart the pod: %s-%d", rt, index)
+					logger.Infof("Need to restart the pod: %v.%v", pod.Namespace, pod.Name)
 					if err := pc.PodControl.DeletePod(pod.Namespace, pod.Name, job); err != nil {
 						return err
 					}

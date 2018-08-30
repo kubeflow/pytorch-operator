@@ -16,7 +16,6 @@ import (
 
 const (
 	failedMarshalPyTorchJobReason = "FailedMarshalPyTorchJob"
-	terminatedPyTorchJobReason    = "PyTorchJobTerminated"
 )
 
 // When a pod is added, set the defaults and enqueue the current pytorchjob.
@@ -34,6 +33,7 @@ func (pc *PyTorchController) addPyTorchJob(obj interface{}) {
 		if err == errFailedMarshal {
 			errMsg := fmt.Sprintf("Failed to unmarshal the object to PyTorchJob object: %v", err)
 			logger.Warn(errMsg)
+			pc.Recorder.Event(un, v1.EventTypeWarning, failedMarshalPyTorchJobReason, errMsg)
 		}
 		return
 	}
@@ -75,8 +75,6 @@ func (pc *PyTorchController) deletePodsAndServices(job *v1alpha2.PyTorchJob, pod
 	if len(pods) == 0 {
 		return nil
 	}
-	pc.Recorder.Event(job, v1.EventTypeNormal, terminatedPyTorchJobReason,
-		"PyTorchJob is terminated, deleting pods and services")
 
 	// Delete nothing when the cleanPodPolicy is None.
 	if *job.Spec.CleanPodPolicy == v1alpha2.CleanPodPolicyNone {
