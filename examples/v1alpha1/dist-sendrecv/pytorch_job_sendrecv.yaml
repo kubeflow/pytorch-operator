@@ -1,7 +1,7 @@
 apiVersion: "kubeflow.org/v1alpha1"
 kind: "PyTorchJob"
 metadata:
-  name: "dist-mnist-for-e2e-test"
+  name: "pytorch-dist-basic-sendrecv"
 spec:
   backend: "tcp"
   masterPort: "23456"
@@ -11,8 +11,8 @@ spec:
       template:
         spec:
           containers:
-          - image: gcr.io/kubeflow-ci/pytorch-dist-mnist_test:1.0
-            imagePullPolicy: IfNotPresent
+          - image: gcr.io/kubeflow-ci/pytorch-dist-sendrecv-test:1.0
+            imagePullPolicy: Always
             name: pytorch
           restartPolicy: OnFailure
     - replicas: 3
@@ -20,7 +20,7 @@ spec:
       template:
         spec:
           containers:
-          - image: gcr.io/kubeflow-ci/pytorch-dist-mnist_test:1.0
-            imagePullPolicy: IfNotPresent
+          - image: gcr.io/kubeflow-ci/pytorch-dist-sendrecv-test:1.0
+            imagePullPolicy: Always
             name: pytorch
           restartPolicy: OnFailure

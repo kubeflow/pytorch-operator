@@ -1,7 +1,7 @@
 apiVersion: "kubeflow.org/v1alpha1"
 kind: "PyTorchJob"
 metadata:
-  name: "cifar-job"
+  name: "pytorch-cifar-job"
 spec:
   backend: "tcp"
   masterPort: "23456"
