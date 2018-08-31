@@ -41,7 +41,7 @@ gcloud --project ${PROJECT} container clusters get-credentials ${CLUSTER_NAME} \
 
 cd ${APP_NAME}
 echo "Install PyTorch v1alpha2 operator"
-/usr/local/bin/ks generate pytorch-operator pytorch-operator --pytorchJobImage=${REGISTRY}/${REPO_NAME}:${VERSION}
+#/usr/local/bin/ks generate pytorch-operator pytorch-operator --pytorchJobImage=${REGISTRY}/${REPO_NAME}:${VERSION}
 /usr/local/bin/ks param set pytorch-operator pytorchJobVersion v1alpha2
 /usr/local/bin/ks apply ${KF_ENV} -c pytorch-operator
 
