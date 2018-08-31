@@ -50,22 +50,4 @@ cd ${APP_NAME}
 /usr/local/bin/ks env set ${KF_ENV} --namespace ${NAMESPACE}
 /usr/local/bin/ks registry add kubeflow github.com/kubeflow/kubeflow/tree/${KUBEFLOW_VERSION}/kubeflow
 
-echo "Install the operator"
 /usr/local/bin/ks pkg install kubeflow/pytorch-job@${KUBEFLOW_VERSION}
-/usr/local/bin/ks generate pytorch-operator pytorch-operator --pytorchJobImage=${REGISTRY}/${REPO_NAME}:${VERSION}
-/usr/local/bin/ks apply ${KF_ENV} -c pytorch-operator
-
-TIMEOUT=30
-until kubectl get pods -n ${NAMESPACE} | grep pytorch-operator | grep 1/1 || [[ $TIMEOUT -eq 1 ]]; do
-  sleep 10
-  TIMEOUT=$(( TIMEOUT - 1 ))
-done
-
-echo "Run go tests"
-cd ${GO_DIR}
-MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
-go run ./test/e2e/main.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob
-
-
-SENDRECV_TEST_IMAGE_TAG="pytorch-dist-sendrecv-test:1.0"
-go run ./test/e2e/main.go --namespace=${NAMESPACE} --image=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --name=sendrecvjob

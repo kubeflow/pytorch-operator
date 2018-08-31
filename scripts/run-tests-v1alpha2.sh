@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Copyright 2018 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This shell script is used to build a cluster and create a namespace from our
+# argo workflow
+
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+CLUSTER_NAME="${CLUSTER_NAME}"
+ZONE="${GCP_ZONE}"
+PROJECT="${GCP_PROJECT}"
+NAMESPACE="${DEPLOY_NAMESPACE}"
+REGISTRY="${GCP_REGISTRY}"
+VERSION=$(git describe --tags --always --dirty)
+GO_DIR=${GOPATH}/src/github.com/${REPO_OWNER}/${REPO_NAME}
+APP_NAME=test-app
+KUBEFLOW_VERSION=master
+KF_ENV=pytorch
+
+echo "Install pytorch v1alpha2 operator"
+/usr/local/bin/ks generate pytorch-operator pytorch-operator --pytorchJobImage=${REGISTRY}/${REPO_NAME}:${VERSION}
+/usr/local/bin/ks param set pytorch-operator pytorchJobVersion v1alpha2
+/usr/local/bin/ks apply ${KF_ENV} -c pytorch-operator
+
+TIMEOUT=30
+until kubectl get pods -n ${NAMESPACE} | grep pytorch-operator | grep 1/1 || [[ $TIMEOUT -eq 1 ]]; do
+  sleep 10
+  TIMEOUT=$(( TIMEOUT - 1 ))
+done
+
+cd ${GO_DIR}
+
+echo "Running smoke test"
+SENDRECV_TEST_IMAGE_TAG="pytorch-dist-sendrecv-test:1.0"
+go run ./test/e2e/v1alpha2/main.go --namespace=${NAMESPACE} --image=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --name=sendrecvjob
+
+echo "Running mnist test"
+MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
+go run ./test/e2e/v1alpha2/main.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob
+
+echo "Uninstall pytorch v1alpha2 operator"
+/usr/local/bin/ks delete ${KF_ENV} -c pytorch-operator
