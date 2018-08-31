@@ -33,6 +33,12 @@ APP_NAME=test-app
 KUBEFLOW_VERSION=master
 KF_ENV=pytorch
 
+echo "Activating service-account"
+gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
+echo "Configuring kubectl"
+gcloud --project ${PROJECT} container clusters get-credentials ${CLUSTER_NAME} \
+    --zone ${ZONE}
+
 cd ${APP_NAME}
 echo "Install PyTorch v1alpha1 operator"
 /usr/local/bin/ks generate pytorch-operator pytorch-operator --pytorchJobImage=${REGISTRY}/${REPO_NAME}:${VERSION}
