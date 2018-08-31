@@ -50,4 +50,5 @@ cd ${APP_NAME}
 /usr/local/bin/ks env set ${KF_ENV} --namespace ${NAMESPACE}
 /usr/local/bin/ks registry add kubeflow github.com/kubeflow/kubeflow/tree/${KUBEFLOW_VERSION}/kubeflow
 
+echo "Install pytorch ksonnet package"
 /usr/local/bin/ks pkg install kubeflow/pytorch-job@${KUBEFLOW_VERSION}

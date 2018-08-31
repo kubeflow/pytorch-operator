@@ -33,7 +33,7 @@ APP_NAME=test-app
 KUBEFLOW_VERSION=master
 KF_ENV=pytorch
 
-cho "Install pytorch v1alpha1 operator"
+echo "Install pytorch v1alpha1 operator"
 /usr/local/bin/ks generate pytorch-operator pytorch-operator --pytorchJobImage=${REGISTRY}/${REPO_NAME}:${VERSION}
 /usr/local/bin/ks param set pytorch-operator pytorchJobVersion v1alpha1
 /usr/local/bin/ks apply ${KF_ENV} -c pytorch-operator
