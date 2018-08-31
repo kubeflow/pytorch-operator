@@ -51,7 +51,7 @@ until kubectl get pods -n ${NAMESPACE} | grep pytorch-operator | grep 1/1 || [[ 
   TIMEOUT=$(( TIMEOUT - 1 ))
 done
 
-cd ${GO_DIR}
+pushd ${GO_DIR}
 
 echo "Running smoke test"
 SENDRECV_TEST_IMAGE_TAG="pytorch-dist-sendrecv-test:1.0"
@@ -61,5 +61,6 @@ echo "Running mnist test"
 MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
 go run ./test/e2e/v1alpha1/main.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob
 
+popd
 echo "Uninstall PyTorch v1alpha1 operator"
 /usr/local/bin/ks delete ${KF_ENV} -c pytorch-operator
