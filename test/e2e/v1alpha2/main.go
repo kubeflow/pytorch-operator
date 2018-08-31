@@ -44,7 +44,8 @@ func getReplicaSpec(worker int32) map[v1alpha2.PyTorchReplicaType]*v1alpha2.PyTo
 
 func replicaSpec(replica int32) *v1alpha2.PyTorchReplicaSpec {
 	return &v1alpha2.PyTorchReplicaSpec{
-		Replicas: proto.Int32(replica),
+		Replicas:      proto.Int32(replica),
+		RestartPolicy: v1alpha2.RestartPolicyOnFailure,
 		Template: v1.PodTemplateSpec{
 			Spec: v1.PodSpec{
 				Containers: []v1.Container{
@@ -54,7 +55,6 @@ func replicaSpec(replica int32) *v1alpha2.PyTorchReplicaSpec {
 						ImagePullPolicy: "IfNotPresent",
 					},
 				},
-				RestartPolicy: v1.RestartPolicyOnFailure,
 			},
 		},
 	}

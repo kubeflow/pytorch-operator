@@ -108,7 +108,7 @@ def run():
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
 
     num_batches = ceil(len(train_set.dataset) / float(bsz))
-    for epoch in range(10):
+    for epoch in range(3):
         epoch_loss = 0.0
         for data, target in train_set:
             data, target = Variable(data), Variable(target)
