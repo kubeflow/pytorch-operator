@@ -44,8 +44,7 @@ func getReplicaSpec(worker int32) map[v1alpha2.PyTorchReplicaType]*v1alpha2.PyTo
 
 func replicaSpec(replica int32) *v1alpha2.PyTorchReplicaSpec {
 	return &v1alpha2.PyTorchReplicaSpec{
-		Replicas:      proto.Int32(replica),
-		RestartPolicy: v1alpha2.RestartPolicyOnFailure,
+		Replicas: proto.Int32(replica),
 		Template: v1.PodTemplateSpec{
 			Spec: v1.PodSpec{
 				Containers: []v1.Container{
@@ -114,8 +113,6 @@ func run() (string, error) {
 			PyTorchReplicaSpecs: getReplicaSpec(3),
 		},
 	}
-	policy := v1alpha2.CleanPodPolicyNone
-	original.Spec.CleanPodPolicy = &policy
 	// Create PyTorchJob
 	_, err = torchJobClient.KubeflowV1alpha2().PyTorchJobs(*namespace).Create(original)
 	if err != nil {
