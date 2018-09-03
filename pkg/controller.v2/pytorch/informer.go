@@ -31,7 +31,7 @@ var (
 	errFailedMarshal = fmt.Errorf("Failed to marshal the object to PyTorchJob")
 )
 
-func NewUnstructuredPyTorchJobInformer(restConfig *restclientset.Config) jobinformersv1alpha2.PyTorchJobInformer {
+func NewUnstructuredPyTorchJobInformer(restConfig *restclientset.Config, namespace string) jobinformersv1alpha2.PyTorchJobInformer {
 	dynClientPool := dynamic.NewDynamicClientPool(restConfig)
 	dclient, err := dynClientPool.ClientForGroupVersionKind(v1alpha2.SchemeGroupVersionKind)
 	if err != nil {
@@ -47,7 +47,7 @@ func NewUnstructuredPyTorchJobInformer(restConfig *restclientset.Config) jobinfo
 	informer := unstructured.NewPyTorchJobInformer(
 		resource,
 		dclient,
-		metav1.NamespaceAll,
+		namespace,
 		resyncPeriod,
 		cache.Indexers{},
 	)

@@ -92,10 +92,10 @@ func Run(opt *options.ServerOption) error {
 	}
 
 	// Create informer factory.
-	kubeInformerFactory := kubeinformers.NewSharedInformerFactory(kubeClientSet, resyncPeriod)
+	kubeInformerFactory := kubeinformers.NewFilteredSharedInformerFactory(kubeClientSet, resyncPeriod, opt.Namespace, nil)
 	pytorchJobInformerFactory := jobinformers.NewSharedInformerFactory(pytorchJobClientSet, resyncPeriod)
 
-	unstructuredInformer := controller.NewUnstructuredPyTorchJobInformer(kcfg)
+	unstructuredInformer := controller.NewUnstructuredPyTorchJobInformer(kcfg, opt.Namespace)
 
 	// Create pytorch controller.
 	tc := controller.NewPyTorchController(unstructuredInformer, kubeClientSet, pytorchJobClientSet, kubeInformerFactory, pytorchJobInformerFactory, *opt)
