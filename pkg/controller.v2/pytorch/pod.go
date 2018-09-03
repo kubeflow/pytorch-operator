@@ -36,6 +36,7 @@ const (
 	// podTemplateRestartPolicyReason is the warning reason when the restart
 	// policy is setted in pod template.
 	podTemplateRestartPolicyReason = "SettedPodTemplateRestartPolicy"
+	exitedWithCodeReason           = "ExitedWithCode"
 )
 
 // reconcilePods checks and updates pods for each given PyTorchReplicaSpec.
@@ -82,7 +83,7 @@ func (pc *PyTorchController) reconcilePods(
 					if status.Name == v1alpha2.DefaultContainerName && state.Terminated != nil {
 						exitCode = state.Terminated.ExitCode
 						logger.Infof("Pod: %v.%v exited with code %v", pod.Namespace, pod.Name, exitCode)
-						pc.Recorder.Eventf(job, v1.EventTypeNormal, "Pod: %v.%v exited with code %v", pod.Namespace, pod.Name, exitCode)
+						pc.Recorder.Eventf(job, v1.EventTypeNormal, exitedWithCodeReason, "Pod: %v.%v exited with code %v", pod.Namespace, pod.Name, exitCode)
 					}
 				}
 				if pod.Status.Phase == v1.PodFailed && train_util.IsRetryableExitCode(exitCode) {

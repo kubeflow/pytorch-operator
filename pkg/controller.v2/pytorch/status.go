@@ -46,6 +46,8 @@ func updateStatusSingle(job *v1alpha2.PyTorchJob, rtype v1alpha2.PyTorchReplicaT
 	running := int(job.Status.PyTorchReplicaStatuses[rtype].Active)
 	failed := int(job.Status.PyTorchReplicaStatuses[rtype].Failed)
 
+	pylogger.LoggerForJob(job).Infof("PyTorchJob=%s, ReplicaType=%s expected=%d, running=%d, failed=%d",
+		job.Name, rtype, expected, running, failed)
 	// All workers are running, set StartTime.
 	if running == replicas && job.Status.StartTime == nil {
 		now := metav1.Now()
@@ -64,8 +66,10 @@ func updateStatusSingle(job *v1alpha2.PyTorchJob, rtype v1alpha2.PyTorchReplicaT
 			}
 			if expected == 0 {
 				msg := fmt.Sprintf("PyTorchJob %s is successfully completed.", job.Name)
-				now := metav1.Now()
-				job.Status.CompletionTime = &now
+				if job.Status.CompletionTime == nil {
+					now := metav1.Now()
+					job.Status.CompletionTime = &now
+				}
 				err := updatePyTorchJobConditions(job, v1alpha2.PyTorchJobSucceeded, pytorchJobSucceededReason, msg)
 				if err != nil {
 					pylogger.LoggerForJob(job).Infof("Append job condition error: %v", err)
@@ -88,6 +92,10 @@ func updateStatusSingle(job *v1alpha2.PyTorchJob, rtype v1alpha2.PyTorchReplicaT
 			}
 		} else {
 			msg := fmt.Sprintf("PyTorchJob %s is failed.", job.Name)
+			if job.Status.CompletionTime == nil {
+				now := metav1.Now()
+				job.Status.CompletionTime = &now
+			}
 			err := updatePyTorchJobConditions(job, v1alpha2.PyTorchJobFailed, pytorchJobFailedReason, msg)
 			if err != nil {
 				pylogger.LoggerForJob(job).Infof("Append job condition error: %v", err)
