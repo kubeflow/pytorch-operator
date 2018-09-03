@@ -65,7 +65,7 @@
       local dataVolume = "kubeflow-test-volume";
       local versionTag = if params.versionTag != null then
         params.versionTag
-        else name;
+      else name;
       local pytorchJobImage = params.registry + "/pytorch_operator:" + versionTag;
 
       // The namespace on the cluster we spin up to deploy into.
@@ -192,7 +192,7 @@
               },
             },
           ],  // volumes
-          // onExit specifies the template that should always run when the workflow completes.          
+          // onExit specifies the template that should always run when the workflow completes.
           onExit: "exit-handler",
           templates: [
             {
@@ -221,8 +221,20 @@
                 ],
                 [
                   {
-                    name: "run-tests",
-                    template: "run-tests",
+                    name: "setup-kubeflow",
+                    template: "setup-kubeflow",
+                  },
+                ],
+                [
+                  {
+                    name: "run-tests-v1alpha1",
+                    template: "run-tests-v1alpha1",
+                  },
+                ],
+                [
+                  {
+                    name: "run-tests-v1alpha2",
+                    template: "run-tests-v1alpha2",
                   },
                 ],
               ],
@@ -261,12 +273,18 @@
                 ],
               },
             },  // checkout
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("setup-cluster",testWorkerImage, [
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("setup-cluster", testWorkerImage, [
               "scripts/create-cluster.sh",
             ]),  // setup cluster
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-tests", testWorkerImage, [
-              "scripts/run-tests.sh",
-            ]),  // run tests
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("setup-kubeflow", testWorkerImage, [
+              "scripts/setup-kubeflow.sh",
+            ]),  // setup kubeflow
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-tests-v1alpha1", testWorkerImage, [
+              "scripts/run-tests-v1alpha1.sh",
+            ]),  // run v1alpha1 tests
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-tests-v1alpha2", testWorkerImage, [
+              "scripts/run-tests-v1alpha2.sh",
+            ]),  // run v1alpha2 tests
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", testWorkerImage, [
               "python",
               "-m",
@@ -275,9 +293,9 @@
               "create_pr_symlink",
               "--bucket=" + bucket,
             ]),  // create-pr-symlink
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("teardown-cluster",testWorkerImage, [
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("teardown-cluster", testWorkerImage, [
               "scripts/delete-cluster.sh",
-             ]),  // teardown cluster
+            ]),  // teardown cluster
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("copy-artifacts", testWorkerImage, [
               "python",
               "-m",

@@ -52,7 +52,6 @@ func (torchrt torchReplicaType) toSpec(replica int32) *torchv1alpha1.PyTorchRepl
 			},
 		},
 	}
-
 }
 
 func run() (string, error) {
