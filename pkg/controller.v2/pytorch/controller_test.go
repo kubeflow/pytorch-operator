@@ -434,7 +434,7 @@ func TestSyncPdb(t *testing.T) {
 		},
 	}
 	for _, c := range testCases {
-		pdb, _ := ctr.SyncPdb(c.job)
+		pdb, _ := ctr.SyncPdb(c.job, getTotalReplicas(c.job))
 		if pdb == nil && c.expectPdb != nil {
 			t.Errorf("Got nil, want %v", c.expectPdb.Spec)
 		}

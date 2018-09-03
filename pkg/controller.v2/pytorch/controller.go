@@ -297,7 +297,8 @@ func (pc *PyTorchController) syncPyTorchJob(key string) (bool, error) {
 	jobNeedsSync := pc.satisfiedExpectations(job)
 
 	if pc.Config.EnableGangScheduling {
-		_, err := pc.SyncPdb(job)
+		minAvailableReplicas := getTotalReplicas(job)
+		_, err := pc.SyncPdb(job, minAvailableReplicas)
 		if err != nil {
 			logger.Warnf("Sync pdb %v: %v", job.Name, err)
 		}
@@ -318,7 +319,7 @@ func (pc *PyTorchController) syncPyTorchJob(key string) (bool, error) {
 	return true, err
 }
 
-func (pc *PyTorchController) GetTotalReplicas(obj metav1.Object) int32 {
+func getTotalReplicas(obj metav1.Object) int32 {
 	job := obj.(*v1alpha2.PyTorchJob)
 	jobReplicas := int32(0)
 	for _, r := range job.Spec.PyTorchReplicaSpecs {

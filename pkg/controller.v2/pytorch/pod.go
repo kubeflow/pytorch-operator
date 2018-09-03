@@ -145,7 +145,7 @@ func (pc *PyTorchController) createNewPod(job *v1alpha2.PyTorchJob, rtype v1alph
 	labels[replicaIndexLabel] = index
 
 	podTemplate := spec.Template.DeepCopy()
-	totalReplicas := pc.GetTotalReplicas(job)
+	totalReplicas := getTotalReplicas(job)
 	// Set name for the template.
 	podTemplate.Name = jobcontroller.GenGeneralName(job.Name, rt, index)
 
