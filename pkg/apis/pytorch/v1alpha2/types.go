@@ -53,7 +53,7 @@ type PyTorchJobSpec struct {
 	// It may take extra ReconcilePeriod seconds for the cleanup, since
 	// reconcile gets called periodically.
 	// Default to infinite.
-	TTLSecondsAfterFinished *int32 `json:"ttlSecondsAfterFinishing,omitempty"`
+	TTLSecondsAfterFinished *int32 `json:"ttlSecondsAfterFinished,omitempty"`
 
 	// PyTorchReplicaSpecs is map of PyTorchReplicaType and PyTorchReplicaSpec
 	// specifies the PyTorch replicas to run.
