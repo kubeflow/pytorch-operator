@@ -212,44 +212,6 @@ func TestDeletePodsAndServices(t *testing.T) {
 			expectedPodDeletions: 5,
 		},
 		testCase{
-			description: "4 workers and 1 master are running, policy is running",
-			job:         testutil.NewPyTorchJobWithCleanPolicy(1, 4, v1alpha2.CleanPodPolicyRunning),
-
-			pendingWorkerPods:   0,
-			activeWorkerPods:    4,
-			succeededWorkerPods: 0,
-			failedWorkerPods:    0,
-
-			pendingMasterPods:   0,
-			activeMasterPods:    1,
-			succeededMasterPods: 0,
-			failedMasterPods:    0,
-
-			activeWorkerServices: 4,
-			activeMasterServices: 1,
-
-			expectedPodDeletions: 5,
-		},
-		testCase{
-			description: "4 workers and 1 master succeeded, policy is running",
-			job:         testutil.NewPyTorchJobWithCleanPolicy(1, 4, v1alpha2.CleanPodPolicyRunning),
-
-			pendingWorkerPods:   0,
-			activeWorkerPods:    0,
-			succeededWorkerPods: 4,
-			failedWorkerPods:    0,
-
-			pendingMasterPods:   0,
-			activeMasterPods:    0,
-			succeededMasterPods: 1,
-			failedMasterPods:    0,
-
-			activeWorkerServices: 4,
-			activeMasterServices: 1,
-
-			expectedPodDeletions: 0,
-		},
-		testCase{
 			description: "4 workers and 1 master succeeded, policy is None",
 			job:         testutil.NewPyTorchJobWithCleanPolicy(1, 4, v1alpha2.CleanPodPolicyNone),
 

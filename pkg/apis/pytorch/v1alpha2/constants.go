@@ -26,5 +26,5 @@ const (
 	// DefaultPort is default value of the port.
 	DefaultPort = 23456
 	// DefaultRestartPolicy is default RestartPolicy for PyTorchReplicaSpec.
-	DefaultRestartPolicy = RestartPolicyNever
+	DefaultRestartPolicy = RestartPolicyOnFailure
 )

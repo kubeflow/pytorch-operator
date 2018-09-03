@@ -82,9 +82,6 @@ func (pc *PyTorchController) deletePodsAndServices(job *v1alpha2.PyTorchJob, pod
 	}
 
 	for _, pod := range pods {
-		if *job.Spec.CleanPodPolicy == v1alpha2.CleanPodPolicyRunning && pod.Status.Phase != v1.PodRunning {
-			continue
-		}
 		if err := pc.PodControl.DeletePod(pod.Namespace, pod.Name, job); err != nil {
 			return err
 		}

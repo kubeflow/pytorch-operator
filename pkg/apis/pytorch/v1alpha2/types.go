@@ -88,7 +88,6 @@ type CleanPodPolicy string
 const (
 	CleanPodPolicyUndefined CleanPodPolicy = ""
 	CleanPodPolicyAll       CleanPodPolicy = "All"
-	CleanPodPolicyRunning   CleanPodPolicy = "Running"
 	CleanPodPolicyNone      CleanPodPolicy = "None"
 )
 
