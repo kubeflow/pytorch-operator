@@ -227,14 +227,18 @@
                 ],
                 [
                   {
-                    name: "run-tests-v1alpha1",
-                    template: "run-tests-v1alpha1",
+                    name: "run-v1alpha1-defaults",
+                    template: "run-v1alpha1-defaults",
                   },
                 ],
                 [
                   {
-                    name: "run-tests-v1alpha2",
-                    template: "run-tests-v1alpha2",
+                    name: "run-v1alpha2-defaults",
+                    template: "run-v1alpha2-defaults",
+                  },
+                  {
+                    name: "run-v1alpha2-cleanpodpolicy-all",
+                    template: "run-v1alpha2-cleanpodpolicy-all",
                   },
                 ],
               ],
@@ -279,12 +283,15 @@
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("setup-kubeflow", testWorkerImage, [
               "scripts/setup-kubeflow.sh",
             ]),  // setup kubeflow
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-tests-v1alpha1", testWorkerImage, [
-              "scripts/run-tests-v1alpha1.sh",
-            ]),  // run v1alpha1 tests
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-tests-v1alpha2", testWorkerImage, [
-              "scripts/run-tests-v1alpha2.sh",
-            ]),  // run v1alpha2 tests
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-v1alpha1-defaults", testWorkerImage, [
+              "scripts/v1alpha1/run-defaults.sh",
+            ]),  // run v1alpha1 default tests
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-v1alpha2-defaults", testWorkerImage, [
+              "scripts/v1alpha2/run-defaults.sh",
+            ]),  // run v1alpha2 default tests
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-v1alpha2-cleanpodpolicy-all", testWorkerImage, [
+              "scripts/v1alpha2/run-cleanpodpolicy-all.sh",
+            ]),  // run v1alpha2 cleanpodpolicy tests
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", testWorkerImage, [
               "python",
               "-m",

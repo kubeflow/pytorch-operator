@@ -55,12 +55,10 @@ pushd ${GO_DIR}
 
 echo "Running smoke test"
 SENDRECV_TEST_IMAGE_TAG="pytorch-dist-sendrecv-test:1.0"
-go run ./test/e2e/v1alpha2/main.go --namespace=${NAMESPACE} --image=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --name=sendrecvjob
+go run ./test/e2e/v1alpha2/defaults.go --namespace=${NAMESPACE} --image=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --name=sendrecvjob-cleannone
 
 echo "Running mnist test"
 MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
-go run ./test/e2e/v1alpha2/main.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob
+go run ./test/e2e/v1alpha2/defaults.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob-cleannone
 
 popd
-echo "Uninstall PyTorch v1alpha2 operator"
-/usr/local/bin/ks delete ${KF_ENV} -c pytorch-operator
