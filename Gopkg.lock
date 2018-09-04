@@ -227,7 +227,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:00720e3e8a1266a155dec3deb18d24c032351a43bd82954962ae3ac94f38c42b"
+  digest = "1:9702b969e679a7aaac45038998b864522ab1141015d3fcf110e524723bc19c4b"
   name = "github.com/kubeflow/tf-operator"
   packages = [
     "pkg/control",
@@ -238,7 +238,7 @@
     "pkg/version",
   ]
   pruneopts = "NUT"
-  revision = "ed91105e7aa2e6f00c10c70ec99d369cc0254076"
+  revision = "1a726c70c44724ef7d9cd83a5d6ffef2a721baa2"
 
 [[projects]]
   branch = "master"
