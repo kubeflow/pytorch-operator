@@ -26,8 +26,6 @@ ENV PATH /opt/conda/bin:$PATH
 WORKDIR /opt/pytorch
 #COPY . .
 RUN git clone --recursive https://github.com/pytorch/pytorch
-RUN cd pytorch/
-RUN ls -lah
 #RUN git submodule update --init --recursive
 RUN TORCH_CUDA_ARCH_LIST="3.5 5.2 6.0 6.1 7.0+PTX" TORCH_NVCC_FLAGS="-Xfatbin -compress-all" \
     CMAKE_PREFIX_PATH="$(dirname $(which conda))/../" \

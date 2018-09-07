@@ -237,6 +237,14 @@
                     template: "run-v1alpha2-defaults",
                   },
                   {
+                    name: "run-v1alpha2-tests-mpi-cpu",
+                    template: "run-v1alpha2-tests-mpi-cpu",
+                  },
+                  {
+                    name: "run-v1alpha2-tests-mpi-gpu",
+                    template: "run-v1alpha2-tests-mpi-gpu",
+                  },
+                  {
                     name: "run-v1alpha2-cleanpodpolicy-all",
                     template: "run-v1alpha2-cleanpodpolicy-all",
                   },
