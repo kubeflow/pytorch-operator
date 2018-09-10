@@ -11,7 +11,7 @@ spec:
         spec:
           containers:
             - name: pytorch
-              image: docker.io/akado2009/pytorch-mpi-mnist-gpu
+              image: gcr.io/kubeflow-ci/pytorch-mpi-mnist-gpu:1.0
     Worker:
       replicas: 3
       restartPolicy: OnFailure
@@ -19,4 +19,4 @@ spec:
         spec:
           containers:
             - name: pytorch
-              image: docker.io/akado2009/pytorch-mpi-mnist-gpu
+              image: gcr.io/kubeflow-ci/pytorch-mpi-mnist-gpu:1.0
