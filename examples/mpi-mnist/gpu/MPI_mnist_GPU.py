@@ -111,7 +111,6 @@ def run(rank, size):
     for epoch in range(3):
         epoch_loss = 0.0
         for data, target in train_set:
-            data, target = Variable(data), Variable(target)
             data, target = Variable(data).cuda(rank), Variable(target).cuda(rank)
             optimizer.zero_grad()
             output = model(data)
