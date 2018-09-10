@@ -40,4 +40,4 @@ WORKDIR /workspace
 RUN chmod -R a+w /workspace
 
 ADD . /opt/pytorch_dist_mnist
-ENTRYPOINT ["mpirun", "-n", "4", "python", "-u","/opt/pytorch_dist_mnist/MPI_mnist_GPU.py"]
+ENTRYPOINT ["mpirun", "-n", "4", "python", "-u","/opt/pytorch_dist_mnist/mpi_mnist_gpu.py"]

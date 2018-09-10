@@ -39,12 +39,6 @@ echo "Configuring kubectl"
 gcloud --project ${PROJECT} container clusters get-credentials ${CLUSTER_NAME} \
     --zone ${ZONE}
 
-cd ${APP_NAME}
-echo "Install PyTorch v1alpha2 operator"
-#/usr/local/bin/ks generate pytorch-operator pytorch-operator --pytorchJobImage=${REGISTRY}/${REPO_NAME}:${VERSION}
-/usr/local/bin/ks param set pytorch-operator pytorchJobVersion v1alpha2
-/usr/local/bin/ks apply ${KF_ENV} -c pytorch-operator
-
 TIMEOUT=30
 until kubectl get pods -n ${NAMESPACE} | grep pytorch-operator | grep 1/1 || [[ $TIMEOUT -eq 1 ]]; do
   sleep 10
@@ -55,7 +49,7 @@ pushd ${GO_DIR}
 
 echo "Running CPU test"
 REGISTRY="docker.io"
-GPU_TEST_IMAGE="akado2009/pytorch-mpi-mnist-cpu"
+GPU_TEST_IMAGE="akado2009/pytorch-mpi-mnist-cpu:1.0"
 go run ./test/e2e/v1alpha2/defaults.go --namespace=${NAMESPACE} --image=${REGISTRY}/${CPU_TEST_IMAGE} --name=cputestjob-cleannone
 
 popd
