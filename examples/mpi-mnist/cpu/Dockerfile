@@ -35,6 +35,7 @@ RUN TORCH_CUDA_ARCH_LIST="3.5 5.2 6.0 6.1 7.0+PTX" TORCH_NVCC_FLAGS="-Xfatbin -c
 RUN /opt/conda/bin/conda config --set ssl_verify False
 RUN pip install --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
 RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org torchvision
+RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org tqdm
 WORKDIR /workspace
 RUN chmod -R a+w /workspace
 
