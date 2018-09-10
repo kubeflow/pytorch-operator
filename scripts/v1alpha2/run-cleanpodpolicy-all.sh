@@ -49,13 +49,3 @@ go run ./test/e2e/v1alpha2/cleanpolicy_all.go --namespace=${NAMESPACE} --image=$
 echo "Running mnist test"
 MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
 go run ./test/e2e/v1alpha2/cleanpolicy_all.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob-cleanall
-
-#echo "Running CPU test"
-#REGISTRY="docker.io"
-#CPU_TEST_IMAGE="akado2009/pytorch-mpi-mnist-cpu"
-#go run ./test/e2e/v1alpha2/cleanpolicy_all.go --namespace=${NAMESPACE} --image=${REGISTRY}/${CPU_TEST_IMAGE} --name=cputestjob-cleanall
-#
-#echo "Running GPU test"
-#GPU_TEST_IMAGE="akado2009/pytorch-mpi-mnist-gpu"
-#go run ./test/e2e/v1alpha2/cleanpolicy_all.go --namespace=${NAMESPACE} --image=${REGISTRY}/${GPU_TEST_IMAGE} --name=gputestjob-cleanall
-#
