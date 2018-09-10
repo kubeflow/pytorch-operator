@@ -297,6 +297,12 @@
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-v1alpha2-defaults", testWorkerImage, [
               "scripts/v1alpha2/run-defaults.sh",
             ]),  // run v1alpha2 default tests
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-v1alpha2-tests-mpi-cpu", testWorkerImage, [
+              "scripts/v1alpha2/run-tests-mpi-cpu.sh",
+            ]),  // run mpi-cpu default tests
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-v1alpha2-tests-mpi-gpu", testWorkerImage, [
+              "scripts/v1alpha2/run-tests-mpi-gpu.sh",
+            ]),  // run mpi-gpu default tests
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-v1alpha2-cleanpodpolicy-all", testWorkerImage, [
               "scripts/v1alpha2/run-cleanpodpolicy-all.sh",
             ]),  // run v1alpha2 cleanpodpolicy tests
