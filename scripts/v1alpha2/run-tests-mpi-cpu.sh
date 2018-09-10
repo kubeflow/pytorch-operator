@@ -48,8 +48,7 @@ done
 pushd ${GO_DIR}
 
 echo "Running CPU test"
-REGISTRY="docker.io"
-GPU_TEST_IMAGE="akado2009/pytorch-mpi-mnist-cpu:1.0"
+GPU_TEST_IMAGE="pytorch-mpi-mnist-cpu:1.0"
 go run ./test/e2e/v1alpha2/defaults.go --namespace=${NAMESPACE} --image=${REGISTRY}/${CPU_TEST_IMAGE} --name=cputestjob-cleannone
 
 popd

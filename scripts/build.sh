@@ -51,11 +51,10 @@ MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
 gcloud container builds submit ./examples/dist-mnist/ --tag=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --project=${PROJECT}
 
 echo "Building MPI CPU test image"
-REGISTRY="docker.io"
-CPU_TEST_IMAGE="akado2009/pytorch-mpi-mnist-cpu:1.0"
+CPU_TEST_IMAGE="pytorch-mpi-mnist-cpu:1.0"
 gcloud container builds submit ./examples/mpi-mnist/cpu --tag=${REGISTRY}/${CPU_TEST_IMAGE} --project=${PROJECT}
 
 echo "Building MPI GPU test image"
-GPU_TEST_IMAGE="akado2009/pytorch-mpi-mnist-gpu:1.0"
+GPU_TEST_IMAGE="pytorch-mpi-mnist-gpu:1.0"
 gcloud container builds submit ./examples/mpi-mnist/gpu --tag=${REGISTRY}/${GPU_TEST_IMAGE} --project=${PROJECT}
 
