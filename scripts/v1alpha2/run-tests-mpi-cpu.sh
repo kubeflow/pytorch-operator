@@ -39,13 +39,16 @@ echo "Configuring kubectl"
 gcloud --project ${PROJECT} container clusters get-credentials ${CLUSTER_NAME} \
     --zone ${ZONE}
 
+TIMEOUT=30
+until kubectl get pods -n ${NAMESPACE} | grep pytorch-operator | grep 1/1 || [[ $TIMEOUT -eq 1 ]]; do
+  sleep 10
+  TIMEOUT=$(( TIMEOUT - 1 ))
+done
 
-cd ${GO_DIR}
+pushd ${GO_DIR}
 
-echo "Running smoke test"
-SENDRECV_TEST_IMAGE_TAG="pytorch-dist-sendrecv-test:1.0"
-go run ./test/e2e/v1alpha2/cleanpolicy_all.go --namespace=${NAMESPACE} --image=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --name=sendrecvjob-cleanall
+echo "Running CPU test"
+GPU_TEST_IMAGE="pytorch-mpi-mnist-cpu:1.0"
+go run ./test/e2e/v1alpha2/defaults.go --namespace=${NAMESPACE} --image=${REGISTRY}/${CPU_TEST_IMAGE} --name=cputestjob-cleannone
 
-echo "Running mnist test"
-MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
-go run ./test/e2e/v1alpha2/cleanpolicy_all.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob-cleanall
+popd
