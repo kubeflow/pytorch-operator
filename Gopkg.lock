@@ -227,18 +227,19 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:9702b969e679a7aaac45038998b864522ab1141015d3fcf110e524723bc19c4b"
+  digest = "1:01da471aa476138c507166dedefd455e380f25fbbeab982e78489a8fc12410d9"
   name = "github.com/kubeflow/tf-operator"
   packages = [
     "pkg/control",
     "pkg/controller.v2/jobcontroller",
     "pkg/logger",
+    "pkg/util/k8sutil",
     "pkg/util/signals",
     "pkg/util/train",
     "pkg/version",
   ]
   pruneopts = "NUT"
-  revision = "1a726c70c44724ef7d9cd83a5d6ffef2a721baa2"
+  revision = "b026d2b9873fed7c587c461adbac5dd94e7e1d08"
 
 [[projects]]
   branch = "master"
@@ -813,6 +814,7 @@
     "github.com/kubeflow/tf-operator/pkg/control",
     "github.com/kubeflow/tf-operator/pkg/controller.v2/jobcontroller",
     "github.com/kubeflow/tf-operator/pkg/logger",
+    "github.com/kubeflow/tf-operator/pkg/util/k8sutil",
     "github.com/kubeflow/tf-operator/pkg/util/signals",
     "github.com/kubeflow/tf-operator/pkg/util/train",
     "github.com/kubeflow/tf-operator/pkg/version",
