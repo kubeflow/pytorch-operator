@@ -37,8 +37,8 @@ import (
 	informers "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions"
 	"github.com/kubeflow/pytorch-operator/pkg/controller"
 	"github.com/kubeflow/pytorch-operator/pkg/util"
-	"github.com/kubeflow/pytorch-operator/pkg/util/k8sutil"
 	"github.com/kubeflow/pytorch-operator/version"
+	"github.com/kubeflow/tf-operator/pkg/util/k8sutil"
 )
 
 var (

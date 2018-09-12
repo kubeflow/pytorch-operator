@@ -30,7 +30,7 @@ import (
 	"k8s.io/client-go/tools/record"
 
 	torchv1alpha1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
-	"github.com/kubeflow/pytorch-operator/pkg/util/k8sutil"
+	"github.com/kubeflow/tf-operator/pkg/util/k8sutil"
 	// TOOO(jlewi): Rename to apiErrors
 	"github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/helper"
 	"github.com/kubeflow/pytorch-operator/pkg/util"
