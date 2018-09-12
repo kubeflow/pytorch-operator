@@ -8,14 +8,16 @@ import (
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
 	v1alpha2 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha2"
 	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
+	"github.com/kubeflow/tf-operator/pkg/util/k8sutil"
 )
 
 const (
-	failedMarshalPyTorchJobReason = "FailedMarshalPyTorchJob"
+	failedMarshalPyTorchJobReason = "FailedInvalidPyTorchJobSpec"
 )
 
 // When a pod is added, set the defaults and enqueue the current pytorchjob.
@@ -31,9 +33,42 @@ func (pc *PyTorchController) addPyTorchJob(obj interface{}) {
 		logger.Errorf("Failed to convert the PyTorchJob: %v", err)
 		// Log the failure to conditions.
 		if err == errFailedMarshal {
-			errMsg := fmt.Sprintf("Failed to unmarshal the object to PyTorchJob object: %v", err)
+			errMsg := fmt.Sprintf("Failed to unmarshal the object to PyTorchJob: Spec is invalid %v", err)
 			logger.Warn(errMsg)
 			pc.Recorder.Event(un, v1.EventTypeWarning, failedMarshalPyTorchJobReason, errMsg)
+
+			status := v1alpha2.PyTorchJobStatus{
+				Conditions: []v1alpha2.PyTorchJobCondition{
+					v1alpha2.PyTorchJobCondition{
+						Type:               v1alpha2.PyTorchJobFailed,
+						Status:             v1.ConditionTrue,
+						LastUpdateTime:     metav1.Now(),
+						LastTransitionTime: metav1.Now(),
+						Reason:             failedMarshalPyTorchJobReason,
+						Message:            errMsg,
+					},
+				},
+			}
+
+			statusMap, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&status)
+
+			if err != nil {
+				logger.Errorf("Could not covert the PyTorchJobStatus to unstructured; %v", err)
+				return
+			}
+
+			client, err := k8sutil.NewCRDRestClient(&v1alpha2.SchemeGroupVersion)
+
+			if err == nil {
+				metav1unstructured.SetNestedField(un.Object, statusMap, "status")
+				logger.Infof("Updating the job to; %+v", un.Object)
+				err = client.Update(un, v1alpha2.Plural)
+				if err != nil {
+					logger.Errorf("Could not update the PyTorchJob; %v", err)
+				}
+			} else {
+				logger.Errorf("Could not create a REST client to update the PyTorchJob")
+			}
 		}
 		return
 	}
