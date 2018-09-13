@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2018 The Kubernetes Authors.
+# Copyright 2018 The Kubeflow Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This shell script is used to run a pytorch job with custom cleanpod policies
-
+# This shell script is used to setup pytorch v1alpha2
 
 set -o errexit
 set -o nounset
@@ -38,14 +37,14 @@ echo "Configuring kubectl"
 gcloud --project ${PROJECT} container clusters get-credentials ${CLUSTER_NAME} \
     --zone ${ZONE}
 
+cd ${APP_NAME}
+echo "Install PyTorch v1alpha2 operator"
+/usr/local/bin/ks param set pytorch-operator pytorchJobVersion v1alpha2
+/usr/local/bin/ks apply ${KF_ENV} -c pytorch-operator
 
-cd ${GO_DIR}
-
-echo "Running smoke test"
-SENDRECV_TEST_IMAGE_TAG="pytorch-dist-sendrecv-test:1.0"
-go run ./test/e2e/v1alpha2/cleanpolicy_all.go --namespace=${NAMESPACE} --image=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --name=sendrecvjob-cleanall
-
-echo "Running mnist test"
-MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
-go run ./test/e2e/v1alpha2/cleanpolicy_all.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob-cleanall
+TIMEOUT=30
+until kubectl get pods -n ${NAMESPACE} | grep pytorch-operator | grep 1/1 || [[ $TIMEOUT -eq 1 ]]; do
+  sleep 10
+  TIMEOUT=$(( TIMEOUT - 1 ))
+done
 
