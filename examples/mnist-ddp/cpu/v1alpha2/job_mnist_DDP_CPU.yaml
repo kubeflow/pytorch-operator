@@ -20,4 +20,3 @@ spec:
           containers:
             - name: pytorch
               image: docker.io/andreyvelichkevich/pytorch-mnist-ddp-cpu
-              
