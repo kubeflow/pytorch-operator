@@ -11,7 +11,7 @@ spec:
         spec:
           containers:
             - name: pytorch
-              image: docker.io/akado2009/mpi-mnist-gpu-wtf-try
+              image: docker.io/akado2009/mpi-mnist-gpu
               imagePullPolicy: Always
               resources:
                 limits:
@@ -23,7 +23,7 @@ spec:
         spec:
           containers:
             - name: pytorch
-              image: docker.io/akado2009/mpi-mnist-gpu-wtf-try
+              image: docker.io/akado2009/mpi-mnist-gpu
               imagePullPolicy: Always
               resources:
                 limits:
