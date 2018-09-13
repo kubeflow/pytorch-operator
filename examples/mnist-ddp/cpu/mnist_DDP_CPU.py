@@ -200,3 +200,4 @@ if __name__ == "__main__":
     rank = dist.get_rank()
     init_print(rank, size)
     run(rank, size)
+       
