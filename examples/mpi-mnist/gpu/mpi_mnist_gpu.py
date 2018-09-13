@@ -94,24 +94,26 @@ def partition_dataset(rank):
 def average_gradients(model):
     """ Gradient averaging. """
     size = float(dist.get_world_size())
+    group = dist.new_group([0])
     for param in model.parameters():
-        dist.all_reduce(param.grad.data, op=dist.reduce_op.SUM, group=0)
+        dist.all_reduce(param.grad.data, op=dist.reduce_op.SUM, group=group)
         param.grad.data /= size
 
 
 def run(rank, size):
     """ Distributed Synchronous SGD Example """
     torch.manual_seed(1234)
+    print(torch.cuda.is_available())
     train_set, bsz = partition_dataset(rank)
     model = Net()
-    model = model.cuda(rank)
+    model = model.cuda()
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
 
     num_batches = ceil(len(train_set.dataset) / float(bsz))
     for epoch in range(3):
         epoch_loss = 0.0
         for data, target in train_set:
-            data, target = Variable(data).cuda(rank), Variable(target).cuda(rank)
+            data, target = Variable(data).cuda(), Variable(target).cuda()
             optimizer.zero_grad()
             output = model(data)
             loss = F.nll_loss(output, target)

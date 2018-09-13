@@ -11,12 +11,20 @@ spec:
         spec:
           containers:
             - name: pytorch
-              image: gcr.io/kubeflow-ci/pytorch-mpi-mnist-gpu:1.0
+              image: docker.io/akado2009/mpi-mnist-gpu-wtf-try
+              imagePullPolicy: Always
+              resources:
+                limits:
+                  nvidia.com/gpu: 1
     Worker:
-      replicas: 3
+      replicas: 1
       restartPolicy: OnFailure
       template:
         spec:
           containers:
             - name: pytorch
-              image: gcr.io/kubeflow-ci/pytorch-mpi-mnist-gpu:1.0
+              image: docker.io/akado2009/mpi-mnist-gpu-wtf-try
+              imagePullPolicy: Always
+              resources:
+                limits:
+                  nvidia.com/gpu: 1
