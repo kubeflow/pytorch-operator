@@ -142,8 +142,9 @@ def partition_dataset(rank):
 def average_gradients(model):
     """ Gradient averaging. """
     size = float(dist.get_world_size())
+    group = dist.new_group([0])
     for param in model.parameters():
-        dist.all_reduce(param.grad.data, op=dist.reduce_op.SUM, group=0)
+        dist.all_reduce(param.grad.data, op=dist.reduce_op.SUM, group=group)
         param.grad.data /= size
 
 
@@ -166,7 +167,7 @@ def run(rank, size):
             optimizer.zero_grad()
             output = model(data)
             loss = F.nll_loss(output, target)
-            epoch_loss += loss.data[0]
+            epoch_loss += loss.item()
             loss.backward()
             average_gradients(model)
             optimizer.step()
