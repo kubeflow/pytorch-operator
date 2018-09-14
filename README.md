@@ -59,7 +59,6 @@ items:
     labels:
       app.kubernetes.io/deploy-manager: ksonnet
     name: pytorch-tcp-dist-mnist
-    namespace: kubeflow
     resourceVersion: "21599007"
     selfLink: /apis/kubeflow.org/v1alpha2/namespaces/kubeflow/pytorchjobs/pytorch-tcp-dist-mnist
     uid: ce70c8de-b82a-11e8-8b09-42010aa000d2
@@ -81,7 +80,7 @@ items:
                 name: pytorchjob-port
               resources: {}
       Worker:
-        replicas: 1
+        replicas: 3
         restartPolicy: OnFailure
         template:
           metadata:
@@ -99,19 +98,19 @@ items:
     conditions:
     - lastTransitionTime: 2018-09-14T14:31:02Z
       lastUpdateTime: 2018-09-14T14:31:02Z
-      message: PyTorchJob pytorch-job is created.
+      message: PyTorchJob pytorch-tcp-dist-mnist is created.
       reason: PyTorchJobCreated
       status: "True"
       type: Created
     - lastTransitionTime: 2018-09-14T14:31:02Z
       lastUpdateTime: 2018-09-14T14:31:05Z
-      message: PyTorchJob pytorch-job is running.
+      message: PyTorchJob pytorch-tcp-dist-mnist is running.
       reason: PyTorchJobRunning
       status: "False"
       type: Running
     - lastTransitionTime: 2018-09-14T14:31:02Z
       lastUpdateTime: 2018-09-14T14:33:13Z
-      message: PyTorchJob pytorch-job is successfully completed.
+      message: PyTorchJob pytorch-tcp-dist-mnist is successfully completed.
       reason: PyTorchJobSucceeded
       status: "True"
       type: Succeeded
