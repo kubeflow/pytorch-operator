@@ -1,7 +1,7 @@
 apiVersion: "kubeflow.org/v1alpha1"
 kind: "PyTorchJob"
 metadata:
-  name: "pytorch-dist-mnist-for-e2e-test"
+  name: "pytorch-tcp-dist-mnist"
 spec:
   backend: "tcp"
   masterPort: "23456"

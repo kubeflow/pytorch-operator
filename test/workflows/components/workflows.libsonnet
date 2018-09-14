@@ -233,6 +233,12 @@
                 ],
                 [
                   {
+                    name: "setup-v1alpha2",
+                    template: "setup-v1alpha2",
+                  },
+                ],
+                [
+                  {
                     name: "run-v1alpha2-defaults",
                     template: "run-v1alpha2-defaults",
                   },
@@ -286,6 +292,9 @@
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-v1alpha1-defaults", testWorkerImage, [
               "scripts/v1alpha1/run-defaults.sh",
             ]),  // run v1alpha1 default tests
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("setup-v1alpha2", testWorkerImage, [
+              "scripts/v1alpha2/setup-v1alpha2.sh",
+            ]),  // setup operator v1alpha2 version
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-v1alpha2-defaults", testWorkerImage, [
               "scripts/v1alpha2/run-defaults.sh",
             ]),  // run v1alpha2 default tests
