@@ -1,7 +1,7 @@
 apiVersion: "kubeflow.org/v1alpha2"
 kind: "PyTorchJob"
 metadata:
-  name: "pytorch-dist-mnist-for-e2e-test"
+  name: "pytorch-gloo-dist-mnist"
 spec:
   pytorchReplicaSpecs:
     Master:
@@ -11,7 +11,7 @@ spec:
         spec:
           containers:
             - name: pytorch
-              image: gcr.io/kubeflow-ci/pytorch-dist-mnist_test:1.0
+              image: docker.io/anugarg/pytorch-dist
     Worker:
       replicas: 3
       restartPolicy: OnFailure
@@ -19,4 +19,5 @@ spec:
         spec:
           containers:
             - name: pytorch
-              image: gcr.io/kubeflow-ci/pytorch-dist-mnist_test:1.0
+              image: docker.io/anugarg/pytorch-dist
+
