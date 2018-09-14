@@ -1,4 +1,4 @@
-FROM nvidia/cuda:latest
+FROM nvidia/cuda:9.0-cudnn7-devel-ubuntu16.04
 ARG PYTHON_VERSION=3.6
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -49,6 +49,6 @@ WORKDIR /workspace
 RUN chmod -R a+w /workspace
 ADD . /opt/pytorch_dist_mnist
 
-ENTRYPOINT ["mpirun", "-n", "1", "--allow-run-as-root", "python", "-u", "/opt/pytorch_dist_mnist/mnist_DDP_GPU.py"]
+ENTRYPOINT ["mpirun", "-n", "4", "--allow-run-as-root", "python", "-u", "/opt/pytorch_dist_mnist/mnist_DDP_GPU.py"]
 
 
