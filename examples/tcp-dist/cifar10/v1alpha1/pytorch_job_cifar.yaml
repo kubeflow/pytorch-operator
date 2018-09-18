@@ -1,7 +1,7 @@
 apiVersion: "kubeflow.org/v1alpha1"
 kind: "PyTorchJob"
 metadata:a
-  name: "pytorch-dist-basic-sendrecv"
+  name: "pytorch-dist-cifar"
 spec:
   backend: "tcp"
   masterPort: "23456"
@@ -11,7 +11,7 @@ spec:
       template:
         spec:
           containers:
-          - image: gcr.io/kubeflow-ci/pytorch-dist-sendrecv-test:1.0
+          - image: gcr.io/kubeflow-ci/pytorch-dist-cifar-test:1.0
             imagePullPolicy: Always
             name: pytorch
           restartPolicy: OnFailure
@@ -20,7 +20,7 @@ spec:
       template:
         spec:
           containers:
-          - image: gcr.io/kubeflow-ci/pytorch-dist-sendrecv-test:1.0
+          - image: gcr.io/kubeflow-ci/pytorch-dist-cifar-test:1.0
             imagePullPolicy: Always
             name: pytorch
           restartPolicy: OnFailure
