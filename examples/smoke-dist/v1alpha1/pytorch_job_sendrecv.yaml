@@ -1,6 +1,6 @@
 apiVersion: "kubeflow.org/v1alpha1"
 kind: "PyTorchJob"
-metadata:a
+metadata:
   name: "pytorch-dist-basic-sendrecv"
 spec:
   backend: "tcp"
