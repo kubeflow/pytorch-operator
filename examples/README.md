@@ -1,7 +1,7 @@
 ## Installation & deployment tips 
 1. You need to configure your node to utilize GPU. In order this can be done the following way: 
     * Install [nvidia-docker2](https://github.com/NVIDIA/nvidia-docker)
-    * Connect to your MasterNode and set nvidia as the default run in `/etc/docker/daymon.json`:
+    * Connect to your MasterNode and set nvidia as the default run in `/etc/docker/daemon.json`:
         ```
         {
             "default-runtime": "nvidia",
