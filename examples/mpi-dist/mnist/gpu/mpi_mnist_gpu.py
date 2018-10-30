@@ -94,9 +94,8 @@ def partition_dataset(rank):
 def average_gradients(model):
     """ Gradient averaging. """
     size = float(dist.get_world_size())
-    group = dist.new_group([0])
     for param in model.parameters():
-        dist.all_reduce(param.grad.data, op=dist.reduce_op.SUM, group=group)
+        dist.all_reduce(param.grad.data, op=dist.reduce_op.SUM, group=0)
         param.grad.data /= size
 
 
