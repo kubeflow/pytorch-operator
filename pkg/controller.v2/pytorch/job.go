@@ -60,11 +60,13 @@ func (pc *PyTorchController) addPyTorchJob(obj interface{}) {
 			client, err := k8sutil.NewCRDRestClient(&v1alpha2.SchemeGroupVersion)
 
 			if err == nil {
-				metav1unstructured.SetNestedField(un.Object, statusMap, "status")
-				logger.Infof("Updating the job to; %+v", un.Object)
+				if err1 := metav1unstructured.SetNestedField(un.Object, statusMap, "status"); err1 != nil {
+					logger.Errorf("Could not set nested field: %v", err1)
+				}
+				logger.Infof("Updating the job to: %+v", un.Object)
 				err = client.Update(un, v1alpha2.Plural)
 				if err != nil {
-					logger.Errorf("Could not update the PyTorchJob; %v", err)
+					logger.Errorf("Could not update the PyTorchJob: %v", err)
 				}
 			} else {
 				logger.Errorf("Could not create a REST client to update the PyTorchJob")
