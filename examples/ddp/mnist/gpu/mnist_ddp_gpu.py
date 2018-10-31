@@ -3,8 +3,8 @@
 import os
 import sys
 import torch
-import torch.utils.data                                                         
-import torch.utils.data.distributed 
+import torch.utils.data
+import torch.utils.data.distributed
 import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
@@ -55,7 +55,7 @@ class DistributedDataParallel(Module):
     def weight_broadcast(self):
         for param in self.module.parameters():
             dist.broadcast(param.data, 0)
-   
+
     def forward(self, *inputs, **kwargs):
         if self.first_call:
             print("first broadcast start")
@@ -134,7 +134,7 @@ def partition_dataset(rank):
         ]))
     size = dist.get_world_size()
     bsz = int(gbatch_size / float(size))
-    train_sampler = torch.utils.data.distributed.DistributedSampler(dataset)   
+    train_sampler = torch.utils.data.distributed.DistributedSampler(dataset)
     train_set = torch.utils.data.DataLoader(
         dataset, batch_size=bsz, shuffle=(train_sampler is None), sampler=train_sampler)
     return train_set, bsz
@@ -142,9 +142,8 @@ def partition_dataset(rank):
 def average_gradients(model):
     """ Gradient averaging. """
     size = float(dist.get_world_size())
-    group = dist.new_group([0])
     for param in model.parameters():
-        dist.all_reduce(param.grad.data, op=dist.reduce_op.SUM, group=group)
+        dist.all_reduce(param.grad.data, op=dist.reduce_op.SUM, group=0)
         param.grad.data /= size
 
 
@@ -201,7 +200,7 @@ def init_print(rank, size, debug_print=True):
 if __name__ == "__main__":
     print("\n======= CUDA INFO =======")
     print("CUDA Availibility:", torch.cuda.is_available())
-    if(torch.cuda.is_available()):    
+    if(torch.cuda.is_available()):
         print("CUDA Device Name:", torch.cuda.get_device_name(0))
         print("CUDA Version:", torch.version.cuda)
     print("=========================\n")
