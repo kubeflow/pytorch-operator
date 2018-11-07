@@ -33,10 +33,6 @@ required = [
   name = "github.com/onrik/logrus"
 
 [[constraint]]
-  name = "github.com/stretchr/testify"
-  version = "1.2.2"
-
-[[constraint]]
   name = "github.com/sirupsen/logrus"
   version = "~1.0.4"
 

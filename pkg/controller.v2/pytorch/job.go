@@ -92,7 +92,7 @@ func (pc *PyTorchController) addPyTorchJob(obj interface{}) {
 	// Convert from pytorchjob object
 	err = unstructuredFromPyTorchJob(obj, job)
 	if err != nil {
-		logger.Error("Failed to convert the obj: %v", err)
+		logger.Errorf("Failed to convert the obj: %v", err)
 		return
 	}
 	pc.enqueuePyTorchJob(obj)
