@@ -96,7 +96,7 @@ func (j *TrainingJob) UID() types.UID {
 // For example, if the user issues a delete request. This will update the metadata on the object
 // so we need to replace the spec.
 func (j *TrainingJob) Update(newJob *torchv1alpha1.PyTorchJob) {
-	log.Info("Updating job to %+v", *newJob)
+	log.Infof("Updating job to %+v", *newJob)
 	j.job = newJob
 }
 
