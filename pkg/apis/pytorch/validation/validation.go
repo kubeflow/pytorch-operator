@@ -170,7 +170,7 @@ func ValidateBetaOnePyTorchJobSpec(c *torchv1beta1.PyTorchJobSpec) error {
 				log.Warn("Image is undefined in the container")
 				return fmt.Errorf("PyTorchJobSpec is not valid")
 			}
-			if container.Name == torchv2.DefaultContainerName {
+			if container.Name == torchv1beta1.DefaultContainerName {
 				defaultContainerPresent = true
 			}
 		}
