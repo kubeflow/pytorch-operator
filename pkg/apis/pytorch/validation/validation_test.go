@@ -19,10 +19,102 @@ import (
 
 	torchv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
 	torchv2 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha2"
+	torchv1beta1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta1"
+	common "github.com/kubeflow/tf-operator/pkg/apis/common/v1beta1"
 
 	"github.com/gogo/protobuf/proto"
 	"k8s.io/api/core/v1"
 )
+
+func TestValidateBetaOnePyTorchJobSpec(t *testing.T) {
+	testCases := []torchv1beta1.PyTorchJobSpec{
+		{
+			PyTorchReplicaSpecs: nil,
+		},
+		{
+			PyTorchReplicaSpecs: map[torchv1beta1.PyTorchReplicaType]*common.ReplicaSpec{
+				torchv1beta1.PyTorchReplicaTypeWorker: &common.ReplicaSpec{
+					Template: v1.PodTemplateSpec{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{},
+						},
+					},
+				},
+			},
+		},
+		{
+			PyTorchReplicaSpecs: map[torchv1beta1.PyTorchReplicaType]*common.ReplicaSpec{
+				torchv1beta1.PyTorchReplicaTypeWorker: &common.ReplicaSpec{
+					Template: v1.PodTemplateSpec{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								v1.Container{
+									Image: "",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			PyTorchReplicaSpecs: map[torchv1beta1.PyTorchReplicaType]*common.ReplicaSpec{
+				torchv1beta1.PyTorchReplicaTypeWorker: &common.ReplicaSpec{
+					Template: v1.PodTemplateSpec{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								v1.Container{
+									Name:  "",
+									Image: "gcr.io/kubeflow-ci/pytorch-dist-mnist_test:1.0",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			PyTorchReplicaSpecs: map[torchv1beta1.PyTorchReplicaType]*common.ReplicaSpec{
+				torchv1beta1.PyTorchReplicaTypeMaster: &common.ReplicaSpec{
+					Replicas: torchv1beta1.Int32(2),
+					Template: v1.PodTemplateSpec{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								v1.Container{
+									Name:  "pytorch",
+									Image: "gcr.io/kubeflow-ci/pytorch-dist-mnist_test:1.0",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			PyTorchReplicaSpecs: map[torchv1beta1.PyTorchReplicaType]*common.ReplicaSpec{
+				torchv1beta1.PyTorchReplicaTypeWorker: &common.ReplicaSpec{
+					Replicas: torchv1beta1.Int32(1),
+					Template: v1.PodTemplateSpec{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								v1.Container{
+									Name:  "pytorch",
+									Image: "gcr.io/kubeflow-ci/pytorch-dist-mnist_test:1.0",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, c := range testCases {
+		err := ValidateBetaOnePyTorchJobSpec(&c)
+		if err.Error() != "PyTorchJobSpec is not valid" {
+			t.Error("Failed validate the v1beta1.PyTorchJobSpec")
+		}
+	}
+}
 
 func TestValidateAlphaTwoPyTorchJobSpec(t *testing.T) {
 	testCases := []torchv2.PyTorchJobSpec{
