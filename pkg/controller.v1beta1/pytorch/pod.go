@@ -35,7 +35,7 @@ import (
 
 const (
 	// podTemplateRestartPolicyReason is the warning reason when the restart
-	// policy is setted in pod template.
+	// policy is set in pod template.
 	podTemplateRestartPolicyReason = "SettedPodTemplateRestartPolicy"
 	exitedWithCodeReason           = "ExitedWithCode"
 )

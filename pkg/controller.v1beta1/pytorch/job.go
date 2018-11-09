@@ -156,7 +156,7 @@ func (pc *PyTorchController) cleanupPyTorchJob(job *v1beta1.PyTorchJob) error {
 	return nil
 }
 
-// deletePyTorchJob delets the given PyTorchJob.
+// deletePyTorchJob deletes the given PyTorchJob.
 func (pc *PyTorchController) deletePyTorchJob(job *v1beta1.PyTorchJob) error {
 	return pc.jobClientSet.KubeflowV1beta1().PyTorchJobs(job.Namespace).Delete(job.Name, &metav1.DeleteOptions{})
 }

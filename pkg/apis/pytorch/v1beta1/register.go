@@ -39,6 +39,8 @@ const (
 	Plural = "pytorchjobs"
 	// Singular is the singular for pytorchJob.
 	Singular = "pytorchjob"
+	// PytorchCRD is the CRD name for PytorchJob.
+	PytorchCRD = "pytorchjobs.kubeflow.org"
 )
 
 var (
