@@ -301,7 +301,7 @@
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1alpha2-cleanpodpolicy-all", testWorkerImage, [
               "scripts/v1alpha2/run-cleanpodpolicy-all.sh",
             ]),  // run v1alpha2 cleanpodpolicy tests
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", testWorkerImage, [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", testWorkerImage, [
               "python",
               "-m",
               "kubeflow.testing.prow_artifacts",
