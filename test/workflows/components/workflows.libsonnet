@@ -342,7 +342,7 @@
               "scripts/v1beta1/run-cleanpodpolicy-all.sh",
             ]),  // run v1beta1 cleanpodpolicy tests
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("delete-v1beta1", testWorkerImage, [
-              "scripts/v1alpha2/delete-v1beta1.sh",
+              "scripts/v1beta1/delete-v1beta1.sh",
             ]),  // delete operator v1beta1 version
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", testWorkerImage, [
               "python",
