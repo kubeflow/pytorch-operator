@@ -125,7 +125,8 @@ func run() (string, error) {
 	for endTime := time.Now().Add(*timeout); time.Now().Before(endTime); {
 		torchJob, err = torchJobClient.KubeflowV1beta1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
 		if err != nil {
-			log.Warningf("There was a problem getting PyTorchJob: %v; error %v", *name, err)
+			log.Errorf("There was a problem getting PyTorchJob: %v; error %v", *name, err)
+			return *name, err
 		}
 
 		if isSucceeded(torchJob.Status) || isFailed(torchJob.Status) {
