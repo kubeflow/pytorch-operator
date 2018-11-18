@@ -26,7 +26,7 @@
     project:: "kubeflow-ci",
     zone:: "us-east1-d",
     // Default registry to use.
-    //registry:: "gcr.io/" + $.defaultParams.project,
+    registry:: "gcr.io/" + $.defaultParams.project,
 
     // The image tag to use.
     // Defaults to a value based on the name.
