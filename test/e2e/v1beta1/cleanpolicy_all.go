@@ -133,7 +133,7 @@ func run() (string, error) {
 			log.Infof("job %v finished:\n%v", *name, util.Pformat(torchJob))
 			break
 		}
-		log.Infof("Waiting for job %v to finish", *name)
+		log.Infof("Waiting for job %v to finish. Currently in %v state", *name, torchJob.Status)
 		time.Sleep(5 * time.Second)
 	}
 

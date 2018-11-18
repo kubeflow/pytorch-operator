@@ -48,4 +48,5 @@ until kubectl get pods -n ${NAMESPACE} | grep pytorch-operator | grep 1/1 || [[ 
   sleep 10
   TIMEOUT=$(( TIMEOUT - 1 ))
 done
-
+PODNAME=`kubectl get pods -n ${NAMESPACE} | grep pytorch-operator | awk '{print $1}'`
+kubectl logs $PODNAME -n ${NAMESPACE}
