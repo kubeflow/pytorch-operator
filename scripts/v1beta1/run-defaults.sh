@@ -47,9 +47,6 @@ go run ./test/e2e/v1beta1/defaults.go --namespace=${NAMESPACE} --image=${REGISTR
 PODNAME=`kubectl get pods -n ${NAMESPACE} | grep pytorch-operator | awk '{print $1}'`
 kubectl logs $PODNAME -n kubeflow
 
-echo "Running mnist test"
-MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
-go run ./test/e2e/v1beta1/defaults.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob-cleannone || true
-
-PODNAME=`kubectl get pods -n ${NAMESPACE} | grep pytorch-operator | awk '{print $1}'`
-kubectl logs $PODNAME -n kubeflow
+#echo "Running mnist test"
+#MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
+#go run ./test/e2e/v1beta1/defaults.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob-cleannone || true
