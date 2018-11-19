@@ -37,6 +37,8 @@ echo "Build pytorch operator v1alpha1 binary"
 go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator
 echo "Build pytorch operator v1alpha2 binary"
 go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v2
+echo "Build pytorch operator v1beta1 binary"
+go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1beta1
 
 echo "Building PyTorch operator in gcloud"
 gcloud version
