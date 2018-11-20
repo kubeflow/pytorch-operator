@@ -227,12 +227,6 @@
                 ],
                 [
                   {
-                    name: "run-v1alpha1-defaults",
-                    template: "run-v1alpha1-defaults",
-                  },
-                ],
-                [
-                  {
                     name: "setup-v1alpha2",
                     template: "setup-v1alpha2",
                   },
@@ -317,9 +311,6 @@
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-kubeflow", testWorkerImage, [
               "scripts/setup-kubeflow.sh",
             ]),  // setup kubeflow
-            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1alpha1-defaults", testWorkerImage, [
-              "scripts/v1alpha1/run-defaults.sh",
-            ]),  // run v1alpha1 default tests
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-v1alpha2", testWorkerImage, [
               "scripts/v1alpha2/setup-v1alpha2.sh",
             ]),  // setup operator v1alpha2 version
