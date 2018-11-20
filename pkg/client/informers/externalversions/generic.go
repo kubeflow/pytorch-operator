@@ -21,7 +21,6 @@ package externalversions
 import (
 	"fmt"
 
-	v1alpha1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
 	v1alpha2 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha2"
 	v1beta1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -54,11 +53,7 @@ func (f *genericInformer) Lister() cache.GenericLister {
 // TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=Kubeflow, Version=V1alpha1
-	case v1alpha1.SchemeGroupVersion.WithResource("pytorchjobs"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubeflow().V1alpha1().PyTorchJobs().Informer()}, nil
-
-		// Group=Kubeflow, Version=V1alpha2
+	// Group=Kubeflow, Version=V1alpha2
 	case v1alpha2.SchemeGroupVersion.WithResource("pytorchjobs"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubeflow().V1alpha2().PyTorchJobs().Informer()}, nil
 
