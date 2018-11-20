@@ -22,7 +22,7 @@
     "Exclude": [
       "redundant return statement",
       "comment or be unexported",
-      "comment on exported",
+      "comment on exported"
     ],
     "Deadline": "300s",
     "Skip": ["pkg/client"]
