@@ -302,7 +302,7 @@
     "idna",
   ]
   pruneopts = "NUT"
-  revision = "351d144fa1fc0bd934e2408202be0c29f25e35a0"
+  revision = "610586996380ceef02dd726cc09df7e00a3f8e56"
 
 [[projects]]
   branch = "master"
@@ -320,14 +320,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d504c2e2a9d57c644347bac08e4e883399a158510e260d21b8ab6b8ea5ef63d5"
+  digest = "1:b9652309d4d5820d01ef9aed88f46dd6b8021b3eaa4d5f0f6808e2d84386040d"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "NUT"
-  revision = "70b957f3b65e069b4930ea94e2721eefa0f8f695"
+  revision = "ad97f365e15054527b467150f898ec66d7f81e14"
 
 [[projects]]
   digest = "1:e33513a825fcd765e97b5de639a2f7547542d1a8245df0cef18e1fd390b778a9"
@@ -372,7 +372,7 @@
     "internal/gopathwalk",
   ]
   pruneopts = "NUT"
-  revision = "bcd4e47d02889ebbc25c9f4bf3d27e4124b0bf9d"
+  revision = "4c874b978acba4ecd4a257d3bb8829dd5de17be8"
 
 [[projects]]
   digest = "1:b63b351b57e64ae8aec1af030dc5e74a2676fcda62102f006ae4411fac1b04c8"
