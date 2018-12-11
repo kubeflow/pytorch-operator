@@ -1,0 +1,14 @@
+apiVersion: "kubeflow.org/v1beta1"
+kind: "PyTorchJob"
+metadata:
+  name: "pytorch-mnist-with-summary"
+spec:
+  pytorchReplicaSpecs:
+    Worker:
+      replicas: 1
+      restartPolicy: OnFailure
+      template:
+        spec:
+          containers:
+            - name: pytorch
+              image: gcr.io/kubeflow-ci/pytorch-mnist-with-summary:0.4
