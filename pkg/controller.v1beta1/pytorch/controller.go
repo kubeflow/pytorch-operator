@@ -177,18 +177,11 @@ func (pc *PyTorchController) Run(threadiness int, stopCh <-chan struct{}) error 
 
 	// Wait for the caches to be synced before starting workers.
 	log.Info("Waiting for informer caches to sync")
-	if ok := cache.WaitForCacheSync(stopCh, pc.jobInformerSynced); !ok {
-		return fmt.Errorf("failed to wait for job caches to sync")
-	}
 
-	if ok := cache.WaitForCacheSync(stopCh, pc.PodInformerSynced); !ok {
-		return fmt.Errorf("failed to wait for pod caches to sync")
+	if ok := cache.WaitForCacheSync(stopCh, pc.jobInformerSynced,
+		pc.PodInformerSynced, pc.ServiceInformerSynced); !ok {
+		return fmt.Errorf("failed to wait for caches to sync")
 	}
-
-	if ok := cache.WaitForCacheSync(stopCh, pc.ServiceInformerSynced); !ok {
-		return fmt.Errorf("failed to wait for service caches to sync")
-	}
-
 	log.Infof("Starting %v workers", threadiness)
 	// Launch workers to process PyTorchJob resources.
 	for i := 0; i < threadiness; i++ {
@@ -213,15 +206,26 @@ func (pc *PyTorchController) runWorker() {
 // processNextWorkItem will read a single work item off the workqueue and
 // attempt to process it, by calling the syncHandler.
 func (pc *PyTorchController) processNextWorkItem() bool {
-	key, quit := pc.WorkQueue.Get()
+	obj, quit := pc.WorkQueue.Get()
 	if quit {
 		return false
 	}
-	defer pc.WorkQueue.Done(key)
+	defer pc.WorkQueue.Done(obj)
 
-	logger := pylogger.LoggerForKey(key.(string))
+	var key string
+	var ok bool
+	if key, ok = obj.(string); !ok {
+		// As the item in the workqueue is actually invalid, we call
+		// Forget here else we'd go into a loop of attempting to
+		// process a work item that is invalid.
+		pc.WorkQueue.Forget(obj)
+		utilruntime.HandleError(fmt.Errorf("expected string in workqueue but got %#v", obj))
+		return true
+	}
 
-	pytorchJob, err := pc.getPyTorchJobFromKey(key.(string))
+	logger := pylogger.LoggerForKey(key)
+
+	pytorchJob, err := pc.getPyTorchJobFromKey(key)
 	if err != nil {
 		if err == errNotExists {
 			logger.Infof("PyTorchJob has been deleted: %v", key)
@@ -240,7 +244,7 @@ func (pc *PyTorchController) processNextWorkItem() bool {
 	}
 
 	// Sync PyTorchJob to mapch the actual state to this desired state.
-	forget, err := pc.syncHandler(key.(string))
+	forget, err := pc.syncHandler(key)
 	if err == nil {
 		if forget {
 			pc.WorkQueue.Forget(key)
