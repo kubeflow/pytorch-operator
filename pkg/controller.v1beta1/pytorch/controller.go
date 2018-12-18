@@ -49,6 +49,7 @@ const (
 	replicaIndexLabel   = "pytorch-replica-index"
 	labelGroupName      = "group_name"
 	labelPyTorchJobName = "pytorch_job_name"
+	labelPyTorchJobRole = "pytorch_job_role"
 )
 
 var (
