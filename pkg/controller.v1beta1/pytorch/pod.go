@@ -71,6 +71,7 @@ func (pc *PyTorchController) reconcilePods(
 		} else if len(podSlice) == 0 {
 			logger.Infof("Need to create new pod: %s-%d", rt, index)
 
+			//Pytorch Job will have exactly one Master pod available
 			if rtype == v1beta1.PyTorchReplicaTypeMaster {
 				masterRole = true
 			}
