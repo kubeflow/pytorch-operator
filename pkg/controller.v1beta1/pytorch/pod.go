@@ -58,17 +58,24 @@ func (pc *PyTorchController) reconcilePods(
 	}
 	replicas := int(*spec.Replicas)
 	restart := false
+	masterRole := false
 
 	initializePyTorchReplicaStatuses(job, rtype)
 
 	podSlices := getPodSlices(pods, replicas, logger)
 	for index, podSlice := range podSlices {
+		masterRole = false
 		if len(podSlice) > 1 {
 			logger.Warningf("We have too many pods for %s %d", rt, index)
 			// TODO(gaocegege): Kill some pods.
 		} else if len(podSlice) == 0 {
 			logger.Infof("Need to create new pod: %s-%d", rt, index)
-			err = pc.createNewPod(job, rtype, strconv.Itoa(index), spec)
+
+			//Pytorch Job will have exactly one Master pod available
+			if rtype == v1beta1.PyTorchReplicaTypeMaster {
+				masterRole = true
+			}
+			err = pc.createNewPod(job, rtype, strconv.Itoa(index), spec, masterRole)
 			if err != nil {
 				return err
 			}
@@ -125,7 +132,7 @@ func getPodSlices(pods []*v1.Pod, replicas int, logger *log.Entry) [][]*v1.Pod {
 }
 
 // createNewPod creates a new pod for the given index and type.
-func (pc *PyTorchController) createNewPod(job *v1beta1.PyTorchJob, rtype v1beta1.PyTorchReplicaType, index string, spec *common.ReplicaSpec) error {
+func (pc *PyTorchController) createNewPod(job *v1beta1.PyTorchJob, rtype v1beta1.PyTorchReplicaType, index string, spec *common.ReplicaSpec, masterRole bool) error {
 	rt := strings.ToLower(string(rtype))
 	jobKey, err := KeyFunc(job)
 	if err != nil {
@@ -146,6 +153,9 @@ func (pc *PyTorchController) createNewPod(job *v1beta1.PyTorchJob, rtype v1beta1
 	labels[replicaTypeLabel] = rt
 	labels[replicaIndexLabel] = index
 
+	if masterRole {
+		labels[labelPyTorchJobRole] = "master"
+	}
 	podTemplate := spec.Template.DeepCopy()
 	totalReplicas := getTotalReplicas(job)
 	// Set name for the template.
