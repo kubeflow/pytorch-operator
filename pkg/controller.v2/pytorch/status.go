@@ -154,8 +154,10 @@ func newCondition(conditionType v1alpha2.PyTorchJobConditionType, reason, messag
 
 // getCondition returns the condition with the provided type.
 func getCondition(status v1alpha2.PyTorchJobStatus, condType v1alpha2.PyTorchJobConditionType) *v1alpha2.PyTorchJobCondition {
-	if len(status.Conditions) > 0 {
-		return &status.Conditions[len(status.Conditions)-1]
+	for _, condition := range status.Conditions {
+		if condition.Type == condType {
+			return &condition
+		}
 	}
 	return nil
 }

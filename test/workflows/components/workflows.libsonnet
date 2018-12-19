@@ -37,7 +37,7 @@
   },
 
   // overrides is a dictionary of parameters to provide in addition to defaults.
-  parts(namespace, name, overrides={}):: {
+  parts(namespace, name, overrides):: {
     // Workflow to run the e2e test.
     e2e(prow_env, bucket):
       local params = $.defaultParams + overrides;
@@ -227,12 +227,6 @@
                 ],
                 [
                   {
-                    name: "run-v1alpha1-defaults",
-                    template: "run-v1alpha1-defaults",
-                  },
-                ],
-                [
-                  {
                     name: "setup-v1alpha2",
                     template: "setup-v1alpha2",
                   },
@@ -245,6 +239,34 @@
                   {
                     name: "run-v1alpha2-cleanpodpolicy-all",
                     template: "run-v1alpha2-cleanpodpolicy-all",
+                  },
+                ],
+                [
+                  {
+                    name: "delete-v1alpha2",
+                    template: "delete-v1alpha2",
+                  },
+                ],
+                [
+                  {
+                    name: "setup-v1beta1",
+                    template: "setup-v1beta1",
+                  },
+                ],
+                [
+                  {
+                    name: "run-v1beta1-defaults",
+                    template: "run-v1beta1-defaults",
+                  },
+                  {
+                    name: "run-v1beta1-cleanpodpolicy-all",
+                    template: "run-v1beta1-cleanpodpolicy-all",
+                  },
+                ],
+                [
+                  {
+                    name: "delete-v1beta1",
+                    template: "delete-v1beta1",
                   },
                 ],
               ],
@@ -283,25 +305,37 @@
                 ],
               },
             },  // checkout
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("setup-cluster", testWorkerImage, [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-cluster", testWorkerImage, [
               "scripts/create-cluster.sh",
             ]),  // setup cluster
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("setup-kubeflow", testWorkerImage, [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-kubeflow", testWorkerImage, [
               "scripts/setup-kubeflow.sh",
             ]),  // setup kubeflow
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-v1alpha1-defaults", testWorkerImage, [
-              "scripts/v1alpha1/run-defaults.sh",
-            ]),  // run v1alpha1 default tests
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("setup-v1alpha2", testWorkerImage, [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-v1alpha2", testWorkerImage, [
               "scripts/v1alpha2/setup-v1alpha2.sh",
             ]),  // setup operator v1alpha2 version
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-v1alpha2-defaults", testWorkerImage, [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1alpha2-defaults", testWorkerImage, [
               "scripts/v1alpha2/run-defaults.sh",
             ]),  // run v1alpha2 default tests
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-v1alpha2-cleanpodpolicy-all", testWorkerImage, [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1alpha2-cleanpodpolicy-all", testWorkerImage, [
               "scripts/v1alpha2/run-cleanpodpolicy-all.sh",
             ]),  // run v1alpha2 cleanpodpolicy tests
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", testWorkerImage, [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("delete-v1alpha2", testWorkerImage, [
+              "scripts/v1alpha2/delete-v1alpha2.sh",
+            ]),  // delete operator v1alpha2 version
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-v1beta1", testWorkerImage, [
+              "scripts/v1beta1/setup-v1beta1.sh",
+            ]),  // setup operator v1beta1 version
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1beta1-defaults", testWorkerImage, [
+              "scripts/v1beta1/run-defaults.sh",
+            ]),  // run v1beta1 default tests
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1beta1-cleanpodpolicy-all", testWorkerImage, [
+              "scripts/v1beta1/run-cleanpodpolicy-all.sh",
+            ]),  // run v1beta1 cleanpodpolicy tests
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("delete-v1beta1", testWorkerImage, [
+              "scripts/v1beta1/delete-v1beta1.sh",
+            ]),  // delete operator v1beta1 version
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", testWorkerImage, [
               "python",
               "-m",
               "kubeflow.testing.prow_artifacts",
@@ -309,10 +343,10 @@
               "create_pr_symlink",
               "--bucket=" + bucket,
             ]),  // create-pr-symlink
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("teardown-cluster", testWorkerImage, [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("teardown-cluster", testWorkerImage, [
               "scripts/delete-cluster.sh",
             ]),  // teardown cluster
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("copy-artifacts", testWorkerImage, [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("copy-artifacts", testWorkerImage, [
               "python",
               "-m",
               "kubeflow.testing.prow_artifacts",
@@ -320,7 +354,7 @@
               "copy_artifacts",
               "--bucket=" + bucket,
             ]),  // copy-artifacts
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("build", testWorkerImage, [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("build", testWorkerImage, [
               "scripts/build.sh",
             ]),  // build
           ],  // templates

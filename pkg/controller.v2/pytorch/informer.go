@@ -78,11 +78,7 @@ func (pc *PyTorchController) getPyTorchJobFromKey(key string) (*v1alpha2.PyTorch
 		return nil, errNotExists
 	}
 
-	job, err := jobFromUnstructured(obj)
-	if err != nil {
-		return nil, err
-	}
-	return job, nil
+	return jobFromUnstructured(obj)
 }
 
 func jobFromUnstructured(obj interface{}) (*v1alpha2.PyTorchJob, error) {

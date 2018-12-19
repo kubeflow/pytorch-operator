@@ -30,15 +30,8 @@ CODEGEN_PKG=${CODEGEN_PKG:-$(cd ${SCRIPT_ROOT}; ls -d -1 ./vendor/k8s.io/code-ge
 #                  instead of the $GOPATH directly. For normal projects this can be dropped.
 ${CODEGEN_PKG}/generate-groups.sh "defaulter,deepcopy,client,informer,lister" \
  github.com/kubeflow/pytorch-operator/pkg/client github.com/kubeflow/pytorch-operator/pkg/apis \
- pytorch:v1alpha1,v1alpha2 \
+ pytorch:v1alpha2,v1beta1 \
  --go-header-file ${SCRIPT_ROOT}/hack/boilerplate/boilerplate.go.txt
-
-echo "Generating defaulters for pytorch v1alpha1"
- ${GOPATH}/bin/defaulter-gen --input-dirs github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1 \
- -O zz_generated.defaults \
- --go-header-file ./hack/../hack/boilerplate/boilerplate.go.txt  \
- --output-package github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1
-
 
 echo "Generating defaulters for pytorch v1alpha2"
  ${GOPATH}/bin/defaulter-gen --input-dirs github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha2 \
@@ -46,3 +39,9 @@ echo "Generating defaulters for pytorch v1alpha2"
  --go-header-file ./hack/../hack/boilerplate/boilerplate.go.txt  \
  --output-package github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha2
 
+
+echo "Generating defaulters for pytorch v1beta1"
+ ${GOPATH}/bin/defaulter-gen --input-dirs github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta1 \
+ -O zz_generated.defaults \
+ --go-header-file ./hack/../hack/boilerplate/boilerplate.go.txt  \
+ --output-package github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta1
