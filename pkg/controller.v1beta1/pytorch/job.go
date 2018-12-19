@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	failedMarshalPyTorchJobReason = "FailedInvalidPyTorchJobSpec"
+	failedMarshalPyTorchJobReason = "InvalidPyTorchJobSpec"
 )
 
 // When a pod is added, set the defaults and enqueue the current pytorchjob.
