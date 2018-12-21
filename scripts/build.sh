@@ -49,3 +49,7 @@ gcloud container builds submit  ./examples/smoke-dist/ --tag=${REGISTRY}/${SENDR
 echo "Building MNIST test image"
 MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
 gcloud container builds submit  ./examples/tcp-dist/mnist/ --tag=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --project=${PROJECT}
+
+echo "Building Katib test image with sumaries"
+KATIB_TEST_IMAGE_TAG="pytorch-mnist-with-summary:1.0"
+gcloud container builds submit  ./examples/katib --tag=${REGISTRY}/${KATIB_TEST_IMAGE_TAG} --project=${PROJECT}
