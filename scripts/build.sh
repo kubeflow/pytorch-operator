@@ -40,12 +40,12 @@ go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1beta1
 
 echo "Building PyTorch operator in gcloud"
 gcloud version
-gcloud container builds submit . --tag=${REGISTRY}/${REPO_NAME}:${VERSION} --project=${PROJECT}
+gcloud builds submit . --tag=${REGISTRY}/${REPO_NAME}:${VERSION} --project=${PROJECT}
 
 echo "Building smoke test image"
 SENDRECV_TEST_IMAGE_TAG="pytorch-dist-sendrecv-test:1.0"
-gcloud container builds submit  ./examples/smoke-dist/ --tag=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --project=${PROJECT}
+gcloud builds submit  ./examples/smoke-dist/ --tag=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --project=${PROJECT}
 
 echo "Building MNIST test image"
 MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
-gcloud container builds submit  ./examples/tcp-dist/mnist/ --tag=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --project=${PROJECT}
+gcloud builds submit  ./examples/tcp-dist/mnist/ --tag=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --project=${PROJECT}
