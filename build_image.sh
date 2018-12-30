@@ -26,5 +26,5 @@ echo "Build pytorch operator v1beta1 binary"
 go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1beta1
 
 echo "Building container in gcloud"
-gcloud container builds submit . --tag=${IMAGE}:${TAG}
+gcloud builds submit . --tag=${IMAGE}:${TAG}
 echo "Image built successfully"
