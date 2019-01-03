@@ -4,11 +4,19 @@ metadata:
   name: "pytorch-mnist-with-summary"
 spec:
   pytorchReplicaSpecs:
-    Worker:
+    Master:
       replicas: 1
       restartPolicy: OnFailure
       template:
         spec:
           containers:
             - name: pytorch
-              image: gcr.io/kubeflow-ci/pytorch-mnist-with-summary:0.4
+              image: gcr.io/kubeflow-ci/pytorch-mnist-with-summary:1.0
+    Worker:
+      replicas: 3
+      restartPolicy: OnFailure
+      template:
+        spec:
+          containers:
+            - name: pytorch
+              image: gcr.io/kubeflow-ci/pytorch-mnist-with-summary:1.0
