@@ -7,4 +7,3 @@
     ```
     
     **Note.** Each copy will utilise 1 CPU. You can binding each process a CPU using `-cpu-slot`. For more reference visit [mpirun docuentation](https://www.open-mpi.org/doc/v3.0/man1/mpirun.1.php).
-   

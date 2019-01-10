@@ -11,6 +11,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch._utils import _flatten_dense_tensors, _unflatten_dense_tensors
 from torch.nn.modules import Module
+import torch.nn.parallel as ddp
 
 from math import ceil
 from random import Random
@@ -20,50 +21,6 @@ from torchvision import datasets, transforms
 import datetime
 
 gbatch_size = 128
-
-class DistributedDataParallel(Module):
-    def __init__(self, module):
-        super(DistributedDataParallel, self).__init__()
-        self.module = module
-        self.first_call = True
-
-        def allreduce_params():
-            if (self.needs_reduction):
-                self.needs_reduction = False
-                buckets = {}
-                for param in self.module.parameters():
-                    if param.requires_grad and param.grad is not None:
-                        tp = type(param.data)
-                        if tp not in buckets:
-                            buckets[tp] = []
-                        buckets[tp].append(param)
-                for tp in buckets:
-                    bucket = buckets[tp]
-                    grads = [param.grad.data for param in bucket]
-                    coalesced = _flatten_dense_tensors(grads)
-                    dist.all_reduce(coalesced)
-                    coalesced /= dist.get_world_size()
-                    for buf, synced in zip(grads, _unflatten_dense_tensors(coalesced, grads)):
-                        buf.copy_(synced)
-        for param in list(self.module.parameters()):
-            def allreduce_hook(*unused):
-                Variable._execution_engine.queue_callback(allreduce_params)
-
-            if param.requires_grad:
-                param.register_hook(allreduce_hook)
-
-    def weight_broadcast(self):
-        for param in self.module.parameters():
-            dist.broadcast(param.data, 0)
-
-    def forward(self, *inputs, **kwargs):
-        if self.first_call:
-            print("first broadcast start")
-            self.weight_broadcast()
-            self.first_call = False
-            print("first broadcast done")
-        self.needs_reduction = True
-        return self.module(*inputs, **kwargs)
 
 class Partition(object):
     """ Dataset-like object, but only access a subset of it. """
@@ -139,21 +96,13 @@ def partition_dataset(rank):
         dataset, batch_size=bsz, shuffle=(train_sampler is None), sampler=train_sampler)
     return train_set, bsz
 
-def average_gradients(model):
-    """ Gradient averaging. """
-    size = float(dist.get_world_size())
-    for param in model.parameters():
-        dist.all_reduce(param.grad.data, op=dist.reduce_op.SUM, group=0)
-        param.grad.data /= size
-
-
 def run(rank, size):
     """ Distributed Synchronous SGD Example """
     torch.manual_seed(1234)
     train_set, bsz = partition_dataset(rank)
     model = Net()
     model = model.cuda()
-    model = DistributedDataParallel(model)
+    model = ddp.DistributedDataParallel(model)
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
 
     num_batches = ceil(len(train_set.dataset) / float(bsz))
@@ -168,7 +117,6 @@ def run(rank, size):
             loss = F.nll_loss(output, target)
             epoch_loss += loss.item()
             loss.backward()
-            average_gradients(model)
             optimizer.step()
         print('Epoch {} Loss {:.6f} Global batch size {} on {} ranks'.format(
                   epoch, epoch_loss / num_batches, gbatch_size, dist.get_world_size()))
@@ -204,8 +152,9 @@ if __name__ == "__main__":
         print("CUDA Device Name:", torch.cuda.get_device_name(0))
         print("CUDA Version:", torch.version.cuda)
     print("=========================\n")
-    dist.init_process_group(backend='mpi')
+    dist.init_process_group(backend='nccl')
     size = dist.get_world_size()
+    print("world size = ",size)
     rank = dist.get_rank()
     init_print(rank, size)
     run(rank, size)
