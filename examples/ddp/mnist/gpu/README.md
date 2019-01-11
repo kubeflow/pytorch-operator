@@ -8,11 +8,8 @@
     ```
     **Keep in mind!** The number of GPUs used by workers and master should be less of equal to the number of available GPUs on your cluster/system. If you should have less, then we recommend you to reduce the number of workers, or use master ony (in case you have 1 GPU).
     
-2. MPI can spawn different number of copies. It is controlled by mpirun -n inside the Dockerfile.
+2. If you have only 1 GPU you have to control number of process per node. Parameter ```nproc_per_node``` inside Dockerfile should be equal to the dist world size.
 
     ```
-        mpirun -n <number_of_copies>
+        torch.distributed.launch --nproc_per_node <number of process per node>
     ```
-    
-    **Note.** Each copy will utilise 1 GPU.
-   
