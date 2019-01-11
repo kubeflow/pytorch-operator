@@ -1,7 +1,7 @@
 apiVersion: "kubeflow.org/v1alpha2"
 kind: "PyTorchJob"
 metadata:
-  name: "pytorch-mnist-ddp-gpu"
+  name: "pytorch-dist-mnist-gloo"
 spec:
   pytorchReplicaSpecs:
     Master:
@@ -11,19 +11,22 @@ spec:
         spec:
           containers:
             - name: pytorch
-              image: docker.io/deepermind/pytorch-mnist-ddp-gpu
-              resources:
+              image: gcr.io/<your_project>/pytorch_dist_mnist:latest
+              args: ["--backend", "gloo"]
+              # Comment out the below resources to use the CPU.
+              resources: 
                 limits:
                   nvidia.com/gpu: 1
     Worker:
-      replicas: 3
+      replicas: 1
       restartPolicy: OnFailure
       template:
         spec:
           containers:
             - name: pytorch
-              image: docker.io/deepermind/pytorch-mnist-ddp-gpu
+              image: gcr.io/<your_project>/pytorch_dist_mnist:latest
+              args: ["--backend", "gloo"]
+              # Comment out the below resources to use the CPU.
               resources: 
                 limits:
                   nvidia.com/gpu: 1
-
