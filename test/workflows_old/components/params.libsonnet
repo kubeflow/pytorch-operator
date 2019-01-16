@@ -1,8 +1,8 @@
 {
-  global: {},
-  // TODO(jlewi): Having the component name not match the TFJob name is confusing.
-  // Job names can't have hyphens in the name. Moving forward we should use hyphens
-  // not underscores in component names.
+  global: {
+    // User-defined global parameters; accessible to all component and environments, Ex:
+    // replicas: 4,
+  },
   components: {
     // Component-level parameters, defined initially from 'ks prototype use ...'
     // Each object below should correspond to a component in the components/ directory
@@ -11,14 +11,17 @@
       name: "some-very-very-very-very-very-long-name-jlewi-tf-k8s-presubmit-test-374-6e32",
       namespace: "kubeflow-test-infra",
       prow_env: "JOB_NAME=tf-k8s-presubmit-test,JOB_TYPE=presubmit,PULL_NUMBER=374,REPO_NAME=k8s,REPO_OWNER=tensorflow,BUILD_NUMBER=6e32",
-      versionTag: "",
-      tfJobVersion: "v1alpha2",
+      versionTag: null,
     },
-    // v1alpha2 components
     simple_pytorchjob: {
-      name: "simple-001",
+      name: "simple-pytorch-001",
       namespace: "kubeflow-test-infra",
       image: "",
-    }
+    },
+    gpu_pytorchjob: {
+      name: "simple-pytorch-gpu-001",
+      namespace: "kubeflow-test-infra",
+      image: "",
+    },
   },
 }
