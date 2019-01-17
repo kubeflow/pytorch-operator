@@ -42,10 +42,10 @@ def train(args, model, device, train_loader, optimizer, epoch, writer):
         loss.backward()
         optimizer.step()
         if batch_idx % args.log_interval == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tloss={:.4f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                 100. * batch_idx / len(train_loader), loss.item()))
-            niter = epoch*len(train_loader)+batch_idx
+            niter = epoch * len(train_loader) + batch_idx
             writer.add_scalar('loss', loss.item(), niter)
 
 def test(args, model, device, test_loader, writer, epoch):
@@ -61,11 +61,7 @@ def test(args, model, device, test_loader, writer, epoch):
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader.dataset)
-
-    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct, len(test_loader.dataset),
-        100. * correct / len(test_loader.dataset)))
-
+    print('\naccuracy={:.4f}\n'.format(float(correct) / len(test_loader.dataset)))
     writer.add_scalar('accuracy', float(correct) / len(test_loader.dataset), epoch)
 
 
@@ -137,7 +133,7 @@ def main():
     model = Net().to(device)
 
     if is_distributed():
-        Distributor = nn.parallel.DistributedDataParallel if args.no_cuda \
+        Distributor = nn.parallel.DistributedDataParallel if use_cuda \
             else nn.parallel.DistributedDataParallelCPU
         model = Distributor(model)
 
