@@ -1,7 +1,7 @@
-apiVersion: "kubeflow.org/v1beta1"
+apiVersion: "kubeflow.org/v1alpha2"
 kind: "PyTorchJob"
 metadata:
-  name: "pytorch-mpi-mnist-gpu"
+  name: "pytorch-dist-mnist-nccl"
 spec:
   pytorchReplicaSpecs:
     Master:
@@ -11,9 +11,9 @@ spec:
         spec:
           containers:
             - name: pytorch
-              image: docker.io/akado2009/mpi-mnist-gpu
-              imagePullPolicy: Always
-              resources:
+              image: gcr.io/<your_project>/pytorch_dist_mnist:latest
+              args: ["--backend", "nccl"]
+              resources: 
                 limits:
                   nvidia.com/gpu: 1
     Worker:
@@ -23,8 +23,8 @@ spec:
         spec:
           containers:
             - name: pytorch
-              image: docker.io/akado2009/mpi-mnist-gpu
-              imagePullPolicy: Always
-              resources:
+              image: gcr.io/<your_project>/pytorch_dist_mnist:latest
+              args: ["--backend", "nccl"]
+              resources: 
                 limits:
                   nvidia.com/gpu: 1
