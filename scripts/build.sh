@@ -48,4 +48,4 @@ gcloud builds submit  ./examples/smoke-dist/ --tag=${REGISTRY}/${SENDRECV_TEST_I
 
 echo "Building MNIST test image"
 MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist_test:1.0"
-gcloud builds submit  ./examples/tcp-dist/mnist/ --tag=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --project=${PROJECT}
+gcloud builds submit  ./examples/mnist/ --tag=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --project=${PROJECT}
