@@ -33,7 +33,7 @@ def run():
         # Send the result tensor back to master
         dist.send(tensor=result, dst=0)
 
-def init_processes(fn, backend='tcp'):
+def init_processes(fn, backend='gloo'):
     """ Initialize the distributed environment. """
     dist.init_process_group(backend)
     fn()
