@@ -56,7 +56,7 @@
       local goDir = testDir + "/go";
       // Source directory where all repos should be checked out
       local srcRootDir = testDir + "/src";
-      // The directory containing the kubeflow/tf-operator repo
+      // The directory containing the kubeflow/pytorch-operator repo
       local srcDir = srcRootDir + "/kubeflow/pytorch-operator";
       // The image should generally be overwritten in the prow_config.yaml file. This makes it easier
       // to ensure a consistent image is used for all workflows.
@@ -77,9 +77,10 @@
       local versionTag = if std.objectHas(params, "versionTag") && params.versionTag != "null" && std.length(params.versionTag) > 0 then
         params.versionTag
       else name;
-      local tfJobImage = params.registry + "/pytorch_operator:" + versionTag;
+      local pytorchJobImage = params.registry + "/pytorch:" + versionTag;
 
       // The test server image to use.
+      // FIX THIS
       local testServerImage = "gcr.io/kubeflow-images-staging/pytorch-operator-test-server:v20180613-e06fc0bb-dirty-5ef291";
 
       // The namespace on the cluster we spin up to deploy into.
@@ -172,8 +173,8 @@
               "--zone=" + zone,
               "--project=" + project,
               "--app_dir=" + srcDir + "/test/workflows",
-              "--params=name=" + test_name + "-" + params.tfJobVersion + ",namespace=default",
-              "--tfjob_version=" + params.tfJobVersion,
+              "--params=name=" + test_name + "-" + params.pyTorchJobVersion + ",namespace=default",
+              "--pytorchjob_version=" + params.pyTorchJobVersion,
               "--num_trials=" + num_trials,
               "--artifacts_path=" + artifactsDir,
             ]),
@@ -377,12 +378,26 @@
               "--project=" + project,
               "--namespace=" + deployNamespace,
               "--test_app_dir=" + srcDir + "/test/test-app",
-              "--image=" + tfJobImage,
-              "--tf_job_version=" + params.tfJobVersion,
+              "--image=" + pyTorchJobImage,
+              "--pytorch_job_version=" + params.pyTorchJobVersion,
               "--junit_path=" + artifactsDir + "/junit_setupkubeflow.xml",
             ]),  // setup cluster
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTestTemplate(
-              "simple-pytorchjobs-tests", 2),
+              "simple-tfjob-tests", 2),
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTestTemplate(
+              "shutdown-policy-tests"),
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTestTemplate(
+              "cleanpod-policy-tests"),
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTestTemplate(
+              "estimator-runconfig-tests"),
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTestTemplate(
+              "distributed-training-tests"),
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTestTemplate(
+              "invalid-tfjob-tests"),
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTestTemplate(
+              "replica-restart-policy-tests"),
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTestTemplate(
+              "pod-names-validation-tests"),
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", [
               "python",
               "-m",
@@ -411,7 +426,7 @@
               // Suffix will be used to give a unique file name to all XML files.
               // This will prevent different versions of the workflow from clobbering each other
               // when uploading the results to gubernator.
-              "--suffix=" + params.tfJobVersion,
+              "--suffix=" + params.pyTorchJobVersion,
             ]),  // copy-artifacts
           ],  // templates
         },

@@ -24,9 +24,9 @@ def index():
   """
   return "hello world"
 
-@APP.route("/tfconfig", methods=['GET'])
-def tf_config():
-  return os.environ.get("TF_CONFIG", "")
+@APP.route("/pytorchfontig", methods=['GET'])
+def pytorch_config():
+  return os.environ.get("PYTORCH_CONFIG", "")
 
 @APP.route("/runconfig", methods=['GET'])
 def run_config():
@@ -70,8 +70,8 @@ if __name__ == '__main__':
 
   parser.add_argument(
     "--port",
-    # By default use the same port as PyTorchJob uses so that we can use the
-    # PyTorchJob services to address the test app.
+    # By default use the same port as TFJob uses so that we can use the
+    # TFJob services to address the test app.
     default=2222,
     type=int,
     help="The port to run on.")

@@ -8,17 +8,17 @@
     // Each object below should correspond to a component in the components/ directory
     workflows: {
       bucket: "kubeflow-ci_temp",
-      name: "some-very-very-very-very-very-long-name-jlewi-tf-k8s-presubmit-test-374-6e32",
+      name: "some-very-very-very-very-very-long-name-jlewi-pytorch-k8s-presubmit-test-374-6e32",
       namespace: "kubeflow-test-infra",
-      prow_env: "JOB_NAME=tf-k8s-presubmit-test,JOB_TYPE=presubmit,PULL_NUMBER=374,REPO_NAME=k8s,REPO_OWNER=tensorflow,BUILD_NUMBER=6e32",
+      prow_env: "JOB_NAME=pytorch-k8s-presubmit-test,JOB_TYPE=presubmit,PULL_NUMBER=374,REPO_NAME=k8s,REPO_OWNER=tensorflow,BUILD_NUMBER=6e32",
       versionTag: "",
-      tfJobVersion: "v1alpha2",
+      pyTorchJobVersion: "v1alpha2",
     },
     // v1alpha2 components
-    simple_pytorchjob: {
+    simple_tfjob_v1alpha2: {
       name: "simple-001",
       namespace: "kubeflow-test-infra",
       image: "",
-    }
+    },
   },
 }
