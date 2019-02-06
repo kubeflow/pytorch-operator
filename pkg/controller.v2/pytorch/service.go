@@ -94,7 +94,7 @@ func getServiceSlices(services []*v1.Service, replicas int, logger *log.Entry) [
 func (pc *PyTorchController) createNewService(job *v1alpha2.PyTorchJob, rtype v1alpha2.PyTorchReplicaType, index string, spec *v1alpha2.PyTorchReplicaSpec) error {
 	jobKey, err := KeyFunc(job)
 	if err != nil {
-		utilruntime.HandleError(fmt.Errorf("Couldn't get key for job object %#v: %v", job, err))
+		utilruntime.HandleError(fmt.Errorf("couldn't get key for job object %#v: %v", job, err))
 		return err
 	}
 
