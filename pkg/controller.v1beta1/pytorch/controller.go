@@ -374,9 +374,14 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *v1beta1.PyTorchJob) error
 			}
 		}
 
-		// Initialize the status.
-		initializePyTorchReplicaStatuses(job, v1beta1.PyTorchReplicaTypeMaster)
-		initializePyTorchReplicaStatuses(job, v1beta1.PyTorchReplicaTypeWorker)
+		// At this point the pods may have been deleted, so if the job succeeded, we need to manually set the replica status.
+		// If any replicas are still Active, set their status to succeeded.
+		if isSucceeded(job.Status) {
+			for rtype, _ := range job.Status.ReplicaStatuses {
+				job.Status.ReplicaStatuses[rtype].Succeeded += job.Status.ReplicaStatuses[rtype].Active
+				job.Status.ReplicaStatuses[rtype].Active = 0
+			}
+		}
 		return pc.updateStatusHandler(job)
 	}
 
