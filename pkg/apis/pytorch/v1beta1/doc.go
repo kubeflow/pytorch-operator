@@ -15,6 +15,6 @@
 // +k8s:deepcopy-gen=package,register
 // +k8s:defaulter-gen=TypeMeta
 
-// Package v1beta1 is the v1alpha2 version of the API.
+// Package v1beta1 is the v1beta1 version of the API.
 // +groupName=kubeflow.org
 package v1beta1

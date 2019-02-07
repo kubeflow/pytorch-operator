@@ -33,8 +33,6 @@ mkdir -p ${GOPATH}/src/github.com/${REPO_OWNER}
 ln -s ${PWD} ${GO_DIR}
 cd ${GO_DIR}
 
-echo "Build pytorch operator v1alpha2 binary"
-go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v2
 echo "Build pytorch operator v1beta1 binary"
 go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1beta1
 
