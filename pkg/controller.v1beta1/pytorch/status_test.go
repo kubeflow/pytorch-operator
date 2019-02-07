@@ -19,13 +19,39 @@ import (
 	"testing"
 
 	"k8s.io/api/core/v1"
+	kubeclientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/record"
+	"k8s.io/kubernetes/pkg/controller"
 
+	"github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1beta1/app/options"
 	v1beta1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta1"
+	jobclientset "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
 	"github.com/kubeflow/pytorch-operator/pkg/common/util/testutil"
 	common "github.com/kubeflow/tf-operator/pkg/apis/common/v1beta1"
 )
 
 func TestFailed(t *testing.T) {
+
+	kubeClientSet := kubeclientset.NewForConfigOrDie(&rest.Config{
+		Host: "",
+		ContentConfig: rest.ContentConfig{
+			GroupVersion: &v1.SchemeGroupVersion,
+		},
+	},
+	)
+	config := &rest.Config{
+		Host: "",
+		ContentConfig: rest.ContentConfig{
+			GroupVersion: &v1beta1.SchemeGroupVersion,
+		},
+	}
+	jobClientSet := jobclientset.NewForConfigOrDie(config)
+	ctr, _, _ := newPyTorchController(config, kubeClientSet, jobClientSet, controller.NoResyncPeriodFunc, options.ServerOption{})
+	ctr.jobInformerSynced = testutil.AlwaysReady
+	ctr.PodInformerSynced = testutil.AlwaysReady
+	ctr.ServiceInformerSynced = testutil.AlwaysReady
+
 	job := testutil.NewPyTorchJobWithMaster(3)
 	initializePyTorchReplicaStatuses(job, v1beta1.PyTorchReplicaTypeWorker)
 	pod := testutil.NewBasePod("pod", job, t)
@@ -34,7 +60,7 @@ func TestFailed(t *testing.T) {
 	if job.Status.ReplicaStatuses[common.ReplicaType(v1beta1.PyTorchReplicaTypeWorker)].Failed != 1 {
 		t.Errorf("Failed to set the failed to 1")
 	}
-	err := updateStatusSingle(job, v1beta1.PyTorchReplicaTypeWorker, 3, false)
+	err := ctr.updateStatusSingle(job, v1beta1.PyTorchReplicaTypeWorker, 3, false)
 	if err != nil {
 		t.Errorf("Expected error %v to be nil", err)
 	}
@@ -178,6 +204,32 @@ func TestStatus(t *testing.T) {
 	}
 
 	for i, c := range testCases {
+
+		kubeClientSet := kubeclientset.NewForConfigOrDie(&rest.Config{
+			Host: "",
+			ContentConfig: rest.ContentConfig{
+				GroupVersion: &v1.SchemeGroupVersion,
+			},
+		},
+		)
+		config := &rest.Config{
+			Host: "",
+			ContentConfig: rest.ContentConfig{
+				GroupVersion: &v1beta1.SchemeGroupVersion,
+			},
+		}
+		jobClientSet := jobclientset.NewForConfigOrDie(config)
+		ctr, _, _ := newPyTorchController(config, kubeClientSet, jobClientSet, controller.NoResyncPeriodFunc, options.ServerOption{})
+		fakePodControl := &controller.FakePodControl{}
+		ctr.PodControl = fakePodControl
+		ctr.Recorder = &record.FakeRecorder{}
+		ctr.jobInformerSynced = testutil.AlwaysReady
+		ctr.PodInformerSynced = testutil.AlwaysReady
+		ctr.ServiceInformerSynced = testutil.AlwaysReady
+		ctr.updateStatusHandler = func(job *v1beta1.PyTorchJob) error {
+			return nil
+		}
+
 		initializePyTorchReplicaStatuses(c.job, v1beta1.PyTorchReplicaTypeWorker)
 		initializePyTorchReplicaStatuses(c.job, v1beta1.PyTorchReplicaTypeMaster)
 
@@ -185,13 +237,13 @@ func TestStatus(t *testing.T) {
 		setStatusForTest(c.job, v1beta1.PyTorchReplicaTypeWorker, c.expectedFailedWorker, c.expectedSucceededWorker, c.expectedActiveWorker, t)
 
 		if _, ok := c.job.Spec.PyTorchReplicaSpecs[v1beta1.PyTorchReplicaTypeMaster]; ok {
-			err := updateStatusSingle(c.job, v1beta1.PyTorchReplicaTypeMaster, 1, c.restart)
+			err := ctr.updateStatusSingle(c.job, v1beta1.PyTorchReplicaTypeMaster, 1, c.restart)
 			if err != nil {
 				t.Errorf("%s: Expected error %v to be nil", c.description, err)
 			}
 			if c.job.Spec.PyTorchReplicaSpecs[v1beta1.PyTorchReplicaTypeWorker] != nil {
 				replicas := c.job.Spec.PyTorchReplicaSpecs[v1beta1.PyTorchReplicaTypeWorker].Replicas
-				err := updateStatusSingle(c.job, v1beta1.PyTorchReplicaTypeWorker, int(*replicas), c.restart)
+				err := ctr.updateStatusSingle(c.job, v1beta1.PyTorchReplicaTypeWorker, int(*replicas), c.restart)
 				if err != nil {
 					t.Errorf("%s: Expected error %v to be nil", c.description, err)
 				}

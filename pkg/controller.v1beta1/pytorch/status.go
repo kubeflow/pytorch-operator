@@ -41,7 +41,7 @@ const (
 )
 
 // updateStatus updates the status of the job.
-func updateStatusSingle(job *v1beta1.PyTorchJob, rtype v1beta1.PyTorchReplicaType, replicas int, restart bool) error {
+func (pc *PyTorchController) updateStatusSingle(job *v1beta1.PyTorchJob, rtype v1beta1.PyTorchReplicaType, replicas int, restart bool) error {
 	// Expect to have `replicas - succeeded` pods alive.
 	commonType := common.ReplicaType(rtype)
 	expected := replicas - int(job.Status.ReplicaStatuses[commonType].Succeeded)
@@ -68,6 +68,7 @@ func updateStatusSingle(job *v1beta1.PyTorchJob, rtype v1beta1.PyTorchReplicaTyp
 			}
 			if expected == 0 {
 				msg := fmt.Sprintf("PyTorchJob %s is successfully completed.", job.Name)
+				pc.Recorder.Event(job, v1.EventTypeNormal, pytorchJobSucceededReason, msg)
 				if job.Status.CompletionTime == nil {
 					now := metav1.Now()
 					job.Status.CompletionTime = &now
@@ -86,14 +87,16 @@ func updateStatusSingle(job *v1beta1.PyTorchJob, rtype v1beta1.PyTorchReplicaTyp
 
 	if failed > 0 {
 		if restart {
-			msg := fmt.Sprintf("PyTorchJob %s is restarting.", job.Name)
+			msg := fmt.Sprintf("PyTorchJob %s is restarting because %d %s replica(s) failed.", job.Name, failed, rtype)
+			pc.Recorder.Event(job, v1.EventTypeWarning, pytorchJobRestartingReason, msg)
 			err := updatePyTorchJobConditions(job, common.JobRestarting, pytorchJobRestartingReason, msg)
 			if err != nil {
 				pylogger.LoggerForJob(job).Infof("Append job condition error: %v", err)
 				return err
 			}
 		} else {
-			msg := fmt.Sprintf("PyTorchJob %s is failed.", job.Name)
+			msg := fmt.Sprintf("PyTorchJob %s is failed because %d %s replica(s) failed.", job.Name, failed, rtype)
+			pc.Recorder.Event(job, v1.EventTypeNormal, pytorchJobFailedReason, msg)
 			if job.Status.CompletionTime == nil {
 				now := metav1.Now()
 				job.Status.CompletionTime = &now
