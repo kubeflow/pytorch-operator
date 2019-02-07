@@ -227,28 +227,6 @@
                 ],
                 [
                   {
-                    name: "setup-v1alpha2",
-                    template: "setup-v1alpha2",
-                  },
-                ],
-                [
-                  {
-                    name: "run-v1alpha2-defaults",
-                    template: "run-v1alpha2-defaults",
-                  },
-                  {
-                    name: "run-v1alpha2-cleanpodpolicy-all",
-                    template: "run-v1alpha2-cleanpodpolicy-all",
-                  },
-                ],
-                [
-                  {
-                    name: "delete-v1alpha2",
-                    template: "delete-v1alpha2",
-                  },
-                ],
-                [
-                  {
                     name: "setup-v1beta1",
                     template: "setup-v1beta1",
                   },
@@ -311,18 +289,6 @@
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-kubeflow", testWorkerImage, [
               "scripts/setup-kubeflow.sh",
             ]),  // setup kubeflow
-            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-v1alpha2", testWorkerImage, [
-              "scripts/v1alpha2/setup-v1alpha2.sh",
-            ]),  // setup operator v1alpha2 version
-            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1alpha2-defaults", testWorkerImage, [
-              "scripts/v1alpha2/run-defaults.sh",
-            ]),  // run v1alpha2 default tests
-            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1alpha2-cleanpodpolicy-all", testWorkerImage, [
-              "scripts/v1alpha2/run-cleanpodpolicy-all.sh",
-            ]),  // run v1alpha2 cleanpodpolicy tests
-            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("delete-v1alpha2", testWorkerImage, [
-              "scripts/v1alpha2/delete-v1alpha2.sh",
-            ]),  // delete operator v1alpha2 version
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-v1beta1", testWorkerImage, [
               "scripts/v1beta1/setup-v1beta1.sh",
             ]),  // setup operator v1beta1 version
