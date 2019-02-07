@@ -81,7 +81,7 @@ func updateStatusSingle(job *v1beta1.PyTorchJob, rtype v1beta1.PyTorchReplicaTyp
 		}
 	} else {
 		pylogger.LoggerForJob(job).Info("Invalid config: Job must contain master replica spec")
-		return errors.New("Invalid config: Job must contain master replica spec")
+		return errors.New("invalid config: Job must contain master replica spec")
 	}
 
 	if failed > 0 {

@@ -10,7 +10,7 @@
       "varcheck",
       "gosec",
       "staticcheck",
-      "gosimple",
+      "gotype",
       "lll",
       "unconvert",
       "misspell",
@@ -24,6 +24,6 @@
       "comment or be unexported",
       "comment on exported"
     ],
-    "Deadline": "300s",
+    "Deadline": "600s",
     "Skip": ["pkg/client"]
   }

@@ -136,7 +136,7 @@ func (pc *PyTorchController) createNewPod(job *v1beta1.PyTorchJob, rtype v1beta1
 	rt := strings.ToLower(string(rtype))
 	jobKey, err := KeyFunc(job)
 	if err != nil {
-		utilruntime.HandleError(fmt.Errorf("Couldn't get key for job object %#v: %v", job, err))
+		utilruntime.HandleError(fmt.Errorf("couldn't get key for job object %#v: %v", job, err))
 		return err
 	}
 	expectationPodsKey := jobcontroller.GenExpectationPodsKey(jobKey, rt)
@@ -212,7 +212,7 @@ func setClusterSpec(podTemplateSpec *v1.PodTemplateSpec, job *v1beta1.PyTorchJob
 	masterAddr := jobcontroller.GenGeneralName(job.Name, strings.ToLower(string(v1beta1.PyTorchReplicaTypeMaster)), strconv.Itoa(0))
 	if rtype == v1beta1.PyTorchReplicaTypeMaster {
 		if rank != 0 {
-			return errors.New("Invalid config: There should be only a single master with index=0")
+			return errors.New("invalid config: There should be only a single master with index=0")
 		}
 		masterAddr = "localhost"
 	} else {

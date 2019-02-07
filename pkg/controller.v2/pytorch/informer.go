@@ -26,9 +26,9 @@ const (
 )
 
 var (
-	errGetFromKey    = fmt.Errorf("Failed to get PyTorchJob from key")
-	errNotExists     = fmt.Errorf("The object is not found")
-	errFailedMarshal = fmt.Errorf("Failed to marshal the object to PyTorchJob")
+	errGetFromKey    = fmt.Errorf("failed to get PyTorchJob from key")
+	errNotExists     = fmt.Errorf("the object is not found")
+	errFailedMarshal = fmt.Errorf("failed to marshal the object to PyTorchJob")
 )
 
 func NewUnstructuredPyTorchJobInformer(restConfig *restclientset.Config, namespace string) jobinformersv1alpha2.PyTorchJobInformer {

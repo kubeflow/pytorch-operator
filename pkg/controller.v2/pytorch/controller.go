@@ -251,7 +251,7 @@ func (pc *PyTorchController) processNextWorkItem() bool {
 		return true
 	}
 
-	utilruntime.HandleError(fmt.Errorf("Error syncing job: %v", err))
+	utilruntime.HandleError(fmt.Errorf("error syncing job: %v", err))
 	pc.WorkQueue.AddRateLimited(key)
 
 	return true
@@ -260,7 +260,7 @@ func (pc *PyTorchController) processNextWorkItem() bool {
 func (pc *PyTorchController) enqueuePyTorchJob(job interface{}) {
 	key, err := KeyFunc(job)
 	if err != nil {
-		utilruntime.HandleError(fmt.Errorf("Couldn't get key for job object %#v: %v", job, err))
+		utilruntime.HandleError(fmt.Errorf("couldn't get key for job object %#v: %v", job, err))
 		return
 	}
 
@@ -408,7 +408,7 @@ func (pc *PyTorchController) satisfiedExpectations(job *v1alpha2.PyTorchJob) boo
 	satisfied := false
 	jobKey, err := KeyFunc(job)
 	if err != nil {
-		utilruntime.HandleError(fmt.Errorf("Couldn't get key for job object %#v: %v", job, err))
+		utilruntime.HandleError(fmt.Errorf("couldn't get key for job object %#v: %v", job, err))
 		return false
 	}
 
