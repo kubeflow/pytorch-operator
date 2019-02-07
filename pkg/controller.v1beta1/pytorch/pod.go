@@ -106,7 +106,7 @@ func (pc *PyTorchController) reconcilePods(
 		}
 	}
 
-	return updateStatusSingle(job, rtype, replicas, restart)
+	return pc.updateStatusSingle(job, rtype, replicas, restart)
 }
 
 // getPodSlices returns a slice, which element is the slice of pod.
