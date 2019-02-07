@@ -24,6 +24,6 @@
       "comment or be unexported",
       "comment on exported"
     ],
-    "Deadline": "500s",
+    "Deadline": "600s",
     "Skip": ["pkg/client"]
   }
