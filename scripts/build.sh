@@ -36,6 +36,9 @@ cd ${GO_DIR}
 echo "Build pytorch operator v1beta1 binary"
 go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1beta1
 
+echo "Build pytorch operator v1beta2 binary"
+go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1beta2
+
 echo "Building PyTorch operator in gcloud"
 gcloud version
 gcloud builds submit . --tag=${REGISTRY}/${REPO_NAME}:${VERSION} --project=${PROJECT}
