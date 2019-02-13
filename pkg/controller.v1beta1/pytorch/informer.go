@@ -16,7 +16,7 @@ import (
 	"github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/validation"
 	jobinformers "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions"
 	jobinformersv1beta1 "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions/pytorch/v1beta1"
-	"github.com/kubeflow/pytorch-operator/pkg/common/util/unstructured"
+	"github.com/kubeflow/pytorch-operator/pkg/common/util/v1beta1/unstructured"
 	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
 )
 

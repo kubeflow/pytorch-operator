@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	v1beta1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta1"
+	v1beta2 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta2"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )
@@ -53,6 +54,10 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 	// Group=kubeflow.org, Version=v1beta1
 	case v1beta1.SchemeGroupVersion.WithResource("pytorchjobs"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubeflow().V1beta1().PyTorchJobs().Informer()}, nil
+
+		// Group=kubeflow.org, Version=v1beta2
+	case v1beta2.SchemeGroupVersion.WithResource("pytorchjobs"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubeflow().V1beta2().PyTorchJobs().Informer()}, nil
 
 	}
 

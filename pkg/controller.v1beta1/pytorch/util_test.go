@@ -21,7 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	v1beta1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta1"
-	"github.com/kubeflow/pytorch-operator/pkg/common/util/testutil"
+	"github.com/kubeflow/pytorch-operator/pkg/common/util/v1beta1/testutil"
 )
 
 func TestGenOwnerReference(t *testing.T) {
