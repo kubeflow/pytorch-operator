@@ -392,7 +392,7 @@ func TestSyncPdb(t *testing.T) {
 		expectPdb *apiv1beta1.PodDisruptionBudget
 	}
 
-	minAvailable2 := intstr.FromInt(2)
+	minAvailable := intstr.FromInt(1)
 	testCases := []testCase{
 		{
 			job: &v1beta1.PyTorchJob{
@@ -407,24 +407,9 @@ func TestSyncPdb(t *testing.T) {
 					},
 				},
 			},
-			expectPdb: nil,
-		},
-		{
-			job: &v1beta1.PyTorchJob{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "test-sync-pdb",
-				},
-				Spec: v1beta1.PyTorchJobSpec{
-					PyTorchReplicaSpecs: map[v1beta1.PyTorchReplicaType]*common.ReplicaSpec{
-						v1beta1.PyTorchReplicaTypeWorker: &common.ReplicaSpec{
-							Replicas: proto.Int32(2),
-						},
-					},
-				},
-			},
 			expectPdb: &apiv1beta1.PodDisruptionBudget{
 				Spec: apiv1beta1.PodDisruptionBudgetSpec{
-					MinAvailable: &minAvailable2,
+					MinAvailable: &minAvailable,
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
 							"pytorch_job_name": "test-sync-pdb",

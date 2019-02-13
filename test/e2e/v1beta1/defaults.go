@@ -16,7 +16,7 @@ import (
 	torchjobclient "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
 	"github.com/kubeflow/pytorch-operator/pkg/util"
 	common "github.com/kubeflow/tf-operator/pkg/apis/common/v1beta1"
-	"github.com/kubeflow/tf-operator/pkg/controller.v2/jobcontroller"
+	"github.com/kubeflow/tf-operator/pkg/common/jobcontroller"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	k8s_errors "k8s.io/apimachinery/pkg/api/errors"

@@ -35,8 +35,8 @@ import (
 	jobclientset "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
 	jobscheme "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned/scheme"
 	jobinformers "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions"
-	jobinformersv1beta1 "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions/kubeflow/v1beta1"
-	joblisters "github.com/kubeflow/pytorch-operator/pkg/client/listers/kubeflow/v1beta1"
+	jobinformersv1beta1 "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions/pytorch/v1beta1"
+	joblisters "github.com/kubeflow/pytorch-operator/pkg/client/listers/pytorch/v1beta1"
 	"github.com/kubeflow/tf-operator/pkg/common/jobcontroller"
 	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
 )
