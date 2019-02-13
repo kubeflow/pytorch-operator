@@ -5,9 +5,9 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	restclientset "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
@@ -15,7 +15,7 @@ import (
 	v1beta1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta1"
 	"github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/validation"
 	jobinformers "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions"
-	jobinformersv1beta1 "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions/kubeflow/v1beta1"
+	jobinformersv1beta1 "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions/pytorch/v1beta1"
 	"github.com/kubeflow/pytorch-operator/pkg/common/util/unstructured"
 	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
 )
@@ -32,18 +32,17 @@ var (
 )
 
 func NewUnstructuredPyTorchJobInformer(restConfig *restclientset.Config, namespace string) jobinformersv1beta1.PyTorchJobInformer {
-	dynClientPool := dynamic.NewDynamicClientPool(restConfig)
-	dclient, err := dynClientPool.ClientForGroupVersionKind(v1beta1.SchemeGroupVersionKind)
+	dclient, err := dynamic.NewForConfig(restConfig)
 	if err != nil {
 		panic(err)
 	}
-	resource := &metav1.APIResource{
-		Name:         v1beta1.Plural,
-		SingularName: v1beta1.Singular,
-		Namespaced:   true,
-		Group:        v1beta1.GroupName,
-		Version:      v1beta1.GroupVersion,
+
+	resource := schema.GroupVersionResource{
+		Group:    v1beta1.GroupName,
+		Version:  v1beta1.GroupVersion,
+		Resource: v1beta1.Plural,
 	}
+
 	informer := unstructured.NewPyTorchJobInformer(
 		resource,
 		dclient,
