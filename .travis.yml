@@ -14,6 +14,7 @@ install:
 
 script:
   - go build -o pytorch-operator.v1beta1 github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1beta1
+  - go build -o pytorch-operator.v1beta2 github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1beta2
   - gometalinter --config=linter_config.json ./pkg/...
   # We customize the build step because by default
   # Travis runs go test -v ./... which will include the vendor

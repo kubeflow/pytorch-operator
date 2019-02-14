@@ -35,7 +35,7 @@ import (
 	v1beta1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta1"
 	jobclientset "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
 	jobinformers "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions"
-	"github.com/kubeflow/pytorch-operator/pkg/common/util/testutil"
+	"github.com/kubeflow/pytorch-operator/pkg/common/util/v1beta1/testutil"
 	common "github.com/kubeflow/tf-operator/pkg/apis/common/v1beta1"
 	"github.com/kubeflow/tf-operator/pkg/control"
 )

@@ -26,7 +26,7 @@ import (
 	"github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1beta1/app/options"
 	v1beta1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta1"
 	jobclientset "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
-	"github.com/kubeflow/pytorch-operator/pkg/common/util/testutil"
+	"github.com/kubeflow/pytorch-operator/pkg/common/util/v1beta1/testutil"
 )
 
 func TestAddService(t *testing.T) {

@@ -211,10 +211,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:5cb378ccfbe7488deb6edaaf6d3170939f8aa2251c6b372ee487ed9af81a93cd"
+  digest = "1:db9b2658df733c976b9b71834154d7571eccb11853c7c55bb10e0481be0aeadc"
   name = "github.com/kubeflow/tf-operator"
   packages = [
     "pkg/apis/common/v1beta1",
+    "pkg/apis/common/v1beta2",
     "pkg/common/jobcontroller",
     "pkg/control",
     "pkg/logger",
@@ -862,9 +863,9 @@
   analyzer-version = 1
   input-imports = [
     "github.com/gogo/protobuf/proto",
-    "github.com/golang/glog",
     "github.com/golang/protobuf/proto",
     "github.com/kubeflow/tf-operator/pkg/apis/common/v1beta1",
+    "github.com/kubeflow/tf-operator/pkg/apis/common/v1beta2",
     "github.com/kubeflow/tf-operator/pkg/common/jobcontroller",
     "github.com/kubeflow/tf-operator/pkg/control",
     "github.com/kubeflow/tf-operator/pkg/logger",
