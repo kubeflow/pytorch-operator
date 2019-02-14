@@ -98,6 +98,18 @@ func (c *FakePyTorchJobs) Update(pyTorchJob *v1beta2.PyTorchJob) (result *v1beta
 	return obj.(*v1beta2.PyTorchJob), err
 }
 
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+func (c *FakePyTorchJobs) UpdateStatus(pyTorchJob *v1beta2.PyTorchJob) (*v1beta2.PyTorchJob, error) {
+	obj, err := c.Fake.
+		Invokes(testing.NewUpdateSubresourceAction(pytorchjobsResource, "status", c.ns, pyTorchJob), &v1beta2.PyTorchJob{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1beta2.PyTorchJob), err
+}
+
 // Delete takes name of the pyTorchJob and deletes it. Returns an error if one occurs.
 func (c *FakePyTorchJobs) Delete(name string, options *v1.DeleteOptions) error {
 	_, err := c.Fake.

@@ -65,7 +65,7 @@ func (pc *PyTorchController) addPyTorchJob(obj interface{}) {
 					logger.Errorf("Could not set nested field: %v", err1)
 				}
 				logger.Infof("Updating the job to: %+v", un.Object)
-				err = client.Update(un, v1beta2.Plural)
+				err = client.UpdateStatus(un, v1beta2.Plural)
 				if err != nil {
 					logger.Errorf("Could not update the PyTorchJob: %v", err)
 				}

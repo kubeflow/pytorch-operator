@@ -35,6 +35,7 @@ type PyTorchJobsGetter interface {
 type PyTorchJobInterface interface {
 	Create(*v1beta2.PyTorchJob) (*v1beta2.PyTorchJob, error)
 	Update(*v1beta2.PyTorchJob) (*v1beta2.PyTorchJob, error)
+	UpdateStatus(*v1beta2.PyTorchJob) (*v1beta2.PyTorchJob, error)
 	Delete(name string, options *v1.DeleteOptions) error
 	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string, options v1.GetOptions) (*v1beta2.PyTorchJob, error)
@@ -112,6 +113,22 @@ func (c *pyTorchJobs) Update(pyTorchJob *v1beta2.PyTorchJob) (result *v1beta2.Py
 		Namespace(c.ns).
 		Resource("pytorchjobs").
 		Name(pyTorchJob.Name).
+		Body(pyTorchJob).
+		Do().
+		Into(result)
+	return
+}
+
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+
+func (c *pyTorchJobs) UpdateStatus(pyTorchJob *v1beta2.PyTorchJob) (result *v1beta2.PyTorchJob, err error) {
+	result = &v1beta2.PyTorchJob{}
+	err = c.client.Put().
+		Namespace(c.ns).
+		Resource("pytorchjobs").
+		Name(pyTorchJob.Name).
+		SubResource("status").
 		Body(pyTorchJob).
 		Do().
 		Into(result)
