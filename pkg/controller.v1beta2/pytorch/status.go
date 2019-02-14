@@ -113,7 +113,7 @@ func (pc *PyTorchController) updateStatusSingle(job *v1beta2.PyTorchJob, rtype v
 
 // updatePyTorchJobStatus updates the status of the given PyTorchJob.
 func (pc *PyTorchController) updatePyTorchJobStatus(job *v1beta2.PyTorchJob) error {
-	_, err := pc.jobClientSet.KubeflowV1beta2().PyTorchJobs(job.Namespace).Update(job)
+	_, err := pc.jobClientSet.KubeflowV1beta2().PyTorchJobs(job.Namespace).UpdateStatus(job)
 	return err
 }
 
