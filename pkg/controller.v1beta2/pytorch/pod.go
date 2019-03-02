@@ -51,6 +51,29 @@ func (pc *PyTorchController) reconcilePods(
 	// Convert PyTorchReplicaType to lower string.
 	rt := strings.ToLower(string(rtype))
 	logger := pylogger.LoggerForReplica(job, rt)
+	if rtype == v1beta2.PyTorchReplicaTypeWorker {
+		if ContainMasterSpec(job) {
+			masterPod, err := pc.FilterPodsForReplicaType(pods, strings.ToLower(string(v1beta2.PyTorchReplicaTypeMaster)))
+			if err != nil {
+				return err
+			}
+			if len(masterPod) > 1 {
+				pylogger.LoggerForJob(job).Info("Invalid config: Job must contain only one master pod")
+				return errors.New("Invalid config: Job must contain only one master pod")
+			} else if len(masterPod) == 1 {
+				if masterPod[0].Status.Phase != v1.PodRunning {
+					pylogger.LoggerForJob(job).Info("Master Pod is created but not yet in running phase")
+					return nil
+				}
+			} else {
+				pylogger.LoggerForJob(job).Info("Master Pod is not yet created")
+				return nil
+			}
+		} else {
+			pylogger.LoggerForJob(job).Info("Invalid config: Job must contain master replica spec")
+			return errors.New("invalid config: Job must contain master replica spec")
+		}
+	}
 	// Get all pods for the type rt.
 	pods, err := pc.FilterPodsForReplicaType(pods, rt)
 	if err != nil {
