@@ -247,6 +247,28 @@
                     template: "delete-v1beta1",
                   },
                 ],
+                [
+                  {
+                    name: "setup-v1beta2",
+                    template: "setup-v1beta2",
+                  },
+                ],
+                [
+                  {
+                    name: "run-v1beta2-defaults",
+                    template: "run-v1beta2-defaults",
+                  },
+                  {
+                    name: "run-v1beta2-cleanpodpolicy-all",
+                    template: "run-v1beta2-cleanpodpolicy-all",
+                  },
+                ],
+                [
+                  {
+                    name: "delete-v1beta2",
+                    template: "delete-v1beta2",
+                  },
+                ],
               ],
             },
             {
@@ -301,6 +323,19 @@
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("delete-v1beta1", testWorkerImage, [
               "scripts/v1beta1/delete-v1beta1.sh",
             ]),  // delete operator v1beta1 version
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-v1beta2", testWorkerImage, [
+              "scripts/v1beta2/setup-v1beta2.sh",
+            ]),  // setup operator v1beta2 version
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1beta2-defaults", testWorkerImage, [
+              "scripts/v1beta2/run-defaults.sh",
+            ]),  // run v1beta2 default tests
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1beta2-cleanpodpolicy-all", testWorkerImage, [
+              "scripts/v1beta2/run-cleanpodpolicy-all.sh",
+            ]),  // run v1beta2 cleanpodpolicy tests
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("delete-v1beta2", testWorkerImage, [
+              "scripts/v1beta2/delete-v1beta2.sh",
+            ]),  // delete operator v1beta2 version
+
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", testWorkerImage, [
               "python",
               "-m",

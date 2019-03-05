@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This shell script is used to run a default pytorch job
+# This shell script is used to run a pytorch job with custom cleanpod policies
 
 
 set -o errexit
@@ -38,13 +38,14 @@ echo "Configuring kubectl"
 gcloud --project ${PROJECT} container clusters get-credentials ${CLUSTER_NAME} \
     --zone ${ZONE}
 
+
 cd ${GO_DIR}
 
 echo "Running smoke test"
 SENDRECV_TEST_IMAGE_TAG="pytorch-dist-sendrecv-test:v1.0"
-go run ./test/e2e/v1beta1/defaults.go --namespace=${NAMESPACE} --image=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --name=sendrecvjob-cleannone
+go run ./test/e2e/v1beta2/cleanpolicy_all.go --namespace=${NAMESPACE} --image=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --name=sendrecvjob-cleanall
 
 echo "Running mnist test"
 MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist-test:v1.0"
-go run ./test/e2e/v1beta1/defaults.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob-cleannone
+go run ./test/e2e/v1beta2/cleanpolicy_all.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob-cleanall
 
