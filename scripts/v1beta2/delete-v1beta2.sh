@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2018 The Kubernetes Authors.
+# Copyright 2018 The Kubeflow Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This shell script is used to run a default pytorch job
-
+# This shell script is used to setup pytorch v1beta2
 
 set -o errexit
 set -o nounset
@@ -38,13 +37,7 @@ echo "Configuring kubectl"
 gcloud --project ${PROJECT} container clusters get-credentials ${CLUSTER_NAME} \
     --zone ${ZONE}
 
-cd ${GO_DIR}
-
-echo "Running smoke test"
-SENDRECV_TEST_IMAGE_TAG="pytorch-dist-sendrecv-test:v1.0"
-go run ./test/e2e/v1beta1/defaults.go --namespace=${NAMESPACE} --image=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --name=sendrecvjob-cleannone
-
-echo "Running mnist test"
-MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist-test:v1.0"
-go run ./test/e2e/v1beta1/defaults.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob-cleannone
+cd ${APP_NAME}
+echo "Uninstall PyTorch v1beta2 operator"
+/usr/local/bin/ks delete ${KF_ENV} -c pytorch-operator
 
