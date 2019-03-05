@@ -59,7 +59,7 @@ func (pc *PyTorchController) reconcilePods(
 			}
 			if len(masterPod) > 1 {
 				pylogger.LoggerForJob(job).Info("Invalid config: Job must contain only one master pod")
-				return errors.New("Invalid config: Job must contain only one master pod")
+				return errors.New("invalid config: Job must contain only one master pod")
 			} else if len(masterPod) == 1 {
 				if masterPod[0].Status.Phase != v1.PodRunning {
 					pylogger.LoggerForJob(job).Info("Master Pod is created but not yet in running phase")
