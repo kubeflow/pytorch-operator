@@ -29,8 +29,8 @@ import (
 )
 
 const (
-	LabelGroupName      = "group_name"
-	LabelPyTorchJobName = "pytorch_job_name"
+	LabelGroupName      = "group-name"
+	LabelPyTorchJobName = "pytorch-job-name"
 )
 
 var (

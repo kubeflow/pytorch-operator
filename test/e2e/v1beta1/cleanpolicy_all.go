@@ -146,8 +146,8 @@ func run() (string, error) {
 	}
 
 	l := map[string]string{
-		"group_name":       v1beta1.GroupName,
-		"pytorch_job_name": strings.Replace(*name, "/", "-", -1),
+		"group-name":       v1beta1.GroupName,
+		"pytorch-job-name": strings.Replace(*name, "/", "-", -1),
 	}
 
 	labels := make([]string, 0, len(l))

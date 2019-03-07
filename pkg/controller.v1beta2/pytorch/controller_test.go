@@ -414,7 +414,7 @@ func TestSyncPdb(t *testing.T) {
 					MinAvailable: &minAvailable,
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"pytorch_job_name": "test-sync-pdb",
+							"pytorch-job-name": "test-sync-pdb",
 						},
 					},
 				},

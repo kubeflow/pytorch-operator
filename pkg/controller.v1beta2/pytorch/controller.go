@@ -47,9 +47,9 @@ const (
 	// labels for pods and servers.
 	replicaTypeLabel    = "pytorch-replica-type"
 	replicaIndexLabel   = "pytorch-replica-index"
-	labelGroupName      = "group_name"
-	labelPyTorchJobName = "pytorch_job_name"
-	labelPyTorchJobRole = "pytorch_job_role"
+	labelGroupName      = "group-name"
+	labelPyTorchJobName = "pytorch-job-name"
+	labelPyTorchJobRole = "pytorch-job-role"
 )
 
 var (
