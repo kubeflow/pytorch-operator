@@ -32,12 +32,12 @@ kubectl create -f examples/mnist/v1beta1/pytorch_job_mnist_gloo.yaml
 You should now be able to see the created pods matching the specified number of replicas.
 
 ```
-kubectl get pods -l pytorch_job_name=pytorch-dist-mnist
+kubectl get pods -l pytorch-job-name=pytorch-dist-mnist
 ```
 Training should run for about 10 epochs and takes 5-10 minutes on a cpu cluster. Logs can be inspected to see its training progress. 
 
 ```
-PODNAME=$(kubectl get pods -l pytorch_job_name=pytorch-dist-mnist,task_index=0 -o name)
+PODNAME=$(kubectl get pods -l pytorch-job-name=pytorch-dist-mnist,task_index=0 -o name)
 kubectl logs -f ${PODNAME}
 ```
 ## Monitoring a PyTorch Job
