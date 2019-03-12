@@ -51,6 +51,7 @@ func (pc *PyTorchController) reconcilePods(
 	// Convert PyTorchReplicaType to lower string.
 	rt := strings.ToLower(string(rtype))
 	logger := pylogger.LoggerForReplica(job, rt)
+	// Workers are started only when master pod is in running state
 	if rtype == v1beta2.PyTorchReplicaTypeWorker {
 		if ContainMasterSpec(job) {
 			masterPod, err := pc.FilterPodsForReplicaType(pods, strings.ToLower(string(v1beta2.PyTorchReplicaTypeMaster)))
