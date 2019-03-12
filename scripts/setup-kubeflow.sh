@@ -52,3 +52,13 @@ cd ${APP_NAME}
 
 echo "Install PyTorch ksonnet package"
 /usr/local/bin/ks pkg install kubeflow/pytorch-job@${KUBEFLOW_VERSION}
+
+echo "Install PyTorch operator"
+/usr/local/bin/ks generate pytorch-operator pytorch-operator --pytorchJobImage=${REGISTRY}/${REPO_NAME}:${VERSION}
+/usr/local/bin/ks apply ${KF_ENV} -c pytorch-operator
+
+TIMEOUT=30
+until kubectl get pods -n ${NAMESPACE} | grep pytorch-operator | grep 1/1 || [[ $TIMEOUT -eq 1 ]]; do
+  sleep 10
+  TIMEOUT=$(( TIMEOUT - 1 ))
+done
