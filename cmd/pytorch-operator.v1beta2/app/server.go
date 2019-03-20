@@ -21,7 +21,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
-	crdclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubeinformers "k8s.io/client-go/informers"
 	kubeclientset "k8s.io/client-go/kubernetes"
@@ -91,7 +91,10 @@ func Run(opt *options.ServerOption) error {
 	if err != nil {
 		return err
 	}
-
+	if !checkCRDExists(pytorchJobClientSet, opt.Namespace) {
+		log.Info("CRD doesn't exist. Exiting")
+		os.Exit(1)
+	}
 	// Create informer factory.
 	kubeInformerFactory := kubeinformers.NewFilteredSharedInformerFactory(kubeClientSet, resyncPeriod, opt.Namespace, nil)
 	pytorchJobInformerFactory := jobinformers.NewSharedInformerFactory(pytorchJobClientSet, resyncPeriod)
@@ -156,14 +159,6 @@ func Run(opt *options.ServerOption) error {
 
 func createClientSets(config *restclientset.Config) (kubeclientset.Interface, kubeclientset.Interface, jobclientset.Interface, error) {
 
-	crdClient, err := crdclient.NewForConfig(config)
-
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	checkCRDExists(crdClient, v1beta2.PytorchCRD)
-
 	kubeClientSet, err := kubeclientset.NewForConfig(restclientset.AddUserAgent(config, "pytorch-operator"))
 	if err != nil {
 		return nil, nil, nil, err
@@ -182,11 +177,16 @@ func createClientSets(config *restclientset.Config) (kubeclientset.Interface, ku
 	return kubeClientSet, leaderElectionClientSet, jobClientSet, nil
 }
 
-func checkCRDExists(clientset crdclient.Interface, crdName string) {
-	_, err := clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Get(crdName, metav1.GetOptions{})
+func checkCRDExists(clientset jobclientset.Interface, namespace string) bool {
+	_, err := clientset.KubeflowV1beta2().PyTorchJobs(namespace).List(metav1.ListOptions{})
 
 	if err != nil {
 		log.Error(err)
-		os.Exit(1)
+		if _, ok := err.(*errors.StatusError); ok {
+			if errors.IsNotFound(err) {
+				return false
+			}
+		}
 	}
+	return true
 }
