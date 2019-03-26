@@ -19,6 +19,7 @@ import (
 	"os"
 	"time"
 
+	kubebatchclient "github.com/kubernetes-sigs/kube-batch/pkg/client/clientset/versioned"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -87,7 +88,7 @@ func Run(opt *options.ServerOption) error {
 	}
 
 	// Create clients.
-	kubeClientSet, leaderElectionClientSet, pytorchJobClientSet, err := createClientSets(kcfg)
+	kubeClientSet, leaderElectionClientSet, pytorchJobClientSet, kubeBatchClientSet, err := createClientSets(kcfg)
 	if err != nil {
 		return err
 	}
@@ -102,7 +103,7 @@ func Run(opt *options.ServerOption) error {
 	unstructuredInformer := controller.NewUnstructuredPyTorchJobInformer(kcfg, opt.Namespace)
 
 	// Create pytorch controller.
-	tc := controller.NewPyTorchController(unstructuredInformer, kubeClientSet, pytorchJobClientSet, kubeInformerFactory, pytorchJobInformerFactory, *opt)
+	tc := controller.NewPyTorchController(unstructuredInformer, kubeClientSet, kubeBatchClientSet, pytorchJobClientSet, kubeInformerFactory, pytorchJobInformerFactory, *opt)
 
 	// Start informer goroutines.
 	go kubeInformerFactory.Start(stopCh)
@@ -157,24 +158,29 @@ func Run(opt *options.ServerOption) error {
 	return nil
 }
 
-func createClientSets(config *restclientset.Config) (kubeclientset.Interface, kubeclientset.Interface, jobclientset.Interface, error) {
+func createClientSets(config *restclientset.Config) (kubeclientset.Interface, kubeclientset.Interface, jobclientset.Interface, kubebatchclient.Interface, error) {
 
 	kubeClientSet, err := kubeclientset.NewForConfig(restclientset.AddUserAgent(config, "pytorch-operator"))
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
 	leaderElectionClientSet, err := kubeclientset.NewForConfig(restclientset.AddUserAgent(config, "leader-election"))
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
 	jobClientSet, err := jobclientset.NewForConfig(config)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
-	return kubeClientSet, leaderElectionClientSet, jobClientSet, nil
+	kubeBatchClientSet, err := kubebatchclient.NewForConfig(restclientset.AddUserAgent(config, "kube-batch"))
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	return kubeClientSet, leaderElectionClientSet, jobClientSet, kubeBatchClientSet, nil
 }
 
 func checkCRDExists(clientset jobclientset.Interface, namespace string) bool {

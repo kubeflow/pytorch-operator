@@ -48,7 +48,7 @@ func TestAddPyTorchJob(t *testing.T) {
 		},
 	}
 	jobClientSet := jobclientset.NewForConfigOrDie(config)
-	ctr, _, _ := newPyTorchController(config, kubeClientSet, jobClientSet, controller.NoResyncPeriodFunc, options.ServerOption{})
+	ctr, _, _ := newPyTorchController(config, kubeClientSet, nil, jobClientSet, controller.NoResyncPeriodFunc, options.ServerOption{})
 	ctr.jobInformerSynced = testutil.AlwaysReady
 	ctr.PodInformerSynced = testutil.AlwaysReady
 	ctr.ServiceInformerSynced = testutil.AlwaysReady
@@ -107,7 +107,7 @@ func TestCopyLabelsAndAnnotation(t *testing.T) {
 		},
 	}
 	jobClientSet := jobclientset.NewForConfigOrDie(config)
-	ctr, _, _ := newPyTorchController(config, kubeClientSet, jobClientSet, controller.NoResyncPeriodFunc, options.ServerOption{})
+	ctr, _, _ := newPyTorchController(config, kubeClientSet, nil, jobClientSet, controller.NoResyncPeriodFunc, options.ServerOption{})
 	fakePodControl := &controller.FakePodControl{}
 	ctr.PodControl = fakePodControl
 	ctr.jobInformerSynced = testutil.AlwaysReady
@@ -248,7 +248,7 @@ func TestDeletePodsAndServices(t *testing.T) {
 			},
 		}
 		jobClientSet := jobclientset.NewForConfigOrDie(config)
-		ctr, kubeInformerFactory, _ := newPyTorchController(config, kubeClientSet, jobClientSet, controller.NoResyncPeriodFunc, options.ServerOption{})
+		ctr, kubeInformerFactory, _ := newPyTorchController(config, kubeClientSet, nil, jobClientSet, controller.NoResyncPeriodFunc, options.ServerOption{})
 		fakePodControl := &controller.FakePodControl{}
 		ctr.PodControl = fakePodControl
 		fakeServiceControl := &control.FakeServiceControl{}
@@ -402,7 +402,7 @@ func TestCleanupPyTorchJob(t *testing.T) {
 			},
 		}
 		jobClientSet := jobclientset.NewForConfigOrDie(config)
-		ctr, kubeInformerFactory, _ := newPyTorchController(config, kubeClientSet, jobClientSet, controller.NoResyncPeriodFunc, options.ServerOption{})
+		ctr, kubeInformerFactory, _ := newPyTorchController(config, kubeClientSet, nil, jobClientSet, controller.NoResyncPeriodFunc, options.ServerOption{})
 		fakePodControl := &controller.FakePodControl{}
 		ctr.PodControl = fakePodControl
 		fakeServiceControl := &control.FakeServiceControl{}

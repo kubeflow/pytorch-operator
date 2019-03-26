@@ -211,7 +211,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:db9b2658df733c976b9b71834154d7571eccb11853c7c55bb10e0481be0aeadc"
+  digest = "1:2da9794ff5835c3249a15deb04d8340cb51363637925db89fd4b67bb25dcd5c7"
   name = "github.com/kubeflow/tf-operator"
   packages = [
     "pkg/apis/common/v1beta1",
@@ -225,7 +225,20 @@
     "pkg/version",
   ]
   pruneopts = "NUT"
-  revision = "c2849477dffdeacc2ebc11de66f826a6ce5cf690"
+  revision = "4689a23554f2b8da2c5db8e397e414782156a945"
+
+[[projects]]
+  digest = "1:680c0fba95a0cff934e350b1ad6774d8229378a3e37d9902e07e2861e82a5908"
+  name = "github.com/kubernetes-sigs/kube-batch"
+  packages = [
+    "pkg/apis/scheduling/v1alpha1",
+    "pkg/client/clientset/versioned",
+    "pkg/client/clientset/versioned/scheme",
+    "pkg/client/clientset/versioned/typed/scheduling/v1alpha1",
+  ]
+  pruneopts = "NUT"
+  revision = "b0dbd4f2df590237cecee48f463bfb8746cfa357"
+  version = "v0.3"
 
 [[projects]]
   branch = "master"

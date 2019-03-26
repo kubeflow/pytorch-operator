@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
+	kubebatchclient "github.com/kubernetes-sigs/kube-batch/pkg/client/clientset/versioned"
 	"k8s.io/api/core/v1"
 	apiv1beta1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -48,6 +49,7 @@ var (
 func newPyTorchController(
 	config *rest.Config,
 	kubeClientSet kubeclientset.Interface,
+	kubeBatchClientSet kubebatchclient.Interface,
 	jobClientSet jobclientset.Interface,
 	resyncPeriod controller.ResyncPeriodFunc,
 	option options.ServerOption,
@@ -60,7 +62,7 @@ func newPyTorchController(
 
 	jobInformer := NewUnstructuredPyTorchJobInformer(config, metav1.NamespaceAll)
 
-	ctr := NewPyTorchController(jobInformer, kubeClientSet, jobClientSet, kubeInformerFactory, jobInformerFactory, option)
+	ctr := NewPyTorchController(jobInformer, kubeClientSet, kubeBatchClientSet, jobClientSet, kubeInformerFactory, jobInformerFactory, option)
 	ctr.PodControl = &controller.FakePodControl{}
 	ctr.ServiceControl = &control.FakeServiceControl{}
 	return ctr, kubeInformerFactory, jobInformerFactory
@@ -227,6 +229,15 @@ func TestNormalPath(t *testing.T) {
 			},
 		},
 		)
+		// Prepare the kube-batch clientset and controller for the test.
+		kubeBatchClientSet := kubebatchclient.NewForConfigOrDie(&rest.Config{
+			Host: "",
+			ContentConfig: rest.ContentConfig{
+				GroupVersion: &v1.SchemeGroupVersion,
+			},
+		},
+		)
+
 		config := &rest.Config{
 			Host: "",
 			ContentConfig: rest.ContentConfig{
@@ -235,7 +246,7 @@ func TestNormalPath(t *testing.T) {
 		}
 		option := options.ServerOption{}
 		jobClientSet := jobclientset.NewForConfigOrDie(config)
-		ctr, kubeInformerFactory, _ := newPyTorchController(config, kubeClientSet, jobClientSet, controller.NoResyncPeriodFunc, option)
+		ctr, kubeInformerFactory, _ := newPyTorchController(config, kubeClientSet, kubeBatchClientSet, jobClientSet, controller.NoResyncPeriodFunc, option)
 		ctr.jobInformerSynced = testutil.AlwaysReady
 		ctr.PodInformerSynced = testutil.AlwaysReady
 		ctr.ServiceInformerSynced = testutil.AlwaysReady
@@ -347,6 +358,15 @@ func TestRun(t *testing.T) {
 		},
 	},
 	)
+	// Prepare the kube-batch clientset and controller for the test.
+	kubeBatchClientSet := kubebatchclient.NewForConfigOrDie(&rest.Config{
+		Host: "",
+		ContentConfig: rest.ContentConfig{
+			GroupVersion: &v1.SchemeGroupVersion,
+		},
+	},
+	)
+
 	config := &rest.Config{
 		Host: "",
 		ContentConfig: rest.ContentConfig{
@@ -354,7 +374,7 @@ func TestRun(t *testing.T) {
 		},
 	}
 	jobClientSet := jobclientset.NewForConfigOrDie(config)
-	ctr, _, _ := newPyTorchController(config, kubeClientSet, jobClientSet, controller.NoResyncPeriodFunc, options.ServerOption{})
+	ctr, _, _ := newPyTorchController(config, kubeClientSet, kubeBatchClientSet, jobClientSet, controller.NoResyncPeriodFunc, options.ServerOption{})
 	ctr.jobInformerSynced = testutil.AlwaysReady
 	ctr.PodInformerSynced = testutil.AlwaysReady
 	ctr.ServiceInformerSynced = testutil.AlwaysReady
@@ -380,12 +400,21 @@ func TestSyncPdb(t *testing.T) {
 			GroupVersion: &v1beta1.SchemeGroupVersion,
 		},
 	}
+	// Prepare the kube-batch clientset and controller for the test.
+	kubeBatchClientSet := kubebatchclient.NewForConfigOrDie(&rest.Config{
+		Host: "",
+		ContentConfig: rest.ContentConfig{
+			GroupVersion: &v1.SchemeGroupVersion,
+		},
+	},
+	)
+
 	jobClientSet := jobclientset.NewForConfigOrDie(config)
 	kubeClientSet := fake.NewSimpleClientset()
 	option := options.ServerOption{
 		EnableGangScheduling: true,
 	}
-	ctr, _, _ := newPyTorchController(config, kubeClientSet, jobClientSet, controller.NoResyncPeriodFunc, option)
+	ctr, _, _ := newPyTorchController(config, kubeClientSet, kubeBatchClientSet, jobClientSet, controller.NoResyncPeriodFunc, option)
 
 	type testCase struct {
 		job       *v1beta1.PyTorchJob

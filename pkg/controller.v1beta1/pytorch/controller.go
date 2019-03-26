@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"time"
 
+	kubebatchclient "github.com/kubernetes-sigs/kube-batch/pkg/client/clientset/versioned"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -98,6 +99,7 @@ func NewPyTorchController(
 	// This variable is for unstructured informer.
 	jobInformer jobinformersv1beta1.PyTorchJobInformer,
 	kubeClientSet kubeclientset.Interface,
+	kubeBatchClientSet kubebatchclient.Interface,
 	jobClientSet jobclientset.Interface,
 	kubeInformerFactory kubeinformers.SharedInformerFactory,
 	// This field is not used now but we keep it since it will be used
@@ -116,7 +118,7 @@ func NewPyTorchController(
 	// Create base controller
 	log.Info("Creating Job controller")
 	jc := jobcontroller.NewJobController(pc, metav1.Duration{Duration: 15 * time.Second},
-		option.EnableGangScheduling, kubeClientSet, kubeInformerFactory, v1beta1.Plural)
+		option.EnableGangScheduling, kubeClientSet, kubeBatchClientSet, kubeInformerFactory, v1beta1.Plural)
 	pc.JobController = jc
 	// Set sync handler.
 	pc.syncHandler = pc.syncPyTorchJob
@@ -303,9 +305,9 @@ func (pc *PyTorchController) syncPyTorchJob(key string) (bool, error) {
 
 	if pc.Config.EnableGangScheduling {
 		minAvailableReplicas := getTotalReplicas(job)
-		_, err := pc.SyncPdb(job, minAvailableReplicas)
+		_, err := pc.SyncPodGroup(job, minAvailableReplicas)
 		if err != nil {
-			logger.Warnf("Sync pdb %v: %v", job.Name, err)
+			logger.Warnf("Sync PodGroup %v: %v", job.Name, err)
 		}
 	}
 
@@ -364,12 +366,12 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *v1beta1.PyTorchJob) error
 		}
 
 		if pc.Config.EnableGangScheduling {
-			pc.Recorder.Event(job, v1.EventTypeNormal, "JobTerminated", "Job is terminated, deleting pdb")
-			if err := pc.DeletePdb(job); err != nil {
-				pc.Recorder.Eventf(job, v1.EventTypeWarning, "FailedDeletePdb", "Error deleting: %v", err)
+			pc.Recorder.Event(job, v1.EventTypeNormal, "JobTerminated", "Job is terminated, deleting PodGroup")
+			if err := pc.DeletePodGroup(job); err != nil {
+				pc.Recorder.Eventf(job, v1.EventTypeWarning, "FailedDeletePodGroup", "Error deleting: %v", err)
 				return err
 			} else {
-				pc.Recorder.Eventf(job, v1.EventTypeNormal, "SuccessfulDeletePdb", "Deleted pdb: %v", job.Name)
+				pc.Recorder.Eventf(job, v1.EventTypeNormal, "SuccessfulDeletePodGroup", "Deleted PodGroup: %v", job.Name)
 
 			}
 		}
@@ -466,6 +468,10 @@ func (pc *PyTorchController) GetReplicaTypeLabelKey() string {
 
 func (pc *PyTorchController) GetReplicaIndexLabelKey() string {
 	return replicaIndexLabel
+}
+
+func (pc *PyTorchController) GetJobRoleKey() string {
+	return labelPyTorchJobRole
 }
 
 func (pc *PyTorchController) ControllerName() string {
