@@ -34,10 +34,15 @@ import (
 )
 
 const (
+	// gang scheduler name.
+	gangSchedulerName = "kube-batch"
 	// podTemplateRestartPolicyReason is the warning reason when the restart
 	// policy is set in pod template.
 	podTemplateRestartPolicyReason = "SettedPodTemplateRestartPolicy"
 	exitedWithCodeReason           = "ExitedWithCode"
+	// podTemplateSchedulerNameReason is the warning reason when other scheduler name is set
+	// in pod templates with gang-scheduling enabled
+	podTemplateSchedulerNameReason = "SettedPodTemplateSchedulerName"
 )
 
 // reconcilePods checks and updates pods for each given PyTorchReplicaSpec.
@@ -206,6 +211,19 @@ func (pc *PyTorchController) createNewPod(job *v1beta2.PyTorchJob, rtype v1beta2
 	}
 	setRestartPolicy(podTemplate, spec)
 
+	// if gang-scheduling is enabled:
+	// 1. if user has specified other scheduler, we report a warning without overriding any fields.
+	// 2. if no SchedulerName is set for pods, then we set the SchedulerName to "kube-batch".
+	if pc.Config.EnableGangScheduling {
+		if isNonGangSchedulerSet(job) {
+			errMsg := "Another scheduler is specified when gang-scheduling is enabled and it will not be overwritten"
+			logger.Warning(errMsg)
+			pc.Recorder.Event(job, v1.EventTypeWarning, podTemplateSchedulerNameReason, errMsg)
+		} else {
+			podTemplate.Spec.SchedulerName = gangSchedulerName
+		}
+	}
+
 	err = pc.PodControl.CreatePodsWithControllerRef(job.Namespace, podTemplate, job, controllerRef)
 	if err != nil && k8serrors.IsTimeout(err) {
 		// Pod is created but its initialization has timed out.
@@ -277,4 +295,13 @@ func setRestartPolicy(podTemplateSpec *v1.PodTemplateSpec, spec *common.ReplicaS
 	} else {
 		podTemplateSpec.Spec.RestartPolicy = v1.RestartPolicy(spec.RestartPolicy)
 	}
+}
+
+func isNonGangSchedulerSet(job *v1beta2.PyTorchJob) bool {
+	for _, spec := range job.Spec.PyTorchReplicaSpecs {
+		if spec.Template.Spec.SchedulerName != "" && spec.Template.Spec.SchedulerName != gangSchedulerName {
+			return true
+		}
+	}
+	return false
 }
