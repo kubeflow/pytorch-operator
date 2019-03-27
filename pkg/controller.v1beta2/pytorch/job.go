@@ -105,8 +105,37 @@ func (pc *PyTorchController) updatePyTorchJob(old, cur interface{}) {
 	if err != nil {
 		return
 	}
+	curPyTorchJob, err := jobFromUnstructured(cur)
+	if err != nil {
+		return
+	}
+
+	// never return error
+	key, err := KeyFunc(curPyTorchJob)
+	if err != nil {
+		return
+	}
+
 	log.Infof("Updating pytorchjob: %s", oldPyTorchJob.Name)
 	pc.enqueuePyTorchJob(cur)
+
+	// check if need to add a new rsync for ActiveDeadlineSeconds
+	if curPyTorchJob.Status.StartTime != nil {
+		curPyTorchJobADS := curPyTorchJob.Spec.ActiveDeadlineSeconds
+		if curPyTorchJobADS == nil {
+			return
+		}
+		oldPyTorchJobADS := oldPyTorchJob.Spec.ActiveDeadlineSeconds
+		if oldPyTorchJobADS == nil || *oldPyTorchJobADS != *curPyTorchJobADS {
+			now := metav1.Now()
+			start := curPyTorchJob.Status.StartTime.Time
+			passed := now.Time.Sub(start)
+			total := time.Duration(*curPyTorchJobADS) * time.Second
+			// AddAfter will handle total < passed
+			pc.WorkQueue.AddAfter(key, total-passed)
+			log.Infof("job ActiveDeadlineSeconds updated, will rsync after %d seconds", total-passed)
+		}
+	}
 }
 
 func (pc *PyTorchController) deletePodsAndServices(job *v1beta2.PyTorchJob, pods []*v1.Pod) error {
@@ -159,4 +188,20 @@ func (pc *PyTorchController) cleanupPyTorchJob(job *v1beta2.PyTorchJob) error {
 // deletePyTorchJob deletes the given PyTorchJob.
 func (pc *PyTorchController) deletePyTorchJob(job *v1beta2.PyTorchJob) error {
 	return pc.jobClientSet.KubeflowV1beta2().PyTorchJobs(job.Namespace).Delete(job.Name, &metav1.DeleteOptions{})
+}
+
+func getTotalReplicas(job *v1beta2.PyTorchJob) int32 {
+	jobReplicas := int32(0)
+	for _, r := range job.Spec.PyTorchReplicaSpecs {
+		jobReplicas += *r.Replicas
+	}
+	return jobReplicas
+}
+
+func getTotalFailedReplicas(job *v1beta2.PyTorchJob) int32 {
+	totalFailedReplicas := int32(0)
+	for rtype := range job.Status.ReplicaStatuses {
+		totalFailedReplicas += job.Status.ReplicaStatuses[rtype].Failed
+	}
+	return totalFailedReplicas
 }
