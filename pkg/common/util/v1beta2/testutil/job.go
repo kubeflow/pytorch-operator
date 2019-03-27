@@ -17,6 +17,7 @@ package testutil
 import (
 	"time"
 
+	"github.com/golang/protobuf/proto"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -50,9 +51,42 @@ func NewPyTorchJobWithCleanupJobDelay(master, worker int, ttl *int32) *v1beta2.P
 	return job
 }
 
+func NewPyTorchJobWithActiveDeadlineSeconds(master, worker int, ads *int64) *v1beta2.PyTorchJob {
+	if master == 1 {
+		job := NewPyTorchJobWithMaster(worker)
+		job.Spec.ActiveDeadlineSeconds = ads
+		policy := common.CleanPodPolicyAll
+		job.Spec.CleanPodPolicy = &policy
+		return job
+	}
+	job := NewPyTorchJob(worker)
+	job.Spec.ActiveDeadlineSeconds = ads
+	policy := common.CleanPodPolicyAll
+	job.Spec.CleanPodPolicy = &policy
+	return job
+}
+
+func NewPyTorchJobWithBackoffLimit(master, worker int, backoffLimit *int32) *v1beta2.PyTorchJob {
+	if master == 1 {
+		job := NewPyTorchJobWithMaster(worker)
+		job.Spec.BackoffLimit = backoffLimit
+		job.Spec.PyTorchReplicaSpecs["Worker"].RestartPolicy = "OnFailure"
+		policy := common.CleanPodPolicyAll
+		job.Spec.CleanPodPolicy = &policy
+		return job
+	}
+	job := NewPyTorchJob(worker)
+	job.Spec.BackoffLimit = backoffLimit
+	job.Spec.PyTorchReplicaSpecs["Worker"].RestartPolicy = "OnFailure"
+	policy := common.CleanPodPolicyAll
+	job.Spec.CleanPodPolicy = &policy
+	return job
+}
+
 func NewPyTorchJobWithMaster(worker int) *v1beta2.PyTorchJob {
 	job := NewPyTorchJob(worker)
 	job.Spec.PyTorchReplicaSpecs[v1beta2.PyTorchReplicaTypeMaster] = &common.ReplicaSpec{
+		Replicas: proto.Int32(1),
 		Template: NewPyTorchReplicaSpecTemplate(),
 	}
 	return job

@@ -211,7 +211,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2da9794ff5835c3249a15deb04d8340cb51363637925db89fd4b67bb25dcd5c7"
+  digest = "1:a7968637d05f7cac8985ad2df5818fa5cc3162e4fc65b7ee6e834baa2085e79f"
   name = "github.com/kubeflow/tf-operator"
   packages = [
     "pkg/apis/common/v1beta1",
@@ -225,7 +225,7 @@
     "pkg/version",
   ]
   pruneopts = "NUT"
-  revision = "4689a23554f2b8da2c5db8e397e414782156a945"
+  revision = "aa322c7b557f742743038a81de01c4629a7ebe9b"
 
 [[projects]]
   digest = "1:680c0fba95a0cff934e350b1ad6774d8229378a3e37d9902e07e2861e82a5908"
@@ -886,6 +886,7 @@
     "github.com/kubeflow/tf-operator/pkg/util/signals",
     "github.com/kubeflow/tf-operator/pkg/util/train",
     "github.com/kubeflow/tf-operator/pkg/version",
+    "github.com/kubernetes-sigs/kube-batch/pkg/client/clientset/versioned",
     "github.com/onrik/logrus/filename",
     "github.com/sirupsen/logrus",
     "k8s.io/api/core/v1",

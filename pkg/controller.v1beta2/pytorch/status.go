@@ -18,9 +18,11 @@ package pytorch
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 
 	v1beta2 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta2"
 	common "github.com/kubeflow/tf-operator/pkg/apis/common/v1beta2"
@@ -32,9 +34,9 @@ const (
 	pytorchJobCreatedReason = "PyTorchJobCreated"
 	// pytorchJobSucceededReason is added in a job when it is succeeded.
 	pytorchJobSucceededReason = "PyTorchJobSucceeded"
-	// pytorchJobSucceededReason is added in a job when it is running.
+	// pytorchJobRunningReason is added in a job when it is running.
 	pytorchJobRunningReason = "PyTorchJobRunning"
-	// pytorchJobSucceededReason is added in a job when it is failed.
+	// pytorchJobFailedReason is added in a job when it is failed.
 	pytorchJobFailedReason = "PyTorchJobFailed"
 	// pytorchJobRestarting is added in a job when it is restarting.
 	pytorchJobRestartingReason = "PyTorchJobRestarting"
@@ -42,6 +44,12 @@ const (
 
 // updateStatus updates the status of the job.
 func (pc *PyTorchController) updateStatusSingle(job *v1beta2.PyTorchJob, rtype v1beta2.PyTorchReplicaType, replicas int, restart bool) error {
+	jobKey, err := KeyFunc(job)
+	if err != nil {
+		utilruntime.HandleError(fmt.Errorf("couldn't get key for job object %#v: %v", job, err))
+		return err
+	}
+
 	// Expect to have `replicas - succeeded` pods alive.
 	commonType := common.ReplicaType(rtype)
 	expected := replicas - int(job.Status.ReplicaStatuses[commonType].Succeeded)
@@ -54,6 +62,11 @@ func (pc *PyTorchController) updateStatusSingle(job *v1beta2.PyTorchJob, rtype v
 	if running == replicas && job.Status.StartTime == nil {
 		now := metav1.Now()
 		job.Status.StartTime = &now
+		// enqueue a sync to check if job past ActiveDeadlineSeconds
+		if job.Spec.ActiveDeadlineSeconds != nil {
+			pylogger.LoggerForJob(job).Infof("Job with ActiveDeadlineSeconds will sync after %d seconds", *job.Spec.ActiveDeadlineSeconds)
+			pc.WorkQueue.AddAfter(jobKey, time.Duration(*job.Spec.ActiveDeadlineSeconds)*time.Second)
+		}
 	}
 
 	if ContainMasterSpec(job) {

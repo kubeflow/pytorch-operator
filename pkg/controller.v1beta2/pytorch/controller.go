@@ -17,6 +17,7 @@ package pytorch
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	kubebatchclient "github.com/kubernetes-sigs/kube-batch/pkg/client/clientset/versioned"
@@ -38,8 +39,10 @@ import (
 	jobinformers "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions"
 	jobinformersv1beta2 "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions/pytorch/v1beta2"
 	joblisters "github.com/kubeflow/pytorch-operator/pkg/client/listers/pytorch/v1beta2"
+	common "github.com/kubeflow/tf-operator/pkg/apis/common/v1beta2"
 	"github.com/kubeflow/tf-operator/pkg/common/jobcontroller"
 	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
+	"github.com/kubeflow/tf-operator/pkg/util/k8sutil"
 )
 
 const (
@@ -326,18 +329,15 @@ func (pc *PyTorchController) syncPyTorchJob(key string) (bool, error) {
 	return true, err
 }
 
-func getTotalReplicas(obj metav1.Object) int32 {
-	job := obj.(*v1beta2.PyTorchJob)
-	jobReplicas := int32(0)
-	for _, r := range job.Spec.PyTorchReplicaSpecs {
-		jobReplicas += *r.Replicas
-	}
-	return jobReplicas
-}
-
 // reconcilePyTorchJobs checks and updates replicas for each given PyTorchReplicaSpec.
 // It will requeue the job in case of an error while creating/deleting pods/services.
 func (pc *PyTorchController) reconcilePyTorchJobs(job *v1beta2.PyTorchJob) error {
+	jobKey, err := KeyFunc(job)
+	if err != nil {
+		utilruntime.HandleError(fmt.Errorf("couldn't get key for pytorch job object %#v: %v", job, err))
+		return err
+	}
+
 	logger := pylogger.LoggerForJob(job)
 	logger.Infof("Reconcile PyTorchJobs %s", job.Name)
 
@@ -355,8 +355,46 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *v1beta2.PyTorchJob) error
 		return err
 	}
 
+	// retrieve the previous number of retry
+	previousRetry := pc.WorkQueue.NumRequeues(jobKey)
+
+	activePods := k8sutil.FilterActivePods(pods)
+	active := int32(len(activePods))
+	failed := int32(k8sutil.FilterPods(pods, v1.PodFailed))
+	totalReplicas := getTotalReplicas(job)
+	prevReplicasFailedNum := getTotalFailedReplicas(job)
+
+	var failureMessage string
+	jobExceedsLimit := false
+	exceedsBackoffLimit := false
+	pastBackoffLimit := false
+
+	if job.Spec.BackoffLimit != nil {
+		jobHasNewFailure := failed > prevReplicasFailedNum
+		// new failures happen when status does not reflect the failures and active
+		// is different than parallelism, otherwise the previous controller loop
+		// failed updating status so even if we pick up failure it is not a new one
+		exceedsBackoffLimit = jobHasNewFailure && (active != totalReplicas) &&
+			(int32(previousRetry)+1 > *job.Spec.BackoffLimit)
+
+		pastBackoffLimit, err = pc.pastBackoffLimit(job, pods)
+		if err != nil {
+			return err
+		}
+	}
+
+	if exceedsBackoffLimit || pastBackoffLimit {
+		// check if the number of pod restart exceeds backoff (for restart OnFailure only)
+		// OR if the number of failed jobs increased since the last syncJob
+		jobExceedsLimit = true
+		failureMessage = fmt.Sprintf("PyTorchJob %s has failed because it has reached the specified backoff limit", job.Name)
+	} else if pc.pastActiveDeadline(job) {
+		failureMessage = fmt.Sprintf("PyTorchJob %s has failed because it was active longer than specified deadline", job.Name)
+		jobExceedsLimit = true
+	}
+
 	// If the PyTorchJob is terminated, delete all pods and services.
-	if isSucceeded(job.Status) || isFailed(job.Status) {
+	if isSucceeded(job.Status) || isFailed(job.Status) || jobExceedsLimit {
 		if err := pc.deletePodsAndServices(job, pods); err != nil {
 			return err
 		}
@@ -375,7 +413,18 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *v1beta2.PyTorchJob) error
 
 			}
 		}
-
+		if jobExceedsLimit {
+			pc.Recorder.Event(job, v1.EventTypeNormal, pytorchJobFailedReason, failureMessage)
+			if job.Status.CompletionTime == nil {
+				now := metav1.Now()
+				job.Status.CompletionTime = &now
+			}
+			err := updatePyTorchJobConditions(job, common.JobFailed, pytorchJobFailedReason, failureMessage)
+			if err != nil {
+				logger.Infof("Append pytorchjob condition error: %v", err)
+				return err
+			}
+		}
 		// At this point the pods may have been deleted, so if the job succeeded, we need to manually set the replica status.
 		// If any replicas are still Active, set their status to succeeded.
 		if isSucceeded(job.Status) {
@@ -432,6 +481,59 @@ func (pc *PyTorchController) satisfiedExpectations(job *v1beta2.PyTorchJob) bool
 	}
 
 	return satisfied
+}
+
+// pastBackoffLimitOnFailure checks if container restartCounts sum exceeds BackoffLimit
+// this method applies only to pods with restartPolicy == OnFailure or Always
+func (pc *PyTorchController) pastBackoffLimit(job *v1beta2.PyTorchJob, pods []*v1.Pod) (bool, error) {
+	if job.Spec.BackoffLimit == nil {
+		return false, nil
+	}
+	logger := pylogger.LoggerForJob(job)
+	result := int32(0)
+	for rtype, spec := range job.Spec.PyTorchReplicaSpecs {
+		if spec.RestartPolicy != common.RestartPolicyOnFailure && spec.RestartPolicy != common.RestartPolicyAlways {
+			logger.Warnf("The restart policy of replica %v of the job %v is not OnFailure or Always. Not counted in backoff limit.", rtype, job.Name)
+			continue
+		}
+		// Convert PyTorchReplicaType to lower string.
+		rt := strings.ToLower(string(rtype))
+		pods, err := pc.FilterPodsForReplicaType(pods, rt)
+		if err != nil {
+			return false, err
+		}
+		for i := range pods {
+			po := pods[i]
+			if po.Status.Phase != v1.PodRunning {
+				continue
+			}
+			for j := range po.Status.InitContainerStatuses {
+				stat := po.Status.InitContainerStatuses[j]
+				result += stat.RestartCount
+			}
+			for j := range po.Status.ContainerStatuses {
+				stat := po.Status.ContainerStatuses[j]
+				result += stat.RestartCount
+			}
+		}
+	}
+
+	if *job.Spec.BackoffLimit == 0 {
+		return result > 0, nil
+	}
+	return result >= *job.Spec.BackoffLimit, nil
+}
+
+// pastActiveDeadline checks if job has ActiveDeadlineSeconds field set and if it is exceeded.
+func (pc *PyTorchController) pastActiveDeadline(job *v1beta2.PyTorchJob) bool {
+	if job.Spec.ActiveDeadlineSeconds == nil || job.Status.StartTime == nil {
+		return false
+	}
+	now := metav1.Now()
+	start := job.Status.StartTime.Time
+	duration := now.Time.Sub(start)
+	allowedDuration := time.Duration(*job.Spec.ActiveDeadlineSeconds) * time.Second
+	return duration >= allowedDuration
 }
 
 func (pc *PyTorchController) GetJobFromInformerCache(namespace, name string) (metav1.Object, error) {
