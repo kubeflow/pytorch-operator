@@ -109,7 +109,7 @@ func TestValidateBetaOnePyTorchJobSpec(t *testing.T) {
 	}
 	for _, c := range testCases {
 		err := ValidateBetaOnePyTorchJobSpec(&c)
-		if err.Error() != "PyTorchJobSpec is not valid" {
+		if err == nil {
 			t.Error("Failed validate the v1beta1.PyTorchJobSpec")
 		}
 	}
@@ -199,7 +199,7 @@ func TestValidateBetaTwoPyTorchJobSpec(t *testing.T) {
 	}
 	for _, c := range testCases {
 		err := ValidateBetaTwoPyTorchJobSpec(&c)
-		if err.Error() != "PyTorchJobSpec is not valid" {
+		if err == nil {
 			t.Error("Failed validate the v1beta2.PyTorchJobSpec")
 		}
 	}
