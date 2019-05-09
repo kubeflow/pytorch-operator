@@ -17,6 +17,7 @@ package pytorch
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
@@ -341,6 +342,7 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *v1beta2.PyTorchJob) error
 	logger := pylogger.LoggerForJob(job)
 	logger.Infof("Reconcile PyTorchJobs %s", job.Name)
 
+	oldStatus := job.Status.DeepCopy()
 	pods, err := pc.GetPodsForJob(job)
 
 	if err != nil {
@@ -433,7 +435,11 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *v1beta2.PyTorchJob) error
 				job.Status.ReplicaStatuses[rtype].Active = 0
 			}
 		}
-		return pc.updateStatusHandler(job)
+		// no need to update the job if the status hasn't changed since last time.
+		if !reflect.DeepEqual(*oldStatus, job.Status) {
+			return pc.updateStatusHandler(job)
+		}
+		return nil
 	}
 
 	// Save the current state of the replicas
@@ -483,7 +489,7 @@ func (pc *PyTorchController) satisfiedExpectations(job *v1beta2.PyTorchJob) bool
 	return satisfied
 }
 
-// pastBackoffLimitOnFailure checks if container restartCounts sum exceeds BackoffLimit
+// pastBackoffLimit checks if container restartCounts sum exceeds BackoffLimit
 // this method applies only to pods with restartPolicy == OnFailure or Always
 func (pc *PyTorchController) pastBackoffLimit(job *v1beta2.PyTorchJob, pods []*v1.Pod) (bool, error) {
 	if job.Spec.BackoffLimit == nil {
