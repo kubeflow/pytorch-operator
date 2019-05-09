@@ -17,6 +17,7 @@ package pytorch
 
 import (
 	"fmt"
+	"reflect"
 	"time"
 
 	kubebatchclient "github.com/kubernetes-sigs/kube-batch/pkg/client/clientset/versioned"
@@ -341,6 +342,7 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *v1beta1.PyTorchJob) error
 	logger := pylogger.LoggerForJob(job)
 	logger.Infof("Reconcile PyTorchJobs %s", job.Name)
 
+	oldStatus := job.Status.DeepCopy()
 	pods, err := pc.GetPodsForJob(job)
 
 	if err != nil {
@@ -384,7 +386,11 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *v1beta1.PyTorchJob) error
 				job.Status.ReplicaStatuses[rtype].Active = 0
 			}
 		}
-		return pc.updateStatusHandler(job)
+		// no need to update the job if the status hasn't changed since last time.
+		if !reflect.DeepEqual(*oldStatus, job.Status) {
+			return pc.updateStatusHandler(job)
+		}
+		return nil
 	}
 
 	// Save the current state of the replicas
