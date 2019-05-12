@@ -21,8 +21,8 @@ import (
 	"strings"
 	"time"
 
-	kubebatchclient "github.com/kubernetes-sigs/kube-batch/pkg/client/clientset/versioned"
 	log "github.com/sirupsen/logrus"
+
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -34,7 +34,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1beta2/app/options"
-	v1beta2 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta2"
+	"github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta2"
 	jobclientset "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
 	jobscheme "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned/scheme"
 	jobinformers "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions"
@@ -44,6 +44,8 @@ import (
 	"github.com/kubeflow/tf-operator/pkg/common/jobcontroller"
 	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
 	"github.com/kubeflow/tf-operator/pkg/util/k8sutil"
+
+	kubebatchclient "github.com/kubernetes-sigs/kube-batch/pkg/client/clientset/versioned"
 )
 
 const (
