@@ -401,6 +401,19 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *v1beta2.PyTorchJob) error
 			return err
 		}
 
+		if jobExceedsLimit {
+			pc.Recorder.Event(job, v1.EventTypeNormal, pytorchJobFailedReason, failureMessage)
+			if job.Status.CompletionTime == nil {
+				now := metav1.Now()
+				job.Status.CompletionTime = &now
+			}
+			err := updatePyTorchJobConditions(job, common.JobFailed, pytorchJobFailedReason, failureMessage)
+			if err != nil {
+				logger.Infof("Append pytorchjob condition error: %v", err)
+				return err
+			}
+		}
+
 		if err := pc.cleanupPyTorchJob(job); err != nil {
 			return err
 		}
@@ -415,18 +428,7 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *v1beta2.PyTorchJob) error
 
 			}
 		}
-		if jobExceedsLimit {
-			pc.Recorder.Event(job, v1.EventTypeNormal, pytorchJobFailedReason, failureMessage)
-			if job.Status.CompletionTime == nil {
-				now := metav1.Now()
-				job.Status.CompletionTime = &now
-			}
-			err := updatePyTorchJobConditions(job, common.JobFailed, pytorchJobFailedReason, failureMessage)
-			if err != nil {
-				logger.Infof("Append pytorchjob condition error: %v", err)
-				return err
-			}
-		}
+
 		// At this point the pods may have been deleted, so if the job succeeded, we need to manually set the replica status.
 		// If any replicas are still Active, set their status to succeeded.
 		if isSucceeded(job.Status) {
