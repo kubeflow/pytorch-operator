@@ -40,8 +40,8 @@ import (
 	jobinformers "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions"
 	jobinformersv1beta2 "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions/pytorch/v1beta2"
 	joblisters "github.com/kubeflow/pytorch-operator/pkg/client/listers/pytorch/v1beta2"
-	
-        common "github.com/kubeflow/tf-operator/pkg/apis/common/v1beta2"
+
+	common "github.com/kubeflow/tf-operator/pkg/apis/common/v1beta2"
 	"github.com/kubeflow/tf-operator/pkg/common/jobcontroller"
 	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
 	"github.com/kubeflow/tf-operator/pkg/util/k8sutil"
@@ -403,7 +403,7 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *v1beta2.PyTorchJob) error
 		if err := pc.deletePodsAndServices(job, pods); err != nil {
 			return err
 		}
-		
+
 		if jobExceedsLimit {
 			pc.Recorder.Event(job, v1.EventTypeNormal, pytorchJobFailedReason, failureMessage)
 			if job.Status.CompletionTime == nil {
