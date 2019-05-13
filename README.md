@@ -22,12 +22,12 @@ This repository contains the specification and implementation of `PyTorchJob` cu
 You can create PyTorch Job by defining a PyTorchJob config file. See the manifests for the [distributed MNIST example](./examples/mnist/). You may change the config file based on your requirements.
 
 ```
-cat examples/mnist/v1beta1/pytorch_job_mnist_gloo.yaml
+cat examples/mnist/v1beta2/pytorch_job_mnist_gloo.yaml
 ```
 Deploy the PyTorchJob resource to start training:
 
 ```
-kubectl create -f examples/mnist/v1beta1/pytorch_job_mnist_gloo.yaml
+kubectl create -f examples/mnist/v1beta2/pytorch_job_mnist_gloo.yaml
 ```
 You should now be able to see the created pods matching the specified number of replicas.
 
@@ -50,7 +50,7 @@ See the status section to monitor the job status. Here is sample output when the
 ```
 apiVersion: v1
 items:
-- apiVersion: kubeflow.org/v1beta1
+- apiVersion: kubeflow.org/v1beta2
   kind: PyTorchJob
   metadata:
     creationTimestamp: 2019-01-11T00:51:48Z
@@ -58,7 +58,7 @@ items:
     name: pytorch-dist-mnist
     namespace: kubeflow
     resourceVersion: "2146573"
-    selfLink: /apis/kubeflow.org/v1beta1/namespaces/kubeflow/pytorchjobs/pytorch-dist-mnist
+    selfLink: /apis/kubeflow.org/v1beta2/namespaces/kubeflow/pytorchjobs/pytorch-dist-mnist
     uid: 13ad0e7f-153b-11e9-b5c1-42010a80001e
   spec:
     cleanPodPolicy: None
