@@ -362,7 +362,7 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *v1beta2.PyTorchJob) error
 
 	activePods := k8sutil.FilterActivePods(pods)
 	active := int32(len(activePods))
-	failed := int32(k8sutil.FilterPods(pods, v1.PodFailed))
+	failed := k8sutil.FilterPodCount(pods, v1.PodFailed)
 	totalReplicas := getTotalReplicas(job)
 	prevReplicasFailedNum := getTotalFailedReplicas(job)
 
