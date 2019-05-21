@@ -115,7 +115,7 @@ func run() (string, error) {
 		},
 	}
 	// Create PyTorchJob
-	_, err = torchJobClient.KubeflowV1beta1().PyTorchJobs(*namespace).Create(original)
+	_, err = torchJobClient.KubeflowV1().PyTorchJobs(*namespace).Create(original)
 	if err != nil {
 		log.Errorf("Creating the job failed; %v", err)
 		return *name, err
@@ -123,7 +123,7 @@ func run() (string, error) {
 	log.Info("Job created: \n%v", util.Pformat(original))
 	var torchJob *pyv1.PyTorchJob
 	for endTime := time.Now().Add(*timeout); time.Now().Before(endTime); {
-		torchJob, err = torchJobClient.KubeflowV1beta1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
+		torchJob, err = torchJobClient.KubeflowV1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
 		if err != nil {
 			log.Errorf("There was a problem getting PyTorchJob: %v; error %v", *name, err)
 			return *name, err
@@ -159,13 +159,13 @@ func run() (string, error) {
 	}
 
 	// Delete the job and make sure all subresources are properly garbage collected.
-	if err := torchJobClient.KubeflowV1beta1().PyTorchJobs(*namespace).Delete(*name, &metav1.DeleteOptions{}); err != nil {
+	if err := torchJobClient.KubeflowV1().PyTorchJobs(*namespace).Delete(*name, &metav1.DeleteOptions{}); err != nil {
 		log.Fatalf("Failed to delete PyTorchJob %v; error %v", *name, err)
 	}
 
 	deleted := false
 	for endTime := time.Now().Add(*timeout); time.Now().Before(endTime); {
-		_, err = torchJobClient.KubeflowV1beta1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
+		_, err = torchJobClient.KubeflowV1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
 		if k8s_errors.IsNotFound(err) {
 			deleted = true
 			break
