@@ -58,7 +58,7 @@ func ValidateBetaTwoPyTorchJobSpec(c *torchv1beta2.PyTorchJobSpec) error {
 		}
 		//Make sure there has at least one container named "pytorch"
 		if !defaultContainerPresent {
-			msg := fmt.Sprintf("PyTorchJobSpec is not valid: There is no container named %s in %v", torchv1beta1.DefaultContainerName, rType)
+			msg := fmt.Sprintf("PyTorchJobSpec is not valid: There is no container named %s in %v", torchv1beta2.DefaultContainerName, rType)
 			return fmt.Errorf(msg)
 		}
 		if rType == torchv1beta2.PyTorchReplicaTypeMaster {
@@ -114,7 +114,7 @@ func ValidateV1PyTorchJobSpec(c *torchv1.PyTorchJobSpec) error {
 		}
 		//Make sure there has at least one container named "pytorch"
 		if !defaultContainerPresent {
-			msg := fmt.Sprintf("PyTorchJobSpec is not valid: There is no container named %s in %v", torchv1beta1.DefaultContainerName, rType)
+			msg := fmt.Sprintf("PyTorchJobSpec is not valid: There is no container named %s in %v", torchv1beta2.DefaultContainerName, rType)
 			return fmt.Errorf(msg)
 		}
 		if rType == torchv1.PyTorchReplicaTypeMaster {
