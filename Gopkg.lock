@@ -210,11 +210,10 @@
   version = "v1.0.1"
 
 [[projects]]
-  digest = "1:5055862f48c19a900448143d4b630bffb986d8a8a9f1c97fdf01d4b63b2f7d3f"
+  digest = "1:cccff701344cc105ecb0b024e07b68c4455b7c4b94c6a317a2a652fff3215270"
   name = "github.com/kubeflow/tf-operator"
   packages = [
     "pkg/apis/common/v1",
-    "pkg/apis/common/v1beta1",
     "pkg/apis/common/v1beta2",
     "pkg/common/jobcontroller",
     "pkg/control",
@@ -510,16 +509,9 @@
   version = "kubernetes-1.11.2"
 
 [[projects]]
-  digest = "1:51e1d04096765a19202e8735ba297d10dadd5c7efd26673fb43da72501dc2159"
+  digest = "1:aff2ac035da399e2ccd6d58a0c484f87a52c82868b652397727c2ce1a3aba7f0"
   name = "k8s.io/apiextensions-apiserver"
-  packages = [
-    "pkg/apis/apiextensions",
-    "pkg/apis/apiextensions/v1beta1",
-    "pkg/client/clientset/clientset",
-    "pkg/client/clientset/clientset/scheme",
-    "pkg/client/clientset/clientset/typed/apiextensions/v1beta1",
-    "pkg/features",
-  ]
+  packages = ["pkg/features"]
   pruneopts = "NUT"
   revision = "408db4a50408e2149acbd657bceb2480c13cb0a4"
   version = "kubernetes-1.11.2"
@@ -879,7 +871,6 @@
     "github.com/gogo/protobuf/proto",
     "github.com/golang/protobuf/proto",
     "github.com/kubeflow/tf-operator/pkg/apis/common/v1",
-    "github.com/kubeflow/tf-operator/pkg/apis/common/v1beta1",
     "github.com/kubeflow/tf-operator/pkg/apis/common/v1beta2",
     "github.com/kubeflow/tf-operator/pkg/common/jobcontroller",
     "github.com/kubeflow/tf-operator/pkg/control",
@@ -893,7 +884,6 @@
     "github.com/sirupsen/logrus",
     "k8s.io/api/core/v1",
     "k8s.io/api/policy/v1beta1",
-    "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured",
