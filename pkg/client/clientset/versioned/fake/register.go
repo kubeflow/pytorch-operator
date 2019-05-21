@@ -17,6 +17,7 @@
 package fake
 
 import (
+	kubeflowv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	kubeflowv1beta1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta1"
 	kubeflowv1beta2 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta2"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -51,4 +52,5 @@ func init() {
 func AddToScheme(scheme *runtime.Scheme) {
 	kubeflowv1beta1.AddToScheme(scheme)
 	kubeflowv1beta2.AddToScheme(scheme)
+	kubeflowv1.AddToScheme(scheme)
 }
