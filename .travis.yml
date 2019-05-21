@@ -13,7 +13,6 @@ install:
   - gometalinter --install
 
 script:
-  - go build -o pytorch-operator.v1beta1 github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1beta1
   - go build -o pytorch-operator.v1beta2 github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1beta2
   - go build -o pytorch-operator.v1 github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1
   - gometalinter --config=linter_config.json ./pkg/...
