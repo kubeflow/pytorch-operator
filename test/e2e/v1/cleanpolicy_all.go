@@ -11,10 +11,10 @@ import (
 	"time"
 
 	"github.com/gogo/protobuf/proto"
-	v1beta1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta1"
+	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	torchjobclient "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
 	"github.com/kubeflow/pytorch-operator/pkg/util"
-	common "github.com/kubeflow/tf-operator/pkg/apis/common/v1beta1"
+	common "github.com/kubeflow/tf-operator/pkg/apis/common/v1"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	k8s_errors "k8s.io/apimachinery/pkg/api/errors"
@@ -33,10 +33,10 @@ var (
 	image     = flag.String("image", "", "The Test image to run")
 )
 
-func getReplicaSpec(worker int32) map[v1beta1.PyTorchReplicaType]*common.ReplicaSpec {
-	spec := make(map[v1beta1.PyTorchReplicaType]*common.ReplicaSpec)
-	spec[v1beta1.PyTorchReplicaTypeMaster] = replicaSpec(1)
-	spec[v1beta1.PyTorchReplicaTypeWorker] = replicaSpec(worker)
+func getReplicaSpec(worker int32) map[pyv1.PyTorchReplicaType]*common.ReplicaSpec {
+	spec := make(map[pyv1.PyTorchReplicaType]*common.ReplicaSpec)
+	spec[pyv1.PyTorchReplicaTypeMaster] = replicaSpec(1)
+	spec[pyv1.PyTorchReplicaTypeWorker] = replicaSpec(worker)
 	return spec
 
 }
@@ -104,26 +104,26 @@ func run() (string, error) {
 		return "", err
 	}
 
-	original := &v1beta1.PyTorchJob{
+	original := &pyv1.PyTorchJob{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: *name,
 		},
-		Spec: v1beta1.PyTorchJobSpec{
+		Spec: pyv1.PyTorchJobSpec{
 			PyTorchReplicaSpecs: getReplicaSpec(3),
 		},
 	}
 	policy := common.CleanPodPolicyAll
 	original.Spec.CleanPodPolicy = &policy
 	// Create PyTorchJob
-	_, err = torchJobClient.KubeflowV1beta1().PyTorchJobs(*namespace).Create(original)
+	_, err = torchJobClient.KubeflowV1().PyTorchJobs(*namespace).Create(original)
 	if err != nil {
 		log.Errorf("Creating the job failed; %v", err)
 		return *name, err
 	}
 	log.Info("Job created: \n%v", util.Pformat(original))
-	var torchJob *v1beta1.PyTorchJob
+	var torchJob *pyv1.PyTorchJob
 	for endTime := time.Now().Add(*timeout); time.Now().Before(endTime); {
-		torchJob, err = torchJobClient.KubeflowV1beta1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
+		torchJob, err = torchJobClient.KubeflowV1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
 		if err != nil {
 			log.Errorf("There was a problem getting PyTorchJob: %v; error %v", *name, err)
 			return *name, err
@@ -146,7 +146,7 @@ func run() (string, error) {
 	}
 
 	l := map[string]string{
-		"group-name":       v1beta1.GroupName,
+		"group-name":       pyv1.GroupName,
 		"pytorch-job-name": strings.Replace(*name, "/", "-", -1),
 	}
 
@@ -175,13 +175,13 @@ func run() (string, error) {
 		return *name, fmt.Errorf("Not all pods are successfully deleted for PyTorchJob %v.", *name)
 	}
 	// Delete the job and make sure all subresources are properly garbage collected.
-	if err := torchJobClient.KubeflowV1beta1().PyTorchJobs(*namespace).Delete(*name, &metav1.DeleteOptions{}); err != nil {
+	if err := torchJobClient.KubeflowV1().PyTorchJobs(*namespace).Delete(*name, &metav1.DeleteOptions{}); err != nil {
 		log.Fatalf("Failed to delete PyTorchJob %v; error %v", *name, err)
 	}
 
 	deleted = false
 	for endTime := time.Now().Add(*timeout); time.Now().Before(endTime); {
-		_, err = torchJobClient.KubeflowV1beta1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
+		_, err = torchJobClient.KubeflowV1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
 		if k8s_errors.IsNotFound(err) {
 			deleted = true
 			break
