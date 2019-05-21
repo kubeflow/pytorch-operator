@@ -20,8 +20,6 @@ echo "Create symlink to GOPATH"
 mkdir -p ${GOPATH}/src/github.com/kubeflow
 ln -s ${CONTEXT_DIR} ${GO_DIR}
 cd ${GO_DIR}
-echo "Build pytorch operator v1beta1 binary"
-go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1beta1
 echo "Build pytorch operator v1beta2 binary"
 go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1beta2
 echo "Build pytorch operator v1 binary"
