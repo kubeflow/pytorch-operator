@@ -22,63 +22,57 @@ This repository contains the specification and implementation of `PyTorchJob` cu
 You can create PyTorch Job by defining a PyTorchJob config file. See the manifests for the [distributed MNIST example](./examples/mnist/). You may change the config file based on your requirements.
 
 ```
-cat examples/mnist/v1beta2/pytorch_job_mnist_gloo.yaml
+cat examples/mnist/v1/pytorch_job_mnist_gloo.yaml
 ```
 Deploy the PyTorchJob resource to start training:
 
 ```
-kubectl create -f examples/mnist/v1beta2/pytorch_job_mnist_gloo.yaml
+kubectl create -f examples/mnist/v1/pytorch_job_mnist_gloo.yaml
 ```
 You should now be able to see the created pods matching the specified number of replicas.
 
 ```
-kubectl get pods -l pytorch-job-name=pytorch-dist-mnist
+kubectl get pods -l pytorch-job-name=pytorch-dist-mnist-gloo
 ```
 Training should run for about 10 epochs and takes 5-10 minutes on a cpu cluster. Logs can be inspected to see its training progress. 
 
 ```
-PODNAME=$(kubectl get pods -l pytorch-job-name=pytorch-dist-mnist,task_index=0 -o name)
+PODNAME=$(kubectl get pods -l pytorch-job-name=pytorch-dist-mnist-gloo,pytorch-replica-type=master -o name)
 kubectl logs -f ${PODNAME}
 ```
 ## Monitoring a PyTorch Job
 
 ```
-kubectl get -o yaml pytorchjobs pytorch-dist-mnist
+kubectl get -o yaml pytorchjobs pytorch-dist-mnist-gloo
 ```
 See the status section to monitor the job status. Here is sample output when the job is successfully completed.
 
 ```
 apiVersion: v1
 items:
-- apiVersion: kubeflow.org/v1beta2
+- apiVersion: kubeflow.org/v1
   kind: PyTorchJob
   metadata:
     creationTimestamp: 2019-01-11T00:51:48Z
     generation: 1
-    name: pytorch-dist-mnist
-    namespace: kubeflow
+    name: pytorch-dist-mnist-gloo
+    namespace: default
     resourceVersion: "2146573"
-    selfLink: /apis/kubeflow.org/v1beta2/namespaces/kubeflow/pytorchjobs/pytorch-dist-mnist
+    selfLink: /apis/kubeflow.org/v1/namespaces/kubeflow/pytorchjobs/pytorch-dist-mnist-gloo
     uid: 13ad0e7f-153b-11e9-b5c1-42010a80001e
   spec:
-    cleanPodPolicy: None
     pytorchReplicaSpecs:
       Master:
         replicas: 1
         restartPolicy: OnFailure
         template:
-          metadata:
-            creationTimestamp: null
           spec:
             containers:
             - args:
               - --backend
               - gloo
-              image: gcr.io/tzaman/pytorch-dist-mnist-test:1.0
+              image: gcr.io/kubeflow-ci/pytorch-dist-mnist-test:v1.0
               name: pytorch
-              ports:
-              - containerPort: 23456
-                name: pytorchjob-port
               resources:
                 limits:
                   nvidia.com/gpu: "1"
@@ -86,18 +80,13 @@ items:
         replicas: 1
         restartPolicy: OnFailure
         template:
-          metadata:
-            creationTimestamp: null
           spec:
             containers:
             - args:
               - --backend
               - gloo
-              image: gcr.io/tzaman/pytorch-dist-mnist-test:1.0
+              image: gcr.io/kubeflow-ci/pytorch-dist-mnist-test:v1.0
               name: pytorch
-              ports:
-              - containerPort: 23456
-                name: pytorchjob-port
               resources:
                 limits:
                   nvidia.com/gpu: "1"
@@ -106,24 +95,26 @@ items:
     conditions:
     - lastTransitionTime: 2019-01-11T00:51:48Z
       lastUpdateTime: 2019-01-11T00:51:48Z
-      message: PyTorchJob pytorch-dist-mnist is created.
+      message: PyTorchJob pytorch-dist-mnist-gloo is created.
       reason: PyTorchJobCreated
       status: "True"
       type: Created
     - lastTransitionTime: 2019-01-11T00:57:22Z
       lastUpdateTime: 2019-01-11T00:57:22Z
-      message: PyTorchJob pytorch-dist-mnist is running.
+      message: PyTorchJob pytorch-dist-mnist-gloo is running.
       reason: PyTorchJobRunning
       status: "False"
       type: Running
     - lastTransitionTime: 2019-01-11T01:03:15Z
       lastUpdateTime: 2019-01-11T01:03:15Z
-      message: PyTorchJob pytorch-dist-mnist is successfully completed.
+      message: PyTorchJob pytorch-dist-mnist-gloo is successfully completed.
       reason: PyTorchJobSucceeded
       status: "True"
       type: Succeeded
     replicaStatuses:
-      Master: {}
-      Worker: {}
+      Master:
+        succeeded: 1
+      Worker:
+        succeeded: 1
     startTime: 2019-01-11T00:57:22Z
 ```
