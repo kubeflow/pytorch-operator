@@ -227,12 +227,12 @@
                 ],
                 [
                   {
-                    name: "run-v1beta1-defaults",
-                    template: "run-v1beta1-defaults",
+                    name: "run-v1-defaults",
+                    template: "run-v1-defaults",
                   },
                   {
-                    name: "run-v1beta1-cleanpodpolicy-all",
-                    template: "run-v1beta1-cleanpodpolicy-all",
+                    name: "run-v1-cleanpodpolicy-all",
+                    template: "run-v1-cleanpodpolicy-all",
                   },
                 ],
                 [
@@ -287,12 +287,12 @@
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-kubeflow", testWorkerImage, [
               "scripts/setup-kubeflow.sh",
             ]),  // setup kubeflow
-            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1beta1-defaults", testWorkerImage, [
-              "scripts/v1beta1/run-defaults.sh",
-            ]),  // run v1beta1 default tests
-            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1beta1-cleanpodpolicy-all", testWorkerImage, [
-              "scripts/v1beta1/run-cleanpodpolicy-all.sh",
-            ]),  // run v1beta1 cleanpodpolicy tests
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1-defaults", testWorkerImage, [
+              "scripts/v1/run-defaults.sh",
+            ]),  // run v1 default tests
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1-cleanpodpolicy-all", testWorkerImage, [
+              "scripts/v1/run-cleanpodpolicy-all.sh",
+            ]),  // run v1 cleanpodpolicy tests
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1beta2-defaults", testWorkerImage, [
               "scripts/v1beta2/run-defaults.sh",
             ]),  // run v1beta2 default tests
