@@ -512,16 +512,15 @@ func (pc *PyTorchController) pastBackoffLimit(job *v1beta2.PyTorchJob, pods []*v
 		}
 		for i := range pods {
 			po := pods[i]
-			if po.Status.Phase != v1.PodRunning {
-				continue
-			}
-			for j := range po.Status.InitContainerStatuses {
-				stat := po.Status.InitContainerStatuses[j]
-				result += stat.RestartCount
-			}
-			for j := range po.Status.ContainerStatuses {
-				stat := po.Status.ContainerStatuses[j]
-				result += stat.RestartCount
+			if po.Status.Phase == v1.PodRunning || po.Status.Phase == v1.PodPending {
+				for j := range po.Status.InitContainerStatuses {
+					stat := po.Status.InitContainerStatuses[j]
+					result += stat.RestartCount
+				}
+				for j := range po.Status.ContainerStatuses {
+					stat := po.Status.ContainerStatuses[j]
+					result += stat.RestartCount
+				}
 			}
 		}
 	}
