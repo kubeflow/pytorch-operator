@@ -218,7 +218,7 @@
   version = "v1.0.1"
 
 [[projects]]
-  digest = "1:cccff701344cc105ecb0b024e07b68c4455b7c4b94c6a317a2a652fff3215270"
+  digest = "1:0edf4c6c87de84afe0cab647d88b6812bb0b9dcaa31a735914539753ae214095"
   name = "github.com/kubeflow/tf-operator"
   packages = [
     "pkg/apis/common/v1",
@@ -232,8 +232,8 @@
     "pkg/version",
   ]
   pruneopts = "NUT"
-  revision = "63de5cbdf3f4b90c4d07b009da1610946d2b5816"
-  version = "v0.5.1"
+  revision = "d0b973be7135b7cbed3138d3d5ac70ae3a9bcd88"
+  version = "v0.5.3"
 
 [[projects]]
   digest = "1:680c0fba95a0cff934e350b1ad6774d8229378a3e37d9902e07e2861e82a5908"

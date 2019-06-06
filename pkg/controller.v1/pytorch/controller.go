@@ -307,14 +307,6 @@ func (pc *PyTorchController) syncPyTorchJob(key string) (bool, error) {
 	job := sharedJob.DeepCopy()
 	jobNeedsSync := pc.satisfiedExpectations(job)
 
-	if pc.Config.EnableGangScheduling {
-		minAvailableReplicas := getTotalReplicas(job)
-		_, err := pc.SyncPodGroup(job, minAvailableReplicas)
-		if err != nil {
-			logger.Warnf("Sync PodGroup %v: %v", job.Name, err)
-		}
-	}
-
 	// Set default for the new job.
 	scheme.Scheme.Default(job)
 
@@ -419,13 +411,8 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *pyv1.PyTorchJob) error {
 		}
 
 		if pc.Config.EnableGangScheduling {
-			pc.Recorder.Event(job, v1.EventTypeNormal, "JobTerminated", "Job is terminated, deleting PodGroup")
 			if err := pc.DeletePodGroup(job); err != nil {
-				pc.Recorder.Eventf(job, v1.EventTypeWarning, "FailedDeletePodGroup", "Error deleting: %v", err)
 				return err
-			} else {
-				pc.Recorder.Eventf(job, v1.EventTypeNormal, "SuccessfulDeletePodGroup", "Deleted PodGroup: %v", job.Name)
-
 			}
 		}
 
@@ -437,11 +424,15 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *pyv1.PyTorchJob) error {
 				job.Status.ReplicaStatuses[rtype].Active = 0
 			}
 		}
-		// no need to update the job if the status hasn't changed since last time.
-		if !reflect.DeepEqual(*oldStatus, job.Status) {
-			return pc.updateStatusHandler(job)
+		return pc.updateStatusHandler(job)
+	}
+
+	if pc.Config.EnableGangScheduling {
+		minAvailableReplicas := getTotalReplicas(job)
+		_, err := pc.SyncPodGroup(job, minAvailableReplicas)
+		if err != nil {
+			logger.Warnf("Sync PodGroup %v: %v", job.Name, err)
 		}
-		return nil
 	}
 
 	// Save the current state of the replicas
@@ -463,8 +454,11 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *pyv1.PyTorchJob) error {
 		}
 	}
 
-	// TODO(CPH): Add check here, no need to update the job if the status hasn't changed since last time.
-	return pc.updateStatusHandler(job)
+	// No need to update the job if the status hasn't changed since last time.
+	if !reflect.DeepEqual(*oldStatus, job.Status) {
+		return pc.updateStatusHandler(job)
+	}
+	return nil
 }
 
 // satisfiedExpectations returns true if the required adds/dels for the given job have been observed.
