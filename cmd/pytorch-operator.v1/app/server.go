@@ -55,8 +55,8 @@ var (
 	renewDuration = 5 * time.Second
 	retryPeriod   = 3 * time.Second
 	isLeader      = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "tf_operator_is_leader",
-		Help: "Is this client the leader of this tf-operator client set?",
+		Name: "pytorch_operator_is_leader",
+		Help: "Is this client the leader of this pytorch-operator client set?",
 	})
 )
 
