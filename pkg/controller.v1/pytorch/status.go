@@ -27,6 +27,8 @@ import (
 	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	common "github.com/kubeflow/tf-operator/pkg/apis/common/v1"
 	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 const (
@@ -40,6 +42,21 @@ const (
 	pytorchJobFailedReason = "PyTorchJobFailed"
 	// pytorchJobRestarting is added in a job when it is restarting.
 	pytorchJobRestartingReason = "PyTorchJobRestarting"
+)
+
+var (
+	pytorchJobsSuccessCount = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pytorch_operator_jobs_successful",
+		Help: "Counts number of PyTorch jobs successful",
+	})
+	pytorchJobsFailureCount = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pytorch_operator_jobs_failed",
+		Help: "Counts number of PyTorch jobs failed",
+	})
+	pytorchJobsRestartCount = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pytorch_operator_jobs_restarted",
+		Help: "Counts number of PyTorch jobs restarted",
+	})
 )
 
 // updateStatus updates the status of the job.
@@ -91,6 +108,7 @@ func (pc *PyTorchController) updateStatusSingle(job *pyv1.PyTorchJob, rtype pyv1
 					pylogger.LoggerForJob(job).Infof("Append job condition error: %v", err)
 					return err
 				}
+				pytorchJobsSuccessCount.Inc()
 			}
 		}
 	} else {
@@ -107,6 +125,8 @@ func (pc *PyTorchController) updateStatusSingle(job *pyv1.PyTorchJob, rtype pyv1
 				pylogger.LoggerForJob(job).Infof("Append job condition error: %v", err)
 				return err
 			}
+			pytorchJobsFailureCount.Inc()
+			pytorchJobsRestartCount.Inc()
 		} else {
 			msg := fmt.Sprintf("PyTorchJob %s is failed because %d %s replica(s) failed.", job.Name, failed, rtype)
 			pc.Recorder.Event(job, v1.EventTypeNormal, pytorchJobFailedReason, msg)
@@ -119,6 +139,7 @@ func (pc *PyTorchController) updateStatusSingle(job *pyv1.PyTorchJob, rtype pyv1
 				pylogger.LoggerForJob(job).Infof("Append job condition error: %v", err)
 				return err
 			}
+			pytorchJobsFailureCount.Inc()
 		}
 	}
 	return nil

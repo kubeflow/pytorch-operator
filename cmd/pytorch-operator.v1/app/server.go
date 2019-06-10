@@ -20,6 +20,8 @@ import (
 	"time"
 
 	kubebatchclient "github.com/kubernetes-sigs/kube-batch/pkg/client/clientset/versioned"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -52,6 +54,10 @@ var (
 	leaseDuration = 15 * time.Second
 	renewDuration = 5 * time.Second
 	retryPeriod   = 3 * time.Second
+	isLeader      = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "pytorch_operator_is_leader",
+		Help: "Is this client the leader of this pytorch-operator client set?",
+	})
 )
 
 const RecommendedKubeConfigPathEnv = "KUBECONFIG"
@@ -112,6 +118,7 @@ func Run(opt *options.ServerOption) error {
 
 	// Set leader election start function.
 	run := func(<-chan struct{}) {
+		isLeader.Set(1)
 		if err := tc.Run(opt.Threadiness, stopCh); err != nil {
 			log.Errorf("Failed to run the controller: %v", err)
 		}
@@ -152,6 +159,7 @@ func Run(opt *options.ServerOption) error {
 		Callbacks: election.LeaderCallbacks{
 			OnStartedLeading: run,
 			OnStoppedLeading: func() {
+				isLeader.Set(0)
 				log.Fatalf("leader election lost")
 			},
 		},

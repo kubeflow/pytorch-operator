@@ -44,6 +44,8 @@ import (
 	"github.com/kubeflow/tf-operator/pkg/common/jobcontroller"
 	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
 	"github.com/kubeflow/tf-operator/pkg/util/k8sutil"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 const (
@@ -68,6 +70,11 @@ var (
 		ReconcilerSyncLoopPeriod: metav1.Duration{Duration: 15 * time.Second},
 		EnableGangScheduling:     false,
 	}
+
+	pytorchJobsDeletedCount = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pytorch_operator_jobs_deleted",
+		Help: "Counts number of PyTorch jobs deleted",
+	})
 )
 
 // PyTorchController is the type for PyTorchJob Controller, which manages
@@ -236,6 +243,7 @@ func (pc *PyTorchController) processNextWorkItem() bool {
 	if err != nil {
 		if err == errNotExists {
 			logger.Infof("PyTorchJob has been deleted: %v", key)
+			pytorchJobsDeletedCount.Inc()
 			return true
 		}
 
@@ -298,6 +306,7 @@ func (pc *PyTorchController) syncPyTorchJob(key string) (bool, error) {
 	if err != nil {
 		if err == errNotExists {
 			logger.Infof("PyTorchJob has been deleted: %v", key)
+			pytorchJobsDeletedCount.Inc()
 			// jm.expectations.DeleteExpectations(key)
 			return true, nil
 		}

@@ -15,10 +15,19 @@ import (
 	common "github.com/kubeflow/tf-operator/pkg/apis/common/v1"
 	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
 	"github.com/kubeflow/tf-operator/pkg/util/k8sutil"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 const (
 	failedMarshalPyTorchJobReason = "InvalidPyTorchJobSpec"
+)
+
+var (
+	pytorchJobsCreatedCount = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "pytorch_operator_jobs_created",
+		Help: "Counts number of PyTorch jobs created",
+	})
 )
 
 // When a pod is added, set the defaults and enqueue the current pytorchjob.
@@ -97,6 +106,7 @@ func (pc *PyTorchController) addPyTorchJob(obj interface{}) {
 		return
 	}
 	pc.enqueuePyTorchJob(obj)
+	pytorchJobsCreatedCount.Inc()
 }
 
 // When a pod is updated, enqueue the current pytorchjob.
