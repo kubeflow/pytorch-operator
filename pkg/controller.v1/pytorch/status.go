@@ -58,8 +58,8 @@ func (pc *PyTorchController) updateStatusSingle(job *pyv1.PyTorchJob, rtype pyv1
 
 	pylogger.LoggerForJob(job).Infof("PyTorchJob=%s, ReplicaType=%s expected=%d, running=%d, failed=%d",
 		job.Name, rtype, expected, running, failed)
-	// All workers are running, set StartTime.
-	if running == replicas && job.Status.StartTime == nil {
+	// Set StartTime.
+	if job.Status.StartTime == nil {
 		now := metav1.Now()
 		job.Status.StartTime = &now
 		// enqueue a sync to check if job past ActiveDeadlineSeconds
