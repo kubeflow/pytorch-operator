@@ -7,7 +7,8 @@ Currently available metrics to monitor are listed below.
 ### Metrics for Each Component Container for PyTorch operator
 
 Component Containers:
-* TBD
+* pytorch-master
+* pytorch-worker
 
 #### Each Container Reports on its:
 
