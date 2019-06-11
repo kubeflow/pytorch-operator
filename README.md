@@ -7,7 +7,7 @@
 ## Overview
 
 This repository contains the specification and implementation of `PyTorchJob` custom resource definition. Using this custom resource, users can create and manage PyTorch jobs like other built-in resources in Kubernetes. See [CRD definition](https://github.com/kubeflow/kubeflow/blob/master/kubeflow/pytorch-job/pytorch-operator.libsonnet#L11)
-  
+
 ## Prerequisites
 
 - Kubernetes >= 1.8
@@ -34,7 +34,7 @@ You should now be able to see the created pods matching the specified number of 
 ```
 kubectl get pods -l pytorch-job-name=pytorch-dist-mnist-gloo
 ```
-Training should run for about 10 epochs and takes 5-10 minutes on a cpu cluster. Logs can be inspected to see its training progress. 
+Training should run for about 10 epochs and takes 5-10 minutes on a cpu cluster. Logs can be inspected to see its training progress.
 
 ```
 PODNAME=$(kubectl get pods -l pytorch-job-name=pytorch-dist-mnist-gloo,pytorch-replica-type=master -o name)
@@ -118,3 +118,7 @@ items:
         succeeded: 1
     startTime: 2019-01-11T00:57:22Z
 ```
+
+## Contributing
+
+Please refer to the [developer_guide](developer_guide.md).
