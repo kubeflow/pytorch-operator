@@ -15,7 +15,6 @@ spec:
   group: kubeflow.org
   names:
     kind: PyTorchJob
-    listKind: PyTorchJobList
     plural: pytorchjobs
     singular: pytorchjob
   scope: Namespaced
