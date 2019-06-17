@@ -197,7 +197,7 @@ func (pc *PyTorchController) cleanupPyTorchJob(job *pyv1.PyTorchJob) error {
 
 // deletePyTorchJob deletes the given PyTorchJob.
 func (pc *PyTorchController) deletePyTorchJob(job *pyv1.PyTorchJob) error {
-	return pc.jobClientSet.KubeflowV1beta2().PyTorchJobs(job.Namespace).Delete(job.Name, &metav1.DeleteOptions{})
+	return pc.jobClientSet.KubeflowV1().PyTorchJobs(job.Namespace).Delete(job.Name, &metav1.DeleteOptions{})
 }
 
 func getTotalReplicas(job *pyv1.PyTorchJob) int32 {
