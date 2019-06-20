@@ -45,3 +45,11 @@ echo "Generating defaulters for pytorch v1"
  -O zz_generated.defaults \
  --go-header-file ./hack/../hack/boilerplate/boilerplate.go.txt  \
  --output-package github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1
+
+echo "Generating OpenAPI specification for pytorch/v1beta2"
+${GOPATH}/bin/openapi-gen --input-dirs github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta2,k8s.io/api/core/v1,k8s.io/apimachinery/pkg/apis/meta/v1,k8s.io/apimachinery/pkg/api/resource,k8s.io/apimachinery/pkg/runtime,k8s.io/apimachinery/pkg/util/intstr,k8s.io/apimachinery/pkg/version --output-package github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta2 --go-header-file hack/boilerplate/boilerplate.go.txt "$@"
+cd - > /dev/null
+
+echo "Generating OpenAPI specification for pytorch/v1"
+${GOPATH}/bin/openapi-gen --input-dirs github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1,k8s.io/api/core/v1,k8s.io/apimachinery/pkg/apis/meta/v1,k8s.io/apimachinery/pkg/api/resource,k8s.io/apimachinery/pkg/runtime,k8s.io/apimachinery/pkg/util/intstr,k8s.io/apimachinery/pkg/version --output-package github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1 --go-header-file hack/boilerplate/boilerplate.go.txt "$@"
+cd - > /dev/null
