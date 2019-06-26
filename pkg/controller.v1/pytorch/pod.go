@@ -222,6 +222,12 @@ func (pc *PyTorchController) createNewPod(job *pyv1.PyTorchJob, rtype pyv1.PyTor
 		} else {
 			podTemplate.Spec.SchedulerName = gangSchedulerName
 		}
+
+		if podTemplate.Annotations == nil {
+			podTemplate.Annotations = map[string]string{}
+		}
+		// we create the podGroup with the same name as the pyTorch job
+		podTemplate.Annotations["scheduling.k8s.io/group-name"] = job.Name
 	}
 
 	err = pc.PodControl.CreatePodsWithControllerRef(job.Namespace, podTemplate, job, controllerRef)
