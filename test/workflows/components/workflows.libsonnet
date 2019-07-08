@@ -97,6 +97,7 @@
         // command: List to pass as the container command.
         buildTemplate(step_name, image, command):: {
           name: step_name,
+          activeDeadlineSeconds: 2100,
           container: {
             command: command,
             image: image,
