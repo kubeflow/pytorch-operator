@@ -78,3 +78,20 @@ func TestConvertPyTorchJobToUnstructured(t *testing.T) {
 		t.Errorf("Expected error to be nil while got %v", err)
 	}
 }
+
+func TestGetInitContainer(t *testing.T) {
+	template := `
+- name: init-pytorch
+  image: busybox
+  command: ['sh', '-c', 'until nslookup {{.MasterAddr}}; do echo waiting for master; sleep 2; done;']`
+
+	initContainer, err := GetInitContainer(template, InitContainerParam{"svc"})
+	if err != nil {
+		t.Errorf("Expected error to be nil while got %v", err)
+	}
+
+	expectedCMD := "until nslookup svc; do echo waiting for master; sleep 2; done;"
+	if initContainer[0].Command[2] != expectedCMD {
+		t.Errorf("Expected %s , got %s", expectedCMD, initContainer[0].Command[2])
+	}
+}
