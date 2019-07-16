@@ -47,6 +47,7 @@ echo "Install ksonnet app in namespace ${NAMESPACE}"
 #/usr/local/bin/ks init ${APP_NAME}
 #cd ${APP_NAME}
 #/usr/local/bin/ks env add ${KF_ENV}
+/usr/local/bin/ks version
 cd ${GO_DIR}/test/workflows
 /usr/local/bin/ks env set ${KF_ENV} --namespace ${NAMESPACE}
 /usr/local/bin/ks registry add kubeflow github.com/kubeflow/kubeflow/tree/${KUBEFLOW_VERSION}/kubeflow
