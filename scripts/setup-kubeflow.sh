@@ -44,18 +44,18 @@ echo "Setting account ${ACCOUNT}"
 kubectl create clusterrolebinding default-admin --clusterrole=cluster-admin --user=${ACCOUNT}
 
 echo "Install ksonnet app in namespace ${NAMESPACE}"
-/usr/local/bin/ks init ${APP_NAME}
+/usr/local/bin/ks-13 init ${APP_NAME}
 cd ${APP_NAME}
-/usr/local/bin/ks env add ${KF_ENV}
-/usr/local/bin/ks env set ${KF_ENV} --namespace ${NAMESPACE}
-/usr/local/bin/ks registry add kubeflow github.com/kubeflow/kubeflow/tree/${KUBEFLOW_VERSION}/kubeflow
+/usr/local/bin/ks-13 env add ${KF_ENV}
+/usr/local/bin/ks-13 env set ${KF_ENV} --namespace ${NAMESPACE}
+/usr/local/bin/ks-13 registry add kubeflow github.com/kubeflow/kubeflow/tree/${KUBEFLOW_VERSION}/kubeflow
 
 echo "Install PyTorch ksonnet package"
-/usr/local/bin/ks pkg install kubeflow/pytorch-job@${KUBEFLOW_VERSION}
+/usr/local/bin/ks-13 pkg install kubeflow/pytorch-job@${KUBEFLOW_VERSION}
 
 echo "Install PyTorch operator"
-/usr/local/bin/ks generate pytorch-operator pytorch-operator --pytorchJobImage=${REGISTRY}/${REPO_NAME}:${VERSION}
-/usr/local/bin/ks apply ${KF_ENV} -c pytorch-operator
+/usr/local/bin/ks-13 generate pytorch-operator pytorch-operator --pytorchJobImage=${REGISTRY}/${REPO_NAME}:${VERSION}
+/usr/local/bin/ks-13 apply ${KF_ENV} -c pytorch-operator
 
 TIMEOUT=30
 until kubectl get pods -n ${NAMESPACE} | grep pytorch-operator | grep 1/1 || [[ $TIMEOUT -eq 1 ]]; do
