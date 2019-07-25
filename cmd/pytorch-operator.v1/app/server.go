@@ -133,7 +133,7 @@ func Run(opt *options.ServerOption) error {
 
 	// Prepare event clients.
 	eventBroadcaster := record.NewBroadcaster()
-	if err = pyv1.AddToScheme(scheme.Scheme); err != nil {
+	if err = v1.AddToScheme(scheme.Scheme); err != nil {
 		return fmt.Errorf("coreV1 Add Scheme failed: %v", err)
 	}
 	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, v1.EventSource{Component: "pytorch-operator"})
