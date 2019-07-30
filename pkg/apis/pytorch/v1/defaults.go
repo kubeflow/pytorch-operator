@@ -95,10 +95,12 @@ func SetDefaults_PyTorchJob(job *PyTorchJob) {
 	// Update the key of PyTorchReplicaSpecs to camel case.
 	setTypeNamesToCamelCase(job)
 
-	for _, spec := range job.Spec.PyTorchReplicaSpecs {
+	for rType, spec := range job.Spec.PyTorchReplicaSpecs {
 		// Set default replicas to 1.
 		setDefaultReplicas(spec)
-		// Set default port to pytorch container.
-		setDefaultPort(&spec.Template.Spec)
+		if rType == PyTorchReplicaTypeMaster {
+			// Set default port to pytorch container of Master.
+			setDefaultPort(&spec.Template.Spec)
+		}
 	}
 }
