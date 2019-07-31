@@ -18,7 +18,7 @@ import (
 	"strings"
 
 	common "github.com/kubeflow/tf-operator/pkg/apis/common/v1beta2"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -86,7 +86,7 @@ func setTypeNameToCamelCase(job *PyTorchJob, typ PyTorchReplicaType) {
 
 // SetDefaults_PyTorchJob sets any unspecified values to defaults.
 func SetDefaults_PyTorchJob(job *PyTorchJob) {
-	// Set default cleanpod policy to Running.
+	// Set default cleanpod policy to None.
 	if job.Spec.CleanPodPolicy == nil {
 		policy := common.CleanPodPolicyNone
 		job.Spec.CleanPodPolicy = &policy
