@@ -54,7 +54,7 @@ type PyTorchJobSpec struct {
 
 	// CleanPodPolicy defines the policy to kill pods after PyTorchJob is
 	// succeeded.
-	// Default to Running.
+	// Default to None.
 	CleanPodPolicy *common.CleanPodPolicy `json:"cleanPodPolicy,omitempty"`
 
 	// TTLSecondsAfterFinished is the TTL to clean up pytorch-jobs (temporary

@@ -17,7 +17,13 @@ package pytorch
 import (
 	"fmt"
 
+	"bytes"
+	"html/template"
+
 	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
+	"github.com/kubeflow/pytorch-operator/pkg/common/config"
+	"gopkg.in/yaml.v2"
+	v1 "k8s.io/api/core/v1"
 )
 
 var (
@@ -40,9 +46,41 @@ func GetPortFromPyTorchJob(job *pyv1.PyTorchJob, rtype pyv1.PyTorchReplicaType) 
 	return -1, errPortNotFound
 }
 
+type InitContainerParam struct {
+	MasterAddr string
+}
+
 func ContainMasterSpec(job *pyv1.PyTorchJob) bool {
 	if _, ok := job.Spec.PyTorchReplicaSpecs[pyv1.PyTorchReplicaTypeMaster]; ok {
 		return true
 	}
 	return false
+}
+
+func GetInitContainer(containerTemplate string, param InitContainerParam) ([]v1.Container, error) {
+	var buf bytes.Buffer
+	tpl, err := template.New("container").Parse(containerTemplate)
+	if err != nil {
+		return nil, err
+	}
+	if err := tpl.Execute(&buf, param); err != nil {
+		return nil, err
+	}
+
+	var result []v1.Container
+	err = yaml.Unmarshal(buf.Bytes(), &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func AddInitContainerForWorkerPod(podTemplate *v1.PodTemplateSpec, param InitContainerParam) error {
+	containers, err := GetInitContainer(config.GetInitContainerTemplate(), param)
+	if err != nil {
+		return err
+	}
+	podTemplate.Spec.InitContainers = append(podTemplate.Spec.InitContainers, containers...)
+	return nil
 }

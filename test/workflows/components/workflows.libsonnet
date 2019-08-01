@@ -54,7 +54,7 @@
       local srcRootDir = testDir + "/src";
       // The directory containing the kubeflow/pytorch-operator repo
       local srcDir = srcRootDir + "/kubeflow/pytorch-operator";
-      local testWorkerImage = "gcr.io/kubeflow-ci/test-worker";
+      local testWorkerImage = "gcr.io/kubeflow-ci/test-worker:v20190421-fba47fe-e3b0c4";
       local golangImage = "golang:1.9.4-stretch";
       // TODO(jose5918) Build our own helm image
       local helmImage = "volumecontroller/golang:1.9.2";
@@ -97,6 +97,7 @@
         // command: List to pass as the container command.
         buildTemplate(step_name, image, command):: {
           name: step_name,
+          activeDeadlineSeconds: 2100,
           container: {
             command: command,
             image: image,

@@ -455,6 +455,10 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *pyv1.PyTorchJob) error {
 			return err
 		}
 
+		// Service is in need only for Master
+		if rtype != pyv1.PyTorchReplicaTypeMaster {
+			continue
+		}
 		err = pc.reconcileServices(job, services, rtype, spec)
 
 		if err != nil {
