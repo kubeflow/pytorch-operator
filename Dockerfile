@@ -1,4 +1,4 @@
-FROM golang:latest AS build-image
+FROM golang:1.12 AS build-image
 
 ADD . /go/src/github.com/kubeflow/pytorch-operator
 
