@@ -5,7 +5,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -153,8 +153,9 @@ func (pc *PyTorchController) deletePodsAndServices(job *pyv1.PyTorchJob, pods []
 		return nil
 	}
 
-	// Delete nothing when the cleanPodPolicy is None.
-	if *job.Spec.CleanPodPolicy == common.CleanPodPolicyNone {
+	// Delete nothing when the cleanPodPolicy is None or Running.
+	if *job.Spec.CleanPodPolicy == common.CleanPodPolicyNone ||
+		*job.Spec.CleanPodPolicy == common.CleanPodPolicyRunning {
 		return nil
 	}
 
