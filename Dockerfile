@@ -4,7 +4,7 @@ RUN echo $(ls)
 ADD . /go/src/github.com/kubeflow/pytorch-operator
 
 WORKDIR /go/src/github.com/kubeflow/pytorch-operator
-
+RUN echo $(ls)
 
 # Build pytorch operator v1beta2 binary
 RUN go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1beta2
