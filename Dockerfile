@@ -1,6 +1,7 @@
 FROM golang:1.12 AS build-image
 
 ADD . /go/src/github.com/kubeflow/pytorch-operator
+COPY ./vendor/github.com /usr/local/go/src/
 
 WORKDIR /go/src/github.com/kubeflow/pytorch-operator
 
