@@ -1,7 +1,7 @@
 FROM golang:1.12 AS build-image
-
+RUN echo $(pwd)
+RUN echo $(ls)
 ADD . /go/src/github.com/kubeflow/pytorch-operator
-COPY /go/src/github.com/kubeflow/pytorch-operator/vendor/* /usr/local/go/src/
 
 WORKDIR /go/src/github.com/kubeflow/pytorch-operator
 
