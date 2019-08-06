@@ -17,6 +17,7 @@ rules:
   - kubeflow.org
   resources:
   - pytorchjobs
+  - pytorchjobs/status
   verbs:
   - '*'
 - apiGroups:
