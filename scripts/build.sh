@@ -34,7 +34,6 @@ ln -s ${PWD} ${GO_DIR}
 cd ${GO_DIR}
 
 echo "Building PyTorch operator in gcloud"
-cd github.com/kubeflow/pytorch-operator/
 gcloud version
 gcloud builds submit . --tag=${REGISTRY}/${REPO_NAME}:${VERSION} --project=${PROJECT}
 
