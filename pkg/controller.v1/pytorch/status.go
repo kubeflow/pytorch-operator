@@ -46,15 +46,15 @@ const (
 
 var (
 	pytorchJobsSuccessCount = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "pytorch_operator_jobs_successful",
+		Name: "pytorch_operator_jobs_successful_total",
 		Help: "Counts number of PyTorch jobs successful",
 	})
 	pytorchJobsFailureCount = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "pytorch_operator_jobs_failed",
+		Name: "pytorch_operator_jobs_failed_total",
 		Help: "Counts number of PyTorch jobs failed",
 	})
 	pytorchJobsRestartCount = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "pytorch_operator_jobs_restarted",
+		Name: "pytorch_operator_jobs_restarted_total",
 		Help: "Counts number of PyTorch jobs restarted",
 	})
 )

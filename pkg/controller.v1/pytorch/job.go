@@ -25,7 +25,7 @@ const (
 
 var (
 	pytorchJobsCreatedCount = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "pytorch_operator_jobs_created",
+		Name: "pytorch_operator_jobs_created_total",
 		Help: "Counts number of PyTorch jobs created",
 	})
 )
@@ -49,7 +49,7 @@ func (pc *PyTorchController) addPyTorchJob(obj interface{}) {
 
 			status := common.JobStatus{
 				Conditions: []common.JobCondition{
-					common.JobCondition{
+					{
 						Type:               common.JobFailed,
 						Status:             v1.ConditionTrue,
 						LastUpdateTime:     metav1.Now(),
