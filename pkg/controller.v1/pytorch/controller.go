@@ -72,7 +72,7 @@ var (
 	}
 
 	pytorchJobsDeletedCount = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "pytorch_operator_jobs_deleted",
+		Name: "pytorch_operator_jobs_deleted_total",
 		Help: "Counts number of PyTorch jobs deleted",
 	})
 )
