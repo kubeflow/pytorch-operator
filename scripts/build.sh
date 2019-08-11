@@ -33,12 +33,6 @@ mkdir -p ${GOPATH}/src/github.com/${REPO_OWNER}
 ln -s ${PWD} ${GO_DIR}
 cd ${GO_DIR}
 
-echo "Build pytorch operator v1beta2 binary"
-go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1beta2
-
-echo "Build pytorch operator v1 binary"
-go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1
-
 echo "Building PyTorch operator in gcloud"
 gcloud version
 gcloud builds submit . --tag=${REGISTRY}/${REPO_NAME}:${VERSION} --project=${PROJECT}

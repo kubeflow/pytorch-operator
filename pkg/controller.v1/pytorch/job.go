@@ -5,7 +5,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -25,7 +25,7 @@ const (
 
 var (
 	pytorchJobsCreatedCount = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "pytorch_operator_jobs_created",
+		Name: "pytorch_operator_jobs_created_total",
 		Help: "Counts number of PyTorch jobs created",
 	})
 )
@@ -49,7 +49,7 @@ func (pc *PyTorchController) addPyTorchJob(obj interface{}) {
 
 			status := common.JobStatus{
 				Conditions: []common.JobCondition{
-					common.JobCondition{
+					{
 						Type:               common.JobFailed,
 						Status:             v1.ConditionTrue,
 						LastUpdateTime:     metav1.Now(),
@@ -153,8 +153,9 @@ func (pc *PyTorchController) deletePodsAndServices(job *pyv1.PyTorchJob, pods []
 		return nil
 	}
 
-	// Delete nothing when the cleanPodPolicy is None.
-	if *job.Spec.CleanPodPolicy == common.CleanPodPolicyNone {
+	// Delete nothing when the cleanPodPolicy is None or Running.
+	if *job.Spec.CleanPodPolicy == common.CleanPodPolicyNone ||
+		*job.Spec.CleanPodPolicy == common.CleanPodPolicyRunning {
 		return nil
 	}
 

@@ -56,32 +56,34 @@ pytorch_operator_is_leader
 
 ### Report PyTorch Job metrics:
 
+*Note*: If you are using release v1 pytorch-operator, these PyTorch metrics don't have suffix `total`. So you have to use metric name like `pytorch_operator_jobs_created` to get your metrics. See [PR](https://github.com/kubeflow/pytorch-operator/pull/201) to get more information.
+
 **Job Creation**
 ```
-pytorch_operator_jobs_created
+pytorch_operator_jobs_created_total
 ```
 
 **Job Creation**
 ```
-sum (rate (pytorch_operator_jobs_created[60m]))
+sum (rate (pytorch_operator_jobs_created_total[60m]))
 ```
 
 **Job Deletion**
 ```
-pytorch_operator_jobs_deleted
+pytorch_operator_jobs_deleted_total
 ```
 
 **Successful Job Completions**
 ```
-pytorch_operator_jobs_successful
+pytorch_operator_jobs_successful_total
 ```
 
 **Failed Jobs**
 ```
-pytorch_operator_jobs_failed
+pytorch_operator_jobs_failed_total
 ```
 
 **Restarted Jobs**
 ```
-pytorch_operator_jobs_restarted
+pytorch_operator_jobs_restarted_total
 ```
