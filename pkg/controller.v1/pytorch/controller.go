@@ -56,7 +56,6 @@ const (
 	replicaIndexLabel   = "pytorch-replica-index"
 	labelGroupName      = "group-name"
 	labelPyTorchJobName = "pytorch-job-name"
-	labelPyTorchJobRole = "pytorch-job-role"
 )
 
 var (
@@ -570,6 +569,7 @@ func (pc *PyTorchController) GetGroupNameLabelKey() string {
 	return labelGroupName
 }
 
+// Deprecated function for backwards compatibility. Has to be removed later
 func (pc *PyTorchController) GetJobNameLabelKey() string {
 	return labelPyTorchJobName
 }
@@ -584,10 +584,6 @@ func (pc *PyTorchController) GetReplicaTypeLabelKey() string {
 
 func (pc *PyTorchController) GetReplicaIndexLabelKey() string {
 	return replicaIndexLabel
-}
-
-func (pc *PyTorchController) GetJobRoleKey() string {
-	return labelPyTorchJobRole
 }
 
 func (pc *PyTorchController) ControllerName() string {
