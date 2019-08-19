@@ -117,7 +117,10 @@ func NewPyTorchController(
 	jobInformerFactory jobinformers.SharedInformerFactory,
 	option options.ServerOption) *PyTorchController {
 
-	jobscheme.AddToScheme(scheme.Scheme)
+	err := jobscheme.AddToScheme(scheme.Scheme)
+	if err != nil {
+		log.Fatalf("Failed to add pytorchjob scheme: %v", err)
+	}
 
 	log.Info("Creating PyTorchJob controller")
 	// Create new PyTorchController.
