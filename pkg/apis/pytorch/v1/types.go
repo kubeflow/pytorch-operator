@@ -69,6 +69,10 @@ type PyTorchJobSpec struct {
 	//     "Worker": PyTorchReplicaSpec,
 	//   }
 	PyTorchReplicaSpecs map[PyTorchReplicaType]*common.ReplicaSpec `json:"pytorchReplicaSpecs"`
+
+	//添加判断优先级的属性
+	//add PriorityClassName
+	PriorityClassName string `json:"priorityClassName,omitempty"`
 }
 
 // PyTorchReplicaType is the type for PyTorchReplica. Can be one of "Master" or "Worker".

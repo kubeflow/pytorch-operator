@@ -23,6 +23,8 @@ spec:
       properties:
         spec:
           properties:
+            priorityClassName:
+              type: string
             pytorchReplicaSpecs:
               properties:
                 Master:

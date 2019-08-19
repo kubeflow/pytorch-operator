@@ -241,6 +241,34 @@ func (jc *JobController) SyncPodGroup(job metav1.Object, minAvailableReplicas in
 	return kubeBatchClientInterface.SchedulingV1alpha1().PodGroups(job.GetNamespace()).Create(createPodGroup)
 }
 
+
+//add priorityClassName based on func SyncPodGroup
+func (jc *JobController) SyncPodGroupTest(job metav1.Object, minAvailableReplicas int32,priorityClassName string) (*v1alpha1.PodGroup, error) {
+
+	kubeBatchClientInterface := jc.KubeBatchClientSet
+	// Check whether podGroup exists or not
+	podGroup, err := kubeBatchClientInterface.SchedulingV1alpha1().PodGroups(job.GetNamespace()).Get(job.GetName(), metav1.GetOptions{})
+	if err == nil {
+		return podGroup, nil
+	}
+
+	// create podGroup for gang scheduling by kube-batch
+	minAvailable := intstr.FromInt(int(minAvailableReplicas))
+	createPodGroup := &v1alpha1.PodGroup{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: job.GetName(),
+			OwnerReferences: []metav1.OwnerReference{
+				*jc.GenOwnerReference(job),
+			},
+		},
+		Spec: v1alpha1.PodGroupSpec{
+			MinMember: minAvailable.IntVal,
+			PriorityClassName: priorityClassName,
+		},
+	}
+	return kubeBatchClientInterface.SchedulingV1alpha1().PodGroups(job.GetNamespace()).Create(createPodGroup)
+}
+
 // SyncPdb will create a PDB for gang scheduling by kube-batch.
 func (jc *JobController) SyncPdb(job metav1.Object, minAvailableReplicas int32) (*v1beta1.PodDisruptionBudget, error) {
 	// Check the pdb exist or not
