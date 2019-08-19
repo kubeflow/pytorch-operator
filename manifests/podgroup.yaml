@@ -22,6 +22,8 @@ spec:
             minMember:
               format: int32
               type: integer
+            priorityClassName:
+              type: string
           type: object
         status:
           properties:

@@ -50,6 +50,9 @@ func main() {
 	s := options.NewServerOption()
 	s.AddFlags(flag.CommandLine)
 
+	//添加Kubeconfig配置
+	s.Kubeconfig="C:\\Users\\Yesterday\\go\\src\\github.com\\kubeflow\\pytorch-operator\\cmd\\pytorch-operator.v1\\config"
+
 	flag.Parse()
 
 	if s.JSONLogFormat {

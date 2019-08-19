@@ -81,7 +81,9 @@ func Run(opt *options.ServerOption) error {
 	stopCh := signals.SetupSignalHandler()
 
 	// Note: ENV KUBECONFIG will overwrite user defined Kubeconfig option.
-	if len(os.Getenv(RecommendedKubeConfigPathEnv)) > 0 {
+	if len(opt.Kubeconfig)>0{
+		log.Info("it exists Kubeconfig......................")
+	} else if len(os.Getenv(RecommendedKubeConfigPathEnv)) > 0 {
 		// use the current context in kubeconfig
 		// This is very useful for running locally.
 		opt.Kubeconfig = os.Getenv(RecommendedKubeConfigPathEnv)
