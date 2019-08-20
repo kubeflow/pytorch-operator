@@ -428,6 +428,7 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *v1beta2.PyTorchJob) error
 
 	if pc.Config.EnableGangScheduling {
 		minAvailableReplicas := getTotalReplicas(job)
+		priorityClassName:=getPriorityClassName(job)
 		_, err := pc.SyncPodGroup(job, minAvailableReplicas,priorityClassName)
 		if err != nil {
 			logger.Warnf("Sync PodGroup %v: %v", job.Name, err)
