@@ -440,7 +440,7 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *pyv1.PyTorchJob) error {
 		minAvailableReplicas := getTotalReplicas(job)
 		priorityClassName:=getPriorityClassName(job)
 		//_, err := pc.SyncPodGroup(job, minAvailableReplicas)
-		_, err := pc.SyncPodGroupTest(job, minAvailableReplicas,priorityClassName)
+		_, err := pc.SyncPodGroup(job, minAvailableReplicas,priorityClassName)
 		if err != nil {
 			logger.Warnf("Sync PodGroup %v: %v", job.Name, err)
 		}
