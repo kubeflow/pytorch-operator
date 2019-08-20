@@ -122,6 +122,11 @@ func (in *PyTorchJobSpec) DeepCopyInto(out *PyTorchJobSpec) {
 			(*out)[key] = outVal
 		}
 	}
+	if in.PriorityClassName != nil {
+		in, out := &in.PriorityClassName, &out.PriorityClassName
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 
