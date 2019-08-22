@@ -209,6 +209,6 @@ func getTotalFailedReplicas(job *v1beta2.PyTorchJob) int32 {
 
 func getPriorityClassName(job *v1beta2.PyTorchJob) string {
 	var priorityClassName string
-	priorityClassName=*(job.Spec.PriorityClassName)
+	priorityClassName = *(job.Spec.PriorityClassName)
 	return priorityClassName
 }
