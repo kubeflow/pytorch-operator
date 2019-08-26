@@ -23,7 +23,7 @@ import (
 
 	kubebatchclient "github.com/kubernetes-sigs/kube-batch/pkg/client/clientset/versioned"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -440,7 +440,9 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *pyv1.PyTorchJob) error {
 
 	if pc.Config.EnableGangScheduling {
 		minAvailableReplicas := getTotalReplicas(job)
-		_, err := pc.SyncPodGroup(job, minAvailableReplicas)
+		priorityClassName := getPriorityClassName(job)
+		//_, err := pc.SyncPodGroup(job, minAvailableReplicas)
+		_, err := pc.SyncPodGroup(job, minAvailableReplicas, priorityClassName)
 		if err != nil {
 			logger.Warnf("Sync PodGroup %v: %v", job.Name, err)
 		}

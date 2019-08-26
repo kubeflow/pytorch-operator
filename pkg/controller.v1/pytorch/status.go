@@ -69,6 +69,7 @@ func (pc *PyTorchController) updateStatusSingle(job *pyv1.PyTorchJob, rtype pyv1
 
 	// Expect to have `replicas - succeeded` pods alive.
 	commonType := common.ReplicaType(rtype)
+	//expected is a flag of success.if expected==0,PyTorchJob is successfully completed.
 	expected := replicas - int(job.Status.ReplicaStatuses[commonType].Succeeded)
 	running := int(job.Status.ReplicaStatuses[commonType].Active)
 	failed := int(job.Status.ReplicaStatuses[commonType].Failed)

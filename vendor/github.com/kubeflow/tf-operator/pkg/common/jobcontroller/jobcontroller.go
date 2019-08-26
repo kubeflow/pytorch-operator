@@ -215,7 +215,7 @@ func (jc *JobController) GenLabels(jobName string) map[string]string {
 	}
 }
 
-func (jc *JobController) SyncPodGroup(job metav1.Object, minAvailableReplicas int32) (*v1alpha1.PodGroup, error) {
+func (jc *JobController) SyncPodGroup(job metav1.Object, minAvailableReplicas int32,priorityClassName string) (*v1alpha1.PodGroup, error) {
 
 	kubeBatchClientInterface := jc.KubeBatchClientSet
 	// Check whether podGroup exists or not
@@ -236,6 +236,7 @@ func (jc *JobController) SyncPodGroup(job metav1.Object, minAvailableReplicas in
 		},
 		Spec: v1alpha1.PodGroupSpec{
 			MinMember: minAvailable.IntVal,
+			PriorityClassName: priorityClassName,
 		},
 	}
 	return kubeBatchClientInterface.SchedulingV1alpha1().PodGroups(job.GetNamespace()).Create(createPodGroup)

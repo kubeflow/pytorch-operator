@@ -69,6 +69,10 @@ type PyTorchJobSpec struct {
 	//     "Worker": PyTorchReplicaSpec,
 	//   }
 	PyTorchReplicaSpecs map[PyTorchReplicaType]*common.ReplicaSpec `json:"pytorchReplicaSpecs"`
+
+	//add PriorityClassName
+	//PriorityClassName is a type of k8s resource.(kubectl get priorityclass)
+	PriorityClassName *string `json:"priorityClassName,omitempty"`
 }
 
 // PyTorchReplicaType is the type for PyTorchReplica. Can be one of "Master" or "Worker".
