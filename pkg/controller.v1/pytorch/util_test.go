@@ -22,6 +22,7 @@ import (
 
 	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	"github.com/kubeflow/pytorch-operator/pkg/common/util/v1/testutil"
+	"github.com/kubeflow/tf-operator/pkg/common/jobcontroller"
 )
 
 func TestGenOwnerReference(t *testing.T) {
@@ -51,9 +52,10 @@ func TestGenLabels(t *testing.T) {
 	expectedKey := "test-key"
 
 	labels := testutil.GenLabels(testKey)
+	jobNamelabel := jobcontroller.JobNameLabel
 
-	if labels[labelPyTorchJobName] != expectedKey {
-		t.Errorf("Expected %s %s, got %s", labelPyTorchJobName, expectedKey, labels[labelPyTorchJobName])
+	if labels[jobNamelabel] != expectedKey {
+		t.Errorf("Expected %s %s, got %s", jobNamelabel, expectedKey, labels[jobNamelabel])
 	}
 	if labels[labelGroupName] != pyv1.GroupName {
 		t.Errorf("Expected %s %s, got %s", labelGroupName, pyv1.GroupName, labels[labelGroupName])

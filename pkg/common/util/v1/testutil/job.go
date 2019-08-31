@@ -105,6 +105,7 @@ func NewPyTorchJob(worker int) *pyv1.PyTorchJob {
 			PyTorchReplicaSpecs: make(map[pyv1.PyTorchReplicaType]*common.ReplicaSpec),
 		},
 	}
+	pyv1.SetObjectDefaults_PyTorchJob(job)
 
 	if worker > 0 {
 		worker := int32(worker)

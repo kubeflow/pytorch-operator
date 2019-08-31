@@ -15,6 +15,7 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
@@ -87,6 +88,10 @@ func Run(opt *options.ServerOption) error {
 		log.Fatalf("Error building kubeconfig: %s", err.Error())
 	}
 
+	// Set client qps and burst by opt.
+	kcfg.QPS = float32(opt.QPS)
+	kcfg.Burst = opt.Burst
+
 	// Create clients.
 	kubeClientSet, leaderElectionClientSet, pytorchJobClientSet, kubeBatchClientSet, err := createClientSets(kcfg)
 	if err != nil {
@@ -111,7 +116,7 @@ func Run(opt *options.ServerOption) error {
 	go unstructuredInformer.Informer().Run(stopCh)
 
 	// Set leader election start function.
-	run := func(<-chan struct{}) {
+	run := func(context.Context) {
 		if err := tc.Run(opt.Threadiness, stopCh); err != nil {
 			log.Errorf("Failed to run the controller: %v", err)
 		}
@@ -142,7 +147,7 @@ func Run(opt *options.ServerOption) error {
 	}
 
 	// Start leader election.
-	election.RunOrDie(election.LeaderElectionConfig{
+	election.RunOrDie(context.TODO(), election.LeaderElectionConfig{
 		Lock:          rl,
 		LeaseDuration: leaseDuration,
 		RenewDeadline: renewDuration,

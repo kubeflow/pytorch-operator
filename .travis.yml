@@ -1,7 +1,6 @@
 language: go
 
 go:
-  - "1.9"
   - "1.10"
 
 go_import_path: github.com/kubeflow/pytorch-operator
@@ -13,6 +12,7 @@ install:
   - gometalinter --install
 
 script:
+  - hack/verify-codegen.sh
   - go build -o pytorch-operator.v1beta2 github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1beta2
   - go build -o pytorch-operator.v1 github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1
   - gometalinter --config=linter_config.json ./pkg/...

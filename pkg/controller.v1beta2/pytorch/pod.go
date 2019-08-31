@@ -183,7 +183,7 @@ func (pc *PyTorchController) createNewPod(job *v1beta2.PyTorchJob, rtype v1beta2
 	labels[replicaIndexLabel] = index
 
 	if masterRole {
-		labels[labelPyTorchJobRole] = "master"
+		labels[jobcontroller.JobRoleLabel] = "master"
 	}
 	podTemplate := spec.Template.DeepCopy()
 	totalReplicas := getTotalReplicas(job)

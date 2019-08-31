@@ -29,8 +29,10 @@ import (
 )
 
 const (
-	LabelGroupName      = "group-name"
-	LabelPyTorchJobName = "pytorch-job-name"
+	LabelGroupName = "group-name"
+	JobNameLabel   = "job-name"
+	// Deprecated label. Has to be removed later
+	DeprecatedLabelPyTorchJobName = "pytorch-job-name"
 )
 
 var (
@@ -43,8 +45,9 @@ var (
 
 func GenLabels(jobName string) map[string]string {
 	return map[string]string{
-		LabelGroupName:      GroupName,
-		LabelPyTorchJobName: strings.Replace(jobName, "/", "-", -1),
+		LabelGroupName:                GroupName,
+		JobNameLabel:                  strings.Replace(jobName, "/", "-", -1),
+		DeprecatedLabelPyTorchJobName: strings.Replace(jobName, "/", "-", -1),
 	}
 }
 
