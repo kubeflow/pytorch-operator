@@ -15,8 +15,9 @@ var initContainerTemplate = `
 func init() {
 	bytes, err := ioutil.ReadFile("/etc/config/initContainer.yaml")
 	if err != nil {
-		log.Warningf("error while read initContainerTemplate, use default. error: %s", err)
+		log.Info("Using default init container template")
 	} else {
+		log.Info("Using init container template from /etc/config/initContainer.yaml")
 		initContainerTemplate = string(bytes)
 	}
 }
