@@ -56,7 +56,6 @@ const (
 	replicaIndexLabel   = "pytorch-replica-index"
 	labelGroupName      = "group-name"
 	labelPyTorchJobName = "pytorch-job-name"
-	labelPyTorchJobRole = "pytorch-job-role"
 )
 
 var (
@@ -118,7 +117,10 @@ func NewPyTorchController(
 	jobInformerFactory jobinformers.SharedInformerFactory,
 	option options.ServerOption) *PyTorchController {
 
-	jobscheme.AddToScheme(scheme.Scheme)
+	err := jobscheme.AddToScheme(scheme.Scheme)
+	if err != nil {
+		log.Fatalf("Failed to add pytorchjob scheme: %v", err)
+	}
 
 	log.Info("Creating PyTorchJob controller")
 	// Create new PyTorchController.
@@ -570,6 +572,7 @@ func (pc *PyTorchController) GetGroupNameLabelKey() string {
 	return labelGroupName
 }
 
+// Deprecated function for backwards compatibility. Has to be removed later
 func (pc *PyTorchController) GetJobNameLabelKey() string {
 	return labelPyTorchJobName
 }
@@ -584,10 +587,6 @@ func (pc *PyTorchController) GetReplicaTypeLabelKey() string {
 
 func (pc *PyTorchController) GetReplicaIndexLabelKey() string {
 	return replicaIndexLabel
-}
-
-func (pc *PyTorchController) GetJobRoleKey() string {
-	return labelPyTorchJobRole
 }
 
 func (pc *PyTorchController) ControllerName() string {
