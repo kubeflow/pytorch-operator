@@ -29,8 +29,9 @@ import (
 )
 
 const (
-	LabelGroupName = "group-name"
-	JobNameLabel   = "job-name"
+	LabelGroupName      = "group-name"
+	JobNameLabel        = "job-name"
+	ControllerNameLabel = "controller-name"
 	// Deprecated label. Has to be removed later
 	DeprecatedLabelPyTorchJobName = "pytorch-job-name"
 )
@@ -39,8 +40,9 @@ var (
 	// KeyFunc is the short name to DeletionHandlingMetaNamespaceKeyFunc.
 	// IndexerInformer uses a delta queue, therefore for deletes we have to use this
 	// key function but it should be just fine for non delete events.
-	KeyFunc   = cache.DeletionHandlingMetaNamespaceKeyFunc
-	GroupName = pyv1.GroupName
+	KeyFunc        = cache.DeletionHandlingMetaNamespaceKeyFunc
+	GroupName      = pyv1.GroupName
+	ControllerName = "pytorch-operator"
 )
 
 func GenLabels(jobName string) map[string]string {
@@ -48,6 +50,7 @@ func GenLabels(jobName string) map[string]string {
 		LabelGroupName:                GroupName,
 		JobNameLabel:                  strings.Replace(jobName, "/", "-", -1),
 		DeprecatedLabelPyTorchJobName: strings.Replace(jobName, "/", "-", -1),
+		ControllerNameLabel:           ControllerName,
 	}
 }
 

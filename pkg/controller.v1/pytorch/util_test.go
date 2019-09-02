@@ -54,12 +54,19 @@ func TestGenLabels(t *testing.T) {
 	labels := testutil.GenLabels(testKey)
 	jobNamelabel := jobcontroller.JobNameLabel
 
+	controllerName := jobcontroller.ControllerNameLabel
+	expectedcontrollerName := "pytorch-operator"
+
 	if labels[jobNamelabel] != expectedKey {
 		t.Errorf("Expected %s %s, got %s", jobNamelabel, expectedKey, labels[jobNamelabel])
 	}
 	if labels[labelGroupName] != pyv1.GroupName {
 		t.Errorf("Expected %s %s, got %s", labelGroupName, pyv1.GroupName, labels[labelGroupName])
 	}
+	if labels[controllerName] != expectedcontrollerName {
+		t.Errorf("Expected %s %s, got %s", controllerName, expectedcontrollerName, labels[controllerName])
+	}
+
 }
 
 func TestConvertPyTorchJobToUnstructured(t *testing.T) {

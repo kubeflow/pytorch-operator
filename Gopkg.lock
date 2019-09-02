@@ -227,11 +227,10 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:9bd2815a838269f716b4acb711570baa09ef12065ae56f0e331ccac0e7d0565b"
+  digest = "1:32a13ce258d01530263fb9fca967f27c67178da7fad89e57a060031135522e60"
   name = "github.com/kubeflow/tf-operator"
   packages = [
     "pkg/apis/common/v1",
-    "pkg/apis/common/v1beta2",
     "pkg/common/jobcontroller",
     "pkg/control",
     "pkg/logger",
@@ -241,7 +240,7 @@
     "pkg/version",
   ]
   pruneopts = "NUT"
-  revision = "ad29009e67bb7299e882603f4c9f247028c6e947"
+  revision = "bc339d0869711bfdc6da087e5cd2ac8dca3e490f"
 
 [[projects]]
   digest = "1:680c0fba95a0cff934e350b1ad6774d8229378a3e37d9902e07e2861e82a5908"
@@ -973,7 +972,6 @@
     "github.com/gogo/protobuf/proto",
     "github.com/golang/protobuf/proto",
     "github.com/kubeflow/tf-operator/pkg/apis/common/v1",
-    "github.com/kubeflow/tf-operator/pkg/apis/common/v1beta2",
     "github.com/kubeflow/tf-operator/pkg/common/jobcontroller",
     "github.com/kubeflow/tf-operator/pkg/control",
     "github.com/kubeflow/tf-operator/pkg/logger",

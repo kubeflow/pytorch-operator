@@ -236,16 +236,6 @@
                     template: "run-v1-cleanpodpolicy-all",
                   },
                 ],
-                [
-                  {
-                    name: "run-v1beta2-defaults",
-                    template: "run-v1beta2-defaults",
-                  },
-                  {
-                    name: "run-v1beta2-cleanpodpolicy-all",
-                    template: "run-v1beta2-cleanpodpolicy-all",
-                  },
-                ],
               ],
             },
             {
@@ -294,13 +284,6 @@
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1-cleanpodpolicy-all", testWorkerImage, [
               "scripts/v1/run-cleanpodpolicy-all.sh",
             ]),  // run v1 cleanpodpolicy tests
-            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1beta2-defaults", testWorkerImage, [
-              "scripts/v1beta2/run-defaults.sh",
-            ]),  // run v1beta2 default tests
-            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1beta2-cleanpodpolicy-all", testWorkerImage, [
-              "scripts/v1beta2/run-cleanpodpolicy-all.sh",
-            ]),  // run v1beta2 cleanpodpolicy tests
-
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", testWorkerImage, [
               "python",
               "-m",

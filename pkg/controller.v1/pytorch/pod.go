@@ -34,8 +34,7 @@ import (
 )
 
 const (
-	// gang scheduler name.
-	gangSchedulerName = "kube-batch"
+	gangSchedulingPodGroupAnnotation = "scheduling.k8s.io/group-name"
 	// podTemplateRestartPolicyReason is the warning reason when the restart
 	// policy is set in pod template.
 	podTemplateRestartPolicyReason = "SettedPodTemplateRestartPolicy"
@@ -199,19 +198,18 @@ func (pc *PyTorchController) createNewPod(job *pyv1.PyTorchJob, rtype pyv1.PyTor
 	// 1. if user has specified other scheduler, we report a warning without overriding any fields.
 	// 2. if no SchedulerName is set for pods, then we set the SchedulerName to "kube-batch".
 	if pc.Config.EnableGangScheduling {
-		if isNonGangSchedulerSet(job) {
+		if pc.isNonGangSchedulerSet(job) {
 			errMsg := "Another scheduler is specified when gang-scheduling is enabled and it will not be overwritten"
 			logger.Warning(errMsg)
 			pc.Recorder.Event(job, v1.EventTypeWarning, podTemplateSchedulerNameReason, errMsg)
 		} else {
-			podTemplate.Spec.SchedulerName = gangSchedulerName
+			podTemplate.Spec.SchedulerName = pc.Config.GangSchedulerName
 		}
 
 		if podTemplate.Annotations == nil {
 			podTemplate.Annotations = map[string]string{}
 		}
-		// we create the podGroup with the same name as the pyTorch job
-		podTemplate.Annotations["scheduling.k8s.io/group-name"] = job.Name
+		podTemplate.Annotations[gangSchedulingPodGroupAnnotation] = jobcontroller.GenPodGroupName(job.Name)
 	}
 
 	err = pc.PodControl.CreatePodsWithControllerRef(job.Namespace, podTemplate, job, controllerRef)
@@ -287,9 +285,9 @@ func setRestartPolicy(podTemplateSpec *v1.PodTemplateSpec, spec *common.ReplicaS
 	}
 }
 
-func isNonGangSchedulerSet(job *pyv1.PyTorchJob) bool {
+func (pc *PyTorchController) isNonGangSchedulerSet(job *pyv1.PyTorchJob) bool {
 	for _, spec := range job.Spec.PyTorchReplicaSpecs {
-		if spec.Template.Spec.SchedulerName != "" && spec.Template.Spec.SchedulerName != gangSchedulerName {
+		if spec.Template.Spec.SchedulerName != "" && spec.Template.Spec.SchedulerName != pc.Config.GangSchedulerName {
 			return true
 		}
 	}
