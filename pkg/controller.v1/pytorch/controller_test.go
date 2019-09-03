@@ -16,19 +16,14 @@
 package pytorch
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
-	"github.com/golang/protobuf/proto"
 	kubebatchclient "github.com/kubernetes-sigs/kube-batch/pkg/client/clientset/versioned"
 	"k8s.io/api/core/v1"
-	apiv1beta1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	kubeinformers "k8s.io/client-go/informers"
 	kubeclientset "k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
 	"k8s.io/kubernetes/pkg/controller"
 
@@ -355,72 +350,5 @@ func TestRun(t *testing.T) {
 	err := ctr.Run(testutil.ThreadCount, stopCh)
 	if err != nil {
 		t.Errorf("Failed to run: %v", err)
-	}
-}
-
-func TestSyncPdb(t *testing.T) {
-	config := &rest.Config{
-		Host: "",
-		ContentConfig: rest.ContentConfig{
-			GroupVersion: &pyv1.SchemeGroupVersion,
-		},
-	}
-
-	kubeBatchClientSet := kubebatchclient.NewForConfigOrDie(&rest.Config{
-		Host: "",
-		ContentConfig: rest.ContentConfig{
-			GroupVersion: &v1.SchemeGroupVersion,
-		},
-	},
-	)
-
-	jobClientSet := jobclientset.NewForConfigOrDie(config)
-	kubeClientSet := fake.NewSimpleClientset()
-	option := options.ServerOption{
-		EnableGangScheduling: true,
-	}
-	ctr, _, _ := newPyTorchController(config, kubeClientSet, kubeBatchClientSet, jobClientSet, controller.NoResyncPeriodFunc, option)
-
-	type testCase struct {
-		job       *pyv1.PyTorchJob
-		expectPdb *apiv1beta1.PodDisruptionBudget
-	}
-
-	minAvailable := intstr.FromInt(1)
-	testCases := []testCase{
-		{
-			job: &pyv1.PyTorchJob{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "test-sync-pdb",
-				},
-				Spec: pyv1.PyTorchJobSpec{
-					PyTorchReplicaSpecs: map[pyv1.PyTorchReplicaType]*common.ReplicaSpec{
-						pyv1.PyTorchReplicaTypeWorker: &common.ReplicaSpec{
-							Replicas: proto.Int32(1),
-						},
-					},
-				},
-			},
-			expectPdb: &apiv1beta1.PodDisruptionBudget{
-				Spec: apiv1beta1.PodDisruptionBudgetSpec{
-					MinAvailable: &minAvailable,
-					Selector: &metav1.LabelSelector{
-						MatchLabels: map[string]string{
-							"job-name": "test-sync-pdb",
-						},
-					},
-				},
-			},
-		},
-	}
-	for _, c := range testCases {
-		pdb, _ := ctr.SyncPdb(c.job, getTotalReplicas(c.job))
-		if pdb == nil && c.expectPdb != nil {
-			t.Errorf("Got nil, want %v", c.expectPdb.Spec)
-		}
-
-		if pdb != nil && !reflect.DeepEqual(c.expectPdb.Spec, pdb.Spec) {
-			t.Errorf("Got %+v, want %+v", pdb.Spec, c.expectPdb.Spec)
-		}
 	}
 }

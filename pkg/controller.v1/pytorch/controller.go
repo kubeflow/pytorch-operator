@@ -64,12 +64,6 @@ var (
 	// key function but it should be just fine for non delete events.
 	KeyFunc = cache.DeletionHandlingMetaNamespaceKeyFunc
 
-	// DefaultPyTorchControllerConfiguration is the suggested operator configuration for production.
-	DefaultPyTorchControllerConfiguration = jobcontroller.JobControllerConfiguration{
-		ReconcilerSyncLoopPeriod: metav1.Duration{Duration: 15 * time.Second},
-		EnableGangScheduling:     false,
-	}
-
 	pytorchJobsDeletedCount = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "pytorch_operator_jobs_deleted_total",
 		Help: "Counts number of PyTorch jobs deleted",
@@ -131,7 +125,8 @@ func NewPyTorchController(
 	// Create base controller
 	log.Info("Creating Job controller")
 	jc := jobcontroller.NewJobController(pc, metav1.Duration{Duration: 15 * time.Second},
-		option.EnableGangScheduling, kubeClientSet, kubeBatchClientSet, kubeInformerFactory, pyv1.Plural)
+		option.EnableGangScheduling, option.GangSchedulerName,
+		kubeClientSet, kubeBatchClientSet, kubeInformerFactory, pyv1.Plural)
 	pc.JobController = jc
 	// Set sync handler.
 	pc.syncHandler = pc.syncPyTorchJob
@@ -557,7 +552,7 @@ func (pc *PyTorchController) GetJobFromInformerCache(namespace, name string) (me
 }
 
 func (pc *PyTorchController) GetJobFromAPIClient(namespace, name string) (metav1.Object, error) {
-	return pc.jobClientSet.KubeflowV1beta2().PyTorchJobs(namespace).Get(name, metav1.GetOptions{})
+	return pc.jobClientSet.KubeflowV1().PyTorchJobs(namespace).Get(name, metav1.GetOptions{})
 }
 
 func (pc *PyTorchController) GetAPIGroupVersionKind() schema.GroupVersionKind {
