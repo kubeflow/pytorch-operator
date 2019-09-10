@@ -8,7 +8,7 @@ import (
 
 var initContainerTemplate = `
 - name: init-pytorch
-  image: busybox:1.31.0
+  image: alpine:3.10
   imagePullPolicy: IfNotPresent
   command: ['sh', '-c', 'until nslookup {{.MasterAddr}}; do echo waiting for master; sleep 2; done;']`
 
