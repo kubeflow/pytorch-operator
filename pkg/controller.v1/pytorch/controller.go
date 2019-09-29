@@ -17,7 +17,6 @@ package pytorch
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 	"time"
 
