@@ -24,6 +24,7 @@ import (
 	kubebatchclient "github.com/kubernetes-sigs/kube-batch/pkg/client/clientset/versioned"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -430,7 +431,9 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *pyv1.PyTorchJob) error {
 				job.Status.ReplicaStatuses[rtype].Active = 0
 			}
 		}
-		return pc.updateStatusHandler(job)
+		if !apiequality.Semantic.DeepEqual(*oldStatus, job.Status) {
+			return pc.updateStatusHandler(job)
+		}
 	}
 
 	if pc.Config.EnableGangScheduling {
@@ -465,7 +468,7 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *pyv1.PyTorchJob) error {
 	}
 
 	// No need to update the job if the status hasn't changed since last time.
-	if !reflect.DeepEqual(*oldStatus, job.Status) {
+	if !apiequality.Semantic.DeepEqual(*oldStatus, job.Status) {
 		return pc.updateStatusHandler(job)
 	}
 	return nil
