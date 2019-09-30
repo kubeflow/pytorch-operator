@@ -433,6 +433,7 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *pyv1.PyTorchJob) error {
 		if !apiequality.Semantic.DeepEqual(*oldStatus, job.Status) {
 			return pc.updateStatusHandler(job)
 		}
+		return nil
 	}
 
 	if pc.Config.EnableGangScheduling {
