@@ -29,7 +29,6 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - configmaps
   - pods
   - services
   - endpoints
