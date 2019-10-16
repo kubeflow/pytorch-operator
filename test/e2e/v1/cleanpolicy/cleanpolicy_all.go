@@ -4,10 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/gogo/protobuf/proto"
@@ -16,11 +14,12 @@ import (
 	"github.com/kubeflow/pytorch-operator/pkg/util"
 	common "github.com/kubeflow/tf-operator/pkg/apis/common/v1"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	k8s_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+
 	// Uncomment the following line to load the gcp plugin (only required to authenticate against GKE clusters).
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
@@ -120,7 +119,7 @@ func run() (string, error) {
 		log.Errorf("Creating the job failed; %v", err)
 		return *name, err
 	}
-	log.Info("Job created: \n%v", util.Pformat(original))
+	log.Infof("Job created: \n%v", util.Pformat(original))
 	var torchJob *pyv1.PyTorchJob
 	for endTime := time.Now().Add(*timeout); time.Now().Before(endTime); {
 		torchJob, err = torchJobClient.KubeflowV1().PyTorchJobs(*namespace).Get(*name, metav1.GetOptions{})
@@ -204,23 +203,6 @@ func homeDir() string {
 	return os.Getenv("USERPROFILE") // windows
 }
 
-func runCmd(cmd *exec.Cmd) error {
-	var waitStatus syscall.WaitStatus
-	err := cmd.Run()
-	if err != nil {
-		// Did the command fail because of an unsuccessful exit code
-		if exitError, ok := err.(*exec.ExitError); ok {
-			waitStatus = exitError.Sys().(syscall.WaitStatus)
-			output, _ := cmd.CombinedOutput()
-			log.Infof("exitcode %d: %s", waitStatus.ExitStatus(), string(output))
-		}
-	} else {
-		// Command was successful
-		_ = cmd.ProcessState.Sys().(syscall.WaitStatus)
-	}
-	return err
-}
-
 func main() {
 
 	type Result struct {
@@ -255,7 +237,7 @@ func main() {
 			} else {
 				numFailed += 1
 			}
-		case <-time.After(endTime.Sub(time.Now())):
+		case <-time.After(time.Until(endTime)):
 			log.Errorf("Timeout waiting for PyTorchJob to finish.")
 		}
 	}
