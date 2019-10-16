@@ -32,7 +32,7 @@ import (
 	jobclientset "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
 	jobinformers "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions"
 	"github.com/kubeflow/pytorch-operator/pkg/common/util/v1/testutil"
-	common "github.com/kubeflow/tf-operator/pkg/apis/common/v1"
+	common "github.com/kubeflow/common/job_controller/api/v1"
 	"github.com/kubeflow/tf-operator/pkg/control"
 )
 

@@ -12,7 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 
 	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
-	common "github.com/kubeflow/tf-operator/pkg/apis/common/v1"
+	common "github.com/kubeflow/common/job_controller/api/v1"
 	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
 	"github.com/kubeflow/tf-operator/pkg/util/k8sutil"
 	"github.com/prometheus/client_golang/prometheus"
