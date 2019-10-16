@@ -19,7 +19,7 @@ import (
 	"testing"
 
 	kubebatchclient "github.com/kubernetes-sigs/kube-batch/pkg/client/clientset/versioned"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	kubeclientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/kubernetes/pkg/controller"
@@ -64,7 +64,9 @@ func TestAddPod(t *testing.T) {
 
 	stopCh := make(chan struct{})
 	run := func(<-chan struct{}) {
-		ctr.Run(testutil.ThreadCount, stopCh)
+		if err := ctr.Run(testutil.ThreadCount, stopCh); err != nil {
+			t.Errorf("Failed to run the controller: %v", err)
+		}
 	}
 	go run(stopCh)
 
@@ -175,7 +177,7 @@ func TestRestartPolicy(t *testing.T) {
 			specRestartPolicy := common.RestartPolicyExitCode
 			job.Spec.PyTorchReplicaSpecs[pyv1.PyTorchReplicaTypeMaster].RestartPolicy = specRestartPolicy
 			return tc{
-				job: job,
+				job:                   job,
 				expectedRestartPolicy: v1.RestartPolicyNever,
 				expectedType:          pyv1.PyTorchReplicaTypeMaster,
 			}
@@ -185,7 +187,7 @@ func TestRestartPolicy(t *testing.T) {
 			specRestartPolicy := common.RestartPolicyNever
 			job.Spec.PyTorchReplicaSpecs[pyv1.PyTorchReplicaTypeMaster].RestartPolicy = specRestartPolicy
 			return tc{
-				job: job,
+				job:                   job,
 				expectedRestartPolicy: v1.RestartPolicyNever,
 				expectedType:          pyv1.PyTorchReplicaTypeMaster,
 			}
@@ -195,7 +197,7 @@ func TestRestartPolicy(t *testing.T) {
 			specRestartPolicy := common.RestartPolicyAlways
 			job.Spec.PyTorchReplicaSpecs[pyv1.PyTorchReplicaTypeMaster].RestartPolicy = specRestartPolicy
 			return tc{
-				job: job,
+				job:                   job,
 				expectedRestartPolicy: v1.RestartPolicyAlways,
 				expectedType:          pyv1.PyTorchReplicaTypeMaster,
 			}
@@ -205,7 +207,7 @@ func TestRestartPolicy(t *testing.T) {
 			specRestartPolicy := common.RestartPolicyOnFailure
 			job.Spec.PyTorchReplicaSpecs[pyv1.PyTorchReplicaTypeMaster].RestartPolicy = specRestartPolicy
 			return tc{
-				job: job,
+				job:                   job,
 				expectedRestartPolicy: v1.RestartPolicyOnFailure,
 				expectedType:          pyv1.PyTorchReplicaTypeMaster,
 			}
@@ -257,7 +259,9 @@ func TestExitCode(t *testing.T) {
 
 	stopCh := make(chan struct{})
 	run := func(<-chan struct{}) {
-		ctr.Run(testutil.ThreadCount, stopCh)
+		if err := ctr.Run(testutil.ThreadCount, stopCh); err != nil {
+			t.Errorf("Failed to run the controller: %v", err)
+		}
 	}
 	go run(stopCh)
 

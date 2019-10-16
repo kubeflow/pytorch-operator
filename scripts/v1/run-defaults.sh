@@ -42,9 +42,8 @@ cd ${GO_DIR}
 
 echo "Running smoke test"
 SENDRECV_TEST_IMAGE_TAG="pytorch-dist-sendrecv-test:v1.0"
-go run ./test/e2e/v1/defaults.go --namespace=${NAMESPACE} --image=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --name=sendrecvjob-cleannone
+go run ./test/e2e/v1/default/defaults.go --namespace=${NAMESPACE} --image=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --name=sendrecvjob-cleannone
 
 echo "Running mnist test"
 MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist-test:v1.0"
-go run ./test/e2e/v1/defaults.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob-cleannone
-
+go run ./test/e2e/v1/default/defaults.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob-cleannone
