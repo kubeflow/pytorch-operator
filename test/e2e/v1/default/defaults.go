@@ -13,7 +13,7 @@ import (
 	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	torchjobclient "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
 	"github.com/kubeflow/pytorch-operator/pkg/util"
-	common "github.com/kubeflow/tf-operator/pkg/apis/common/v1"
+	common "github.com/kubeflow/common/job_controller/api/v1"
 	"github.com/kubeflow/tf-operator/pkg/common/jobcontroller"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
