@@ -30,7 +30,11 @@ REGISTRY="${GCP_REGISTRY}"
 VERSION=$(git describe --tags --always --dirty)
 GO_DIR=${GOPATH}/src/github.com/${REPO_OWNER}/${REPO_NAME}
 APP_NAME=test-app
-KUBEFLOW_VERSION=master
+# TBD (@jinchihe) Since the ksonnet registry has been removed kubeflow master.
+# Change to 0.7 version to work around, we need to enhance this later.
+# See more https://github.com/kubeflow/pytorch-operator/issues/229
+#KUBEFLOW_VERSION=master
+KUBEFLOW_VERSION=v0.7.0
 KF_ENV=pytorch
 
 echo "Activating service-account"
