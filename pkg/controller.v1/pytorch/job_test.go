@@ -214,6 +214,7 @@ func TestDeletePodsAndServices(t *testing.T) {
 		activeMasterServices int32
 
 		expectedPodDeletions int
+		expectedServiceDeletions int
 	}
 
 	testCases := []testCase{
@@ -235,6 +236,7 @@ func TestDeletePodsAndServices(t *testing.T) {
 			activeMasterServices: 1,
 
 			expectedPodDeletions: 5,
+			expectedServiceDeletions: 1,
 		},
 		testCase{
 			description: "4 workers and 1 master succeeded, policy is None",
@@ -254,6 +256,7 @@ func TestDeletePodsAndServices(t *testing.T) {
 			activeMasterServices: 1,
 
 			expectedPodDeletions: 0,
+			expectedServiceDeletions: 0,
 		},
 	}
 	for _, tc := range testCases {
@@ -315,7 +318,6 @@ func TestDeletePodsAndServices(t *testing.T) {
 		testutil.SetPodsStatuses(podIndexer, tc.job, testutil.LabelMaster, tc.pendingMasterPods, tc.activeMasterPods, tc.succeededMasterPods, tc.failedMasterPods, nil, t)
 
 		serviceIndexer := kubeInformerFactory.Core().V1().Services().Informer().GetIndexer()
-		testutil.SetServices(serviceIndexer, tc.job, testutil.LabelWorker, tc.activeWorkerServices, t)
 		testutil.SetServices(serviceIndexer, tc.job, testutil.LabelMaster, tc.activeMasterServices, t)
 
 		forget, err := ctr.syncPyTorchJob(testutil.GetKey(tc.job, t))
@@ -329,8 +331,8 @@ func TestDeletePodsAndServices(t *testing.T) {
 		if len(fakePodControl.DeletePodName) != tc.expectedPodDeletions {
 			t.Errorf("%s: unexpected number of pod deletes.  Expected %d, saw %d\n", tc.description, tc.expectedPodDeletions, len(fakePodControl.DeletePodName))
 		}
-		if len(fakeServiceControl.DeleteServiceName) != tc.expectedPodDeletions {
-			t.Errorf("%s: unexpected number of service deletes.  Expected %d, saw %d\n", tc.description, tc.expectedPodDeletions, len(fakeServiceControl.DeleteServiceName))
+		if len(fakeServiceControl.DeleteServiceName) != tc.expectedServiceDeletions {
+			t.Errorf("%s: unexpected number of service deletes.  Expected %d, saw %d\n", tc.description, tc.expectedServiceDeletions, len(fakeServiceControl.DeleteServiceName))
 		}
 	}
 }
@@ -413,7 +415,7 @@ func TestCleanupPyTorchJob(t *testing.T) {
 			succeededMasterPods: 1,
 			failedMasterPods:    0,
 
-			activeWorkerServices: 4,
+
 			activeMasterServices: 1,
 
 			expectedDeleteFinished: true,
@@ -485,7 +487,6 @@ func TestCleanupPyTorchJob(t *testing.T) {
 		testutil.SetPodsStatuses(podIndexer, tc.job, testutil.LabelMaster, tc.pendingMasterPods, tc.activeMasterPods, tc.succeededMasterPods, tc.failedMasterPods, nil, t)
 
 		serviceIndexer := kubeInformerFactory.Core().V1().Services().Informer().GetIndexer()
-		testutil.SetServices(serviceIndexer, tc.job, testutil.LabelWorker, tc.activeWorkerServices, t)
 		testutil.SetServices(serviceIndexer, tc.job, testutil.LabelMaster, tc.activeMasterServices, t)
 
 		ttl := tc.job.Spec.TTLSecondsAfterFinished
@@ -523,10 +524,11 @@ func TestActiveDeadlineSeconds(t *testing.T) {
 		succeededMasterPods int32
 		failedMasterPods    int32
 
-		activeWorkerServices int32
+		
 		activeMasterServices int32
 
 		expectedPodDeletions int
+		expectedServiceDeletions int
 	}
 
 	ads2 := int64(2)
@@ -546,10 +548,11 @@ func TestActiveDeadlineSeconds(t *testing.T) {
 			succeededMasterPods: 0,
 			failedMasterPods:    0,
 
-			activeWorkerServices: 4,
+			
 			activeMasterServices: 1,
 
 			expectedPodDeletions: 0,
+			expectedServiceDeletions: 0,
 		},
 		testCase{
 			description: "1 master and 4 workers running, ActiveDeadlineSeconds is 2",
@@ -565,10 +568,11 @@ func TestActiveDeadlineSeconds(t *testing.T) {
 			succeededMasterPods: 0,
 			failedMasterPods:    0,
 
-			activeWorkerServices: 4,
+			
 			activeMasterServices: 1,
 
 			expectedPodDeletions: 5,
+			expectedServiceDeletions: 1,
 		},
 	}
 	for _, tc := range testCases {
@@ -625,7 +629,7 @@ func TestActiveDeadlineSeconds(t *testing.T) {
 		testutil.SetPodsStatuses(podIndexer, tc.job, testutil.LabelMaster, tc.pendingMasterPods, tc.activeMasterPods, tc.succeededMasterPods, tc.failedMasterPods, nil, t)
 
 		serviceIndexer := kubeInformerFactory.Core().V1().Services().Informer().GetIndexer()
-		testutil.SetServices(serviceIndexer, tc.job, testutil.LabelWorker, tc.activeWorkerServices, t)
+		
 		testutil.SetServices(serviceIndexer, tc.job, testutil.LabelMaster, tc.activeMasterServices, t)
 
 		foo, _ := ctr.getPyTorchJobFromName("default", "test-pytorchjob")
@@ -645,8 +649,8 @@ func TestActiveDeadlineSeconds(t *testing.T) {
 		if len(fakePodControl.DeletePodName) != tc.expectedPodDeletions {
 			t.Errorf("%s: unexpected number of pod deletes.  Expected %d, saw %d\n", tc.description, tc.expectedPodDeletions, len(fakePodControl.DeletePodName))
 		}
-		if len(fakeServiceControl.DeleteServiceName) != tc.expectedPodDeletions {
-			t.Errorf("%s: unexpected number of service deletes.  Expected %d, saw %d\n", tc.description, tc.expectedPodDeletions, len(fakeServiceControl.DeleteServiceName))
+		if len(fakeServiceControl.DeleteServiceName) != tc.expectedServiceDeletions {
+			t.Errorf("%s: unexpected number of service deletes.  Expected %d, saw %d\n", tc.description, tc.expectedServiceDeletions, len(fakeServiceControl.DeleteServiceName))
 		}
 	}
 }
@@ -668,10 +672,11 @@ func TestBackoffForOnFailure(t *testing.T) {
 		succeededMasterPods int32
 		failedMasterPods    int32
 
-		activeWorkerServices int32
+		
 		activeMasterServices int32
 
 		expectedPodDeletions int
+		expectedServiceDeletions int
 	}
 
 	backoffLimit4 := int32(4)
@@ -693,10 +698,11 @@ func TestBackoffForOnFailure(t *testing.T) {
 			succeededMasterPods: 0,
 			failedMasterPods:    0,
 
-			activeWorkerServices: 4,
+
 			activeMasterServices: 1,
 
 			expectedPodDeletions: 5,
+			expectedServiceDeletions: 1,
 		},
 	}
 	for _, tc := range testCases {
@@ -753,7 +759,7 @@ func TestBackoffForOnFailure(t *testing.T) {
 		testutil.SetPodsStatuses(podIndexer, tc.job, testutil.LabelMaster, tc.pendingMasterPods, tc.activeMasterPods, tc.succeededMasterPods, tc.failedMasterPods, tc.restartCounts, t)
 
 		serviceIndexer := kubeInformerFactory.Core().V1().Services().Informer().GetIndexer()
-		testutil.SetServices(serviceIndexer, tc.job, testutil.LabelWorker, tc.activeWorkerServices, t)
+
 		testutil.SetServices(serviceIndexer, tc.job, testutil.LabelMaster, tc.activeMasterServices, t)
 
 		forget, err := ctr.syncPyTorchJob(testutil.GetKey(tc.job, t))
@@ -766,8 +772,8 @@ func TestBackoffForOnFailure(t *testing.T) {
 		if len(fakePodControl.DeletePodName) != tc.expectedPodDeletions {
 			t.Errorf("%s: unexpected number of pod deletes.  Expected %d, saw %d\n", tc.description, tc.expectedPodDeletions, len(fakePodControl.DeletePodName))
 		}
-		if len(fakeServiceControl.DeleteServiceName) != tc.expectedPodDeletions {
-			t.Errorf("%s: unexpected number of service deletes.  Expected %d, saw %d\n", tc.description, tc.expectedPodDeletions, len(fakeServiceControl.DeleteServiceName))
+		if len(fakeServiceControl.DeleteServiceName) != tc.expectedServiceDeletions {
+			t.Errorf("%s: unexpected number of service deletes.  Expected %d, saw %d\n", tc.description, tc.expectedServiceDeletions, len(fakeServiceControl.DeleteServiceName))
 		}
 	}
 }
