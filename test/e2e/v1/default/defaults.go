@@ -79,11 +79,19 @@ func isFailed(status common.JobStatus) bool {
 
 func run() (string, error) {
 	var kubeconfig *string
-	if home := homeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	var kube_env string
+
+	if len(os.Getenv("KUBECONFIG")) > 0 {
+		kube_env = os.Getenv("KUBECONFIG")
+		kubeconfig = &kube_env
 	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+		if home := homeDir(); home != "" {
+			kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+		} else {
+			kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+		}
 	}
+
 	flag.Parse()
 	if *name == "" {
 		name = proto.String("example-job")
