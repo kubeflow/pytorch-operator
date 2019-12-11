@@ -17,7 +17,6 @@ package control
 import (
 	"fmt"
 	"sync"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
@@ -201,9 +200,7 @@ func (f *FakeServiceControl) CreateServicesWithControllerRef(namespace string, s
 func (f *FakeServiceControl) DeleteService(namespace string, serviceID string, object runtime.Object) error {
 	f.Lock()
 	defer f.Unlock()
-	if strings.Contains(serviceID, "master"){
-		f.DeleteServiceName = append(f.DeleteServiceName, serviceID)
-	}
+	f.DeleteServiceName = append(f.DeleteServiceName, serviceID)
 	if f.Err != nil {
 		return f.Err
 	}

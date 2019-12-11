@@ -395,7 +395,7 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *pyv1.PyTorchJob) error {
 
 	// If the PyTorchJob is terminated, delete all pods and services.
 	if isSucceeded(job.Status) || isFailed(job.Status) || jobExceedsLimit {
-		if err := pc.deletePodsAndServices(job, pods); err != nil {
+		if err := pc.deletePodsAndServices(job, pods,services); err != nil {
 			return err
 		}
 

@@ -3,6 +3,7 @@ package pytorch
 import (
 	"fmt"
 	"time"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
@@ -148,7 +149,7 @@ func (pc *PyTorchController) updatePyTorchJob(old, cur interface{}) {
 	}
 }
 
-func (pc *PyTorchController) deletePodsAndServices(job *pyv1.PyTorchJob, pods []*v1.Pod) error {
+func (pc *PyTorchController) deletePodsAndServices(job *pyv1.PyTorchJob, pods []*v1.Pod,services []*v1.Service) error {
 	if len(pods) == 0 {
 		return nil
 	}
@@ -163,8 +164,15 @@ func (pc *PyTorchController) deletePodsAndServices(job *pyv1.PyTorchJob, pods []
 		if err := pc.PodControl.DeletePod(pod.Namespace, pod.Name, job); err != nil {
 			return err
 		}
-		// Pod and service have the same name, thus the service could be deleted using pod's name.
-		if err := pc.ServiceControl.DeleteService(pod.Namespace, pod.Name, job); err != nil {
+	}
+
+	rt := strings.ToLower(string(pyv1.PyTorchReplicaTypeMaster))
+	services, err := pc.FilterServicesForReplicaType(services, rt)
+	if err != nil {
+		return err
+	}
+	for _,service :=range services{
+		if err := pc.ServiceControl.DeleteService(service.Namespace, service.Name, job); err != nil {
 			return err
 		}
 	}
