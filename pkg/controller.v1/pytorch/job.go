@@ -149,7 +149,7 @@ func (pc *PyTorchController) updatePyTorchJob(old, cur interface{}) {
 	}
 }
 
-// delete all the pods and master services
+// deletePodsAndServices deletes all the pods and master service.
 func (pc *PyTorchController) deletePodsAndServices(job *pyv1.PyTorchJob, pods []*v1.Pod,services []*v1.Service) error {
 	if len(pods) == 0 {
 		return nil
