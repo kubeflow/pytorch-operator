@@ -68,12 +68,16 @@
       else name;
       local pytorchJobImage = params.registry + "/pytorch_operator:" + versionTag;
 
+      // value of KUBECONFIG environment variable. This should be  a full path.
+      local kubeConfig = testDir + "/.kube/kubeconfig";
+
       // The namespace on the cluster we spin up to deploy into.
       local deployNamespace = "kubeflow";
       // The directory within the kubeflow_testing submodule containing
       // py scripts to use.
       local k8sPy = srcDir;
       local kubeflowPy = srcRootDir + "/kubeflow/testing/py";
+      local PyTorchSDK = srcRootDir + "/kubeflow/pytorch-operator/sdk/python";
 
       local project = params.project;
       // GKE cluster to use
@@ -106,7 +110,7 @@
               {
                 // Add the source directories to the python path.
                 name: "PYTHONPATH",
-                value: k8sPy + ":" + kubeflowPy,
+                value: k8sPy + ":" + kubeflowPy + ":" + PyTorchSDK,
               },
               {
                 // Set the GOPATH
@@ -145,6 +149,12 @@
                     key: "github_token",
                   },
                 },
+              },
+              {
+                // We use a directory in our NFS share to store our kube config.
+                // This way we can configure it on a single step and reuse it on subsequent steps.
+                name: "KUBECONFIG",
+                value: kubeConfig,
               },
             ] + prow_env,
             volumeMounts: [
@@ -232,6 +242,10 @@
                     template: "run-v1-defaults",
                   },
                   {
+                    name: "sdk-tests",
+                    template: "sdk-tests",
+                  },
+                  {
                     name: "run-v1-cleanpodpolicy-all",
                     template: "run-v1-cleanpodpolicy-all",
                   },
@@ -281,6 +295,13 @@
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1-defaults", testWorkerImage, [
               "scripts/v1/run-defaults.sh",
             ]),  // run v1 default tests
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("sdk-tests", testWorkerImage, [
+              "pytest",
+              "sdk/python/test",
+               "--log-cli-level=info",
+               "--log-cli-format='%(levelname)s|%(asctime)s|%(pathname)s|%(lineno)d| %(message)s'",
+              "--junitxml=" + artifactsDir + "/junit_sdk-test.xml",
+            ]),  // run sdk tests
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1-cleanpodpolicy-all", testWorkerImage, [
               "scripts/v1/run-cleanpodpolicy-all.sh",
             ]),  // run v1 cleanpodpolicy tests
