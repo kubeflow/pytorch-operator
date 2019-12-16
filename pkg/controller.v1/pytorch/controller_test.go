@@ -20,19 +20,19 @@ import (
 	"time"
 
 	kubebatchclient "github.com/kubernetes-sigs/kube-batch/pkg/client/clientset/versioned"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubeinformers "k8s.io/client-go/informers"
 	kubeclientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/kubernetes/pkg/controller"
 
+	common "github.com/kubeflow/common/job_controller/api/v1"
 	"github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1/app/options"
 	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	jobclientset "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
 	jobinformers "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions"
 	"github.com/kubeflow/pytorch-operator/pkg/common/util/v1/testutil"
-	common "github.com/kubeflow/common/job_controller/api/v1"
 	"github.com/kubeflow/tf-operator/pkg/control"
 )
 
@@ -82,7 +82,6 @@ func TestNormalPath(t *testing.T) {
 		succeededMasterPods int32
 		failedMasterPods    int32
 
-		activeWorkerServices int32
 		activeMasterServices int32
 
 		// expectations
@@ -109,7 +108,7 @@ func TestNormalPath(t *testing.T) {
 			nil, true,
 			0, 0, 0, 0,
 			0, 0, 0, 0,
-			0, 0,
+			0,
 			1, 0, 1,
 			0, 0, 0,
 			0, 0, 0,
@@ -122,7 +121,7 @@ func TestNormalPath(t *testing.T) {
 			nil, true,
 			0, 0, 0, 0,
 			0, 0, 0, 0,
-			0, 0,
+			0,
 			5, 0, 1,
 			0, 0, 0,
 			0, 0, 0,
@@ -134,7 +133,7 @@ func TestNormalPath(t *testing.T) {
 			nil, true,
 			4, 0, 0, 0,
 			1, 0, 0, 0,
-			0, 1,
+			1,
 			0, 0, 0,
 			0, 0, 0,
 			0, 0, 0,
@@ -146,7 +145,7 @@ func TestNormalPath(t *testing.T) {
 			nil, true,
 			3, 1, 0, 0,
 			0, 1, 0, 0,
-			0, 1,
+			1,
 			0, 0, 0,
 			1, 0, 0,
 			1, 0, 0,
@@ -158,7 +157,7 @@ func TestNormalPath(t *testing.T) {
 			nil, true,
 			0, 4, 0, 0,
 			0, 1, 0, 0,
-			0, 1,
+			1,
 			0, 0, 0,
 			4, 0, 0,
 			1, 0, 0,
@@ -170,7 +169,7 @@ func TestNormalPath(t *testing.T) {
 			nil, true,
 			0, 0, 4, 0,
 			0, 0, 1, 0,
-			0, 1,
+			1,
 			0, 0, 0,
 			0, 4, 0,
 			0, 1, 0,
@@ -233,7 +232,6 @@ func TestNormalPath(t *testing.T) {
 		testutil.SetPodsStatuses(podIndexer, job, testutil.LabelMaster, tc.pendingMasterPods, tc.activeMasterPods, tc.succeededMasterPods, tc.failedMasterPods, nil, t)
 
 		serviceIndexer := kubeInformerFactory.Core().V1().Services().Informer().GetIndexer()
-		testutil.SetServices(serviceIndexer, job, testutil.LabelWorker, tc.activeWorkerServices, t)
 		testutil.SetServices(serviceIndexer, job, testutil.LabelMaster, tc.activeMasterServices, t)
 
 		forget, err := ctr.syncPyTorchJob(testutil.GetKey(job, t))
