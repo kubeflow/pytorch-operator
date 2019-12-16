@@ -22,7 +22,7 @@ import (
 
 	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	"github.com/kubeflow/pytorch-operator/pkg/common/config"
-	"gopkg.in/yaml.v2"
+	"github.com/kubernetes-sigs/yaml"
 	v1 "k8s.io/api/core/v1"
 )
 
