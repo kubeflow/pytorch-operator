@@ -39,7 +39,11 @@ Class | Method | Description
 [PyTorchJobClient](docs/PyTorchJobClient.md) | [get](docs/PyTorchJobClient.md#get)    | Get the specified PyTorchJob or all PyTorchJob in the namespace |
 [PyTorchJobClient](docs/PyTorchJobClient.md) | [patch](docs/PyTorchJobClient.md#patch)  | Patch the specified PyTorchJob|
 [PyTorchJobClient](docs/PyTorchJobClient.md) | [delete](docs/PyTorchJobClient.md#delete) | Delete the specified PyTorchJob |
-
+[PyTorchJobClient](docs/PyTorchJobClient.md)  | [wait_for_job](docs/PyTorchJobClient.md#wait_for_job) | Wait for the specified job to finish |
+[PyTorchJobClient](docs/PyTorchJobClient.md)  | [wait_for_condition](docs/PyTorchJobClient.md#wait_for_condition) | Waits until any of the specified conditions occur |
+[PyTorchJobClient](docs/PyTorchJobClient.md)  | [get_job_status](docs/PyTorchJobClient.md#get_job_status) | Get the PyTorchJob status|
+[PyTorchJobClient](docs/PyTorchJobClient.md)  | [is_job_running](docs/PyTorchJobClient.md#is_job_running) | Check if the PyTorchJob running |
+[PyTorchJobClient](docs/PyTorchJobClient.md)  | [is_job_succeeded](docs/PyTorchJobClient.md#is_job_succeeded) | Check if the PyTorchJob Succeeded |
 
 ## Documentation For Models
 

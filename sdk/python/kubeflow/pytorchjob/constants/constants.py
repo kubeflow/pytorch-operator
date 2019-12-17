@@ -15,9 +15,12 @@
 import os
 
 # PyTorchJob K8S constants
-PYTORCHJOB_GROUP = "kubeflow.org"
-PYTORCHJOB_KIND = "PyTorchJob"
-PYTORCHJOB_PLURAL = "pytorchjobs"
-PYTORCHJOB_VERSION = "v1"
+PYTORCHJOB_GROUP = 'kubeflow.org'
+PYTORCHJOB_KIND = 'PyTorchJob'
+PYTORCHJOB_PLURAL = 'pytorchjobs'
+PYTORCHJOB_VERSION = os.environ.get('PYTORCHJOB_VERSION', 'v1')
 
 PYTORCH_LOGLEVEL = os.environ.get('PYTORCHJOB_LOGLEVEL', 'INFO').upper()
+
+# How long to wait in seconds for requests to the ApiServer
+APISERVER_TIMEOUT = 120

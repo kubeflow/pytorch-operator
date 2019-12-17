@@ -20,7 +20,11 @@ PyTorchJobClient| [create](#create) | Create PyTorchJob|
 PyTorchJobClient | [get](#get)    | Get the specified PyTorchJob or all PyTorchJob in the namespace |
 PyTorchJobClient | [patch](#patch)  | Patch the specified PyTorchJob|
 PyTorchJobClient | [delete](#delete) | Delete the specified PyTorchJob |
-
+PyTorchJobClient | [wait_for_job](#wait_for_job) | Wait for the specified job to finish |
+PyTorchJobClient | [wait_for_condition](#wait_for_condition) | Waits until any of the specified conditions occur |
+PyTorchJobClient | [get_job_status](#get_job_status) | Get the PyTorchJob status|
+PyTorchJobClient | [is_job_running](#is_job_running) | Check if the PyTorchJob running |
+PyTorchJobClient | [is_job_succeeded](#is_job_succeeded) | Check if the PyTorchJob Succeeded |
 
 ## create
 > create(pytorchjob, namespace=None)
@@ -173,3 +177,136 @@ namespace | str | The pytorchjob's namespace. Defaults to current or default nam
 
 ### Return type
 object
+
+## wait_for_job
+> wait_for_job(name,
+>              namespace=None,
+>              timeout_seconds=600,
+>              polling_interval=30,
+>              status_callback=None):
+
+Wait for the specified job to finish.
+
+### Example
+
+```python
+from kubeflow.pytorchjob import PyTorchJobClient
+
+pytorchjob_client = PyTorchJobClient()
+pytorchjob_client.wait_for_job('mnist', namespace='kubeflow')
+```
+
+### Parameters
+Name | Type |  Description | Notes
+------------ | ------------- | ------------- | -------------
+name  | str | The PyTorchJob name.| |
+namespace | str | The pytorchjob's namespace. Defaults to current or default namespace. | Optional|
+timeout_seconds | int | How long to wait for the job, default wait for 600 seconds. | Optional|
+polling_interval | int | How often to poll for the status of the job.| Optional|
+status_callback | str | Callable. If supplied this callable is invoked after we poll the job. Callable takes a single argument which is the pytorchjob.| Optional|
+
+### Return type
+object
+
+
+## wait_for_condition
+> wait_for_condition(name,
+>                    expected_condition,
+>                    namespace=None,
+>                    timeout_seconds=600,
+>                    polling_interval=30,
+>                    status_callback=None):
+
+
+Waits until any of the specified conditions occur.
+
+### Example
+
+```python
+from kubeflow.pytorchjob import PyTorchJobClient
+
+pytorchjob_client = PyTorchJobClient()
+pytorchjob_client.wait_for_condition('mnist', expected_condition=["Succeeded", "Failed"], namespace='kubeflow')
+```
+
+### Parameters
+Name | Type |  Description | Notes
+------------ | ------------- | ------------- | -------------
+name  | str | The PyTorchJob name.| |
+expected_condition  |List |A list of conditions. Function waits until any of the supplied conditions is reached.| |
+namespace | str | The pytorchjob's namespace. Defaults to current or default namespace. | Optional|
+timeout_seconds | int | How long to wait for the job, default wait for 600 seconds. | Optional|
+polling_interval | int | How often to poll for the status of the job.| Optional|
+status_callback | str | Callable. If supplied this callable is invoked after we poll the job. Callable takes a single argument which is the pytorchjob.| Optional|
+
+### Return type
+object
+
+## get_job_status
+> get_job_status(name, namespace=None)
+
+Returns PyTorchJob status, such as Running, Failed or Succeeded.
+
+### Example
+
+```python
+from kubeflow.pytorchjob import PyTorchJobClient
+
+pytorchjob_client = PyTorchJobClient()
+pytorchjob_client.get_job_status('mnist', namespace='kubeflow')
+```
+
+### Parameters
+Name | Type |  Description | Notes
+------------ | ------------- | ------------- | -------------
+name  | str | The PyTorchJob name. | |
+namespace | str | The pytorchjob's namespace. Defaults to current or default namespace.| Optional |
+
+### Return type
+Str
+
+## is_job_running
+> is_job_running(name, namespace=None)
+
+Returns True if the PyTorchJob running; false otherwise.
+
+### Example
+
+```python
+from kubeflow.pytorchjob import PyTorchJobClient
+
+pytorchjob_client = PyTorchJobClient()
+pytorchjob_client.is_job_running('mnist', namespace='kubeflow')
+```
+
+### Parameters
+Name | Type |  Description | Notes
+------------ | ------------- | ------------- | -------------
+name  | str | The PyTorchJob name.| |
+namespace | str | The pytorchjob's namespace. Defaults to current or default namespace.| Optional |
+
+### Return type
+Bool
+
+## is_job_succeeded
+> is_job_succeeded(name, namespace=None)
+
+Returns True if the PyTorchJob succeeded; false otherwise.
+
+### Example
+
+```python
+from kubeflow.pytorchjob import PyTorchJobClient
+
+pytorchjob_client = PyTorchJobClient()
+pytorchjob_client.is_job_succeeded('mnist', namespace='kubeflow')
+```
+
+### Parameters
+Name | Type |  Description | Notes
+------------ | ------------- | ------------- | -------------
+name  | str | The PyTorchJob name.| |
+namespace | str | The pytorchjob's namespace. Defaults to current or default namespace.| Optional |
+
+### Return type
+Bool
