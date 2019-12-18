@@ -15,7 +15,6 @@
 package testutil
 
 import (
-	"encoding/json"
 	"strings"
 	"testing"
 
@@ -23,6 +22,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	common "github.com/kubeflow/common/job_controller/api/v1"
@@ -68,18 +68,15 @@ func GenOwnerReference(job *pyv1.PyTorchJob) *metav1.OwnerReference {
 	return controllerRef
 }
 
-// ConvertPyTorchJobToUnstructured uses JSON to convert PyTorchJob to Unstructured.
+// ConvertPyTorchJobToUnstructured uses function ToUnstructured to convert PyTorchJob to Unstructured.
 func ConvertPyTorchJobToUnstructured(job *pyv1.PyTorchJob) (*unstructured.Unstructured, error) {
-	var unstructured unstructured.Unstructured
-	b, err := json.Marshal(job)
+	object, err := runtime.DefaultUnstructuredConverter.ToUnstructured(job)
 	if err != nil {
 		return nil, err
 	}
-
-	if err := json.Unmarshal(b, &unstructured); err != nil {
-		return nil, err
-	}
-	return &unstructured, nil
+	return &unstructured.Unstructured{
+		Object:object,
+	},nil
 }
 
 func GetKey(job *pyv1.PyTorchJob, t *testing.T) string {
