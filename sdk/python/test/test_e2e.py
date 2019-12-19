@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
 import os
 
 from kubernetes.client import V1PodTemplateSpec
@@ -29,24 +28,7 @@ from kubeflow.pytorchjob import V1PyTorchJobSpec
 from kubeflow.pytorchjob import PyTorchJobClient
 
 PYTORCH_CLIENT = PyTorchJobClient(config_file=os.getenv('KUBECONFIG', '~/.kube/config'))
-
-def wait_for_pytorchjob_ready(name, namespace='default',
-                              timeout_seconds=600):
-  for _ in range(round(timeout_seconds/10)):
-    time.sleep(10)
-    pytorchjob = PYTORCH_CLIENT.get(name, namespace=namespace)
-
-    last_condition = pytorchjob.get("status", {}).get("conditions", [])[-1]
-    last_status = last_condition.get("type", "").lower()
-
-    if last_status == "succeeded":
-      return
-    elif last_status == "failed":
-      raise RuntimeError("The PyTorchJob is failed.")
-    else:
-      continue
-
-    raise RuntimeError("Timeout to finish the PyTorchJob.")
+SDK_TEST_NAMESPACE = 'default'
 
 def test_sdk_e2e():
   container = V1Container(
@@ -78,7 +60,7 @@ def test_sdk_e2e():
   pytorchjob = V1PyTorchJob(
     api_version="kubeflow.org/v1",
     kind="PyTorchJob",
-    metadata=V1ObjectMeta(name="pytorchjob-mnist-ci-test", namespace='default'),
+    metadata=V1ObjectMeta(name="pytorchjob-mnist-ci-test", namespace=SDK_TEST_NAMESPACE),
     spec=V1PyTorchJobSpec(
       clean_pod_policy="None",
       pytorch_replica_specs={"Master": master,
@@ -87,6 +69,11 @@ def test_sdk_e2e():
   )
 
   PYTORCH_CLIENT.create(pytorchjob)
-  wait_for_pytorchjob_ready("pytorchjob-mnist-ci-test")
 
-  PYTORCH_CLIENT.delete('pytorchjob-mnist-ci-test', namespace='default')
+
+  PYTORCH_CLIENT.wait_for_job("pytorchjob-mnist-ci-test", namespace=SDK_TEST_NAMESPACE)
+  if not PYTORCH_CLIENT.is_job_succeeded("pytorchjob-mnist-ci-test",
+                                         namespace=SDK_TEST_NAMESPACE):
+    raise RuntimeError("The PyTorchJob is not succeeded.")
+
+  PYTORCH_CLIENT.delete("pytorchjob-mnist-ci-test", namespace=SDK_TEST_NAMESPACE)
