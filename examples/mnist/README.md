@@ -23,3 +23,55 @@ The below example uses the gloo backend.
 ```shell
 kubectl create -f ./v1beta1/pytorch_job_mnist_gloo.yaml
 ```
+The above command will fail in non-gcp enviromnets as it expects an uset to have a gcp user and image path is gcr.io/<your_project>/pytorch_dist_mnist:latest
+
+For Testing it on non gcp cluster like on-premises edit the file ./v1/pytorch_job_mnist_gloo.yaml replace the image name gcr.io/<your_project>/pytorch_dist_mnist:latest with kubeflow/pytorch-dist-mnist-test:1.0
+
+Example yaml with local image:
+```
+apiVersion: "kubeflow.org/v1"
+kind: "PyTorchJob"
+metadata:
+  name: "pytorch-dist-mnist-gloo"
+spec:
+  pytorchReplicaSpecs:
+    Master:
+      replicas: 1
+      restartPolicy: OnFailure
+      template:
+        spec:
+          containers:
+            - name: pytorch
+              image: kubeflow/pytorch-dist-mnist-test:1.0
+              args: ["--backend", "gloo"]
+              #ports:
+              #- port: 23456
+              #  name: pytorch-job-port
+              # Comment out the below resources to use the CPU.
+              resources:
+                limits:
+                  nvidia.com/gpu: 1
+    Worker:
+      replicas: 1
+      restartPolicy: OnFailure
+      template:
+        spec:
+          containers:
+            - name: pytorch
+              image: kubeflow/pytorch-dist-mnist-test:1.0
+              args: ["--backend", "gloo"]
+              #ports:
+              #- port: 23456
+              #  name: pytorch-job-port
+              # Comment out the below resources to use the CPU.
+              resources:
+                limits:
+                  nvidia.com/gpu: 1
+```
+Then Test with the same command:
+
+```
+shell
+kubectl create -f ./v1beta1/pytorch_job_mnist_gloo.yaml
+```
+
