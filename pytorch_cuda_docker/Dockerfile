@@ -52,19 +52,3 @@ RUN pip install h5py-cache==1.0
 
 # Install Torchnet, a high-level framework for PyTorch
 RUN pip install torchnet==0.0.4
-
-# Install Requests, a Python library for making HTTP requests
-RUN conda install -y requests=2.19.1 \
- && conda clean -ya
-
-# Install Graphviz
-RUN conda install -y graphviz=2.40.1 python-graphviz=0.8.4 \
- && conda clean -ya
-
-# Install OpenCV3 Python bindings
-RUN sudo apt-get update && sudo apt-get install -y --no-install-recommends \
-    libgtk2.0-0 \
-    libcanberra-gtk-module \
- && sudo rm -rf /var/lib/apt/lists/*
-RUN conda install -y -c menpo opencv3=3.1.0 \
- && conda clean -ya
