@@ -296,11 +296,9 @@
               "scripts/v1/run-defaults.sh",
             ]),  // run v1 default tests
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("sdk-tests", testWorkerImage, [
-              "pytest",
-              "sdk/python/test",
-               "--log-cli-level=info",
-               "--log-cli-format='%(levelname)s|%(asctime)s|%(pathname)s|%(lineno)d| %(message)s'",
-              "--junitxml=" + artifactsDir + "/junit_sdk-test.xml",
+              "/bin/sh",
+              "-xc",
+              "pip3 install -r sdk/python/requirements.txt; pytest sdk/python/test --log-cli-level=info --log-cli-format='%(levelname)s|%(asctime)s|%(pathname)s|%(lineno)d| %(message)s' --junitxml=" + artifactsDir + "/junit_sdk-test.xml",
             ]),  // run sdk tests
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1-cleanpodpolicy-all", testWorkerImage, [
               "scripts/v1/run-cleanpodpolicy-all.sh",
