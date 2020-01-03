@@ -100,7 +100,7 @@ namespace | str | Namespace for pytorchjob deploying to. If the `namespace` is n
 object
 
 ## get
-> get(name=None, namespace=None)
+> get(name=None, namespace=None, watch=False, timeout_seconds=600))
 
 Get the created pytorchjob in the specified namespace
 
@@ -118,6 +118,8 @@ Name | Type |  Description | Notes
 ------------ | ------------- | ------------- | -------------
 name  | str | pytorchjob name. If the `name` is not specified, it will get all pytorchjobs in the namespace.| Optional. |
 namespace | str | The pytorchjob's namespace. Defaults to current or default namespace.| Optional |
+watch | bool | Watch the created pytorchjob if `True`, otherwise will return the created pytorchjob object. Stop watching if pytorchjob reaches the optional specified `timeout_seconds` or once the PyTorchJob status `Succeeded` or `Failed`. | Optional |
+timeout_seconds | int | Timeout seconds for watching. Defaults to 600. | Optional |
 
 
 ### Return type
@@ -181,6 +183,7 @@ object
 ## wait_for_job
 > wait_for_job(name,
 >              namespace=None,
+>              watch=False,
 >              timeout_seconds=600,
 >              polling_interval=30,
 >              status_callback=None):
@@ -194,6 +197,16 @@ from kubeflow.pytorchjob import PyTorchJobClient
 
 pytorchjob_client = PyTorchJobClient()
 pytorchjob_client.wait_for_job('mnist', namespace='kubeflow')
+
+# The API also supports watching the PyTorchJob status till it's Succeeded or Failed.
+pytorchjob_client.wait_for_job('mnist', namespace='kubeflow', watch=True)
+NAME                           STATE                TIME
+pytorch-dist-mnist-gloo        Created              2020-01-02T09:21:22Z
+pytorch-dist-mnist-gloo        Running              2020-01-02T09:21:36Z
+pytorch-dist-mnist-gloo        Running              2020-01-02T09:21:36Z
+pytorch-dist-mnist-gloo        Running              2020-01-02T09:21:36Z
+pytorch-dist-mnist-gloo        Running              2020-01-02T09:21:36Z
+pytorch-dist-mnist-gloo        Succeeded            2020-01-02T09:26:38Z
 ```
 
 ### Parameters
@@ -201,6 +214,7 @@ Name | Type |  Description | Notes
 ------------ | ------------- | ------------- | -------------
 name  | str | The PyTorchJob name.| |
 namespace | str | The pytorchjob's namespace. Defaults to current or default namespace. | Optional|
+watch | bool | Watch the PyTorchJob if `True`. Stop watching if PyTorchJob reaches the optional specified `timeout_seconds` or once the PyTorchJob status `Succeeded` or `Failed`. | Optional |
 timeout_seconds | int | How long to wait for the job, default wait for 600 seconds. | Optional|
 polling_interval | int | How often to poll for the status of the job.| Optional|
 status_callback | str | Callable. If supplied this callable is invoked after we poll the job. Callable takes a single argument which is the pytorchjob.| Optional|
