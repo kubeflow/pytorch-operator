@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
-GoogleCloudPlatform/gcloud-golang  Other  https://github.com/googleapis/google-cloud-go/blob/master/LICENSE
+GoogleCloudPlatform/gcloud-golang  Apache License 2.0  https://github.com/googleapis/google-cloud-go/blob/master/LICENSE
 --------------------------------------------------------------------------------
 
                                  Apache License
@@ -526,7 +526,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --------------------------------------------------------------------------------
-ghodss/yaml  Other  https://github.com/ghodss/yaml/blob/master/LICENSE
+ghodss/yaml  MIT License  https://github.com/ghodss/yaml/blob/master/LICENSE
 --------------------------------------------------------------------------------
 The MIT License (MIT)
 
@@ -992,7 +992,7 @@ go-openapi/jsonreference  Apache License 2.0  https://github.com/go-openapi/json
    limitations under the License.
 
 --------------------------------------------------------------------------------
-go-openapi/spec  Other  https://github.com/go-openapi/spec/blob/master/LICENSE
+go-openapi/spec  Apache License 2.0  https://github.com/go-openapi/spec/blob/master/LICENSE
 --------------------------------------------------------------------------------
 
                                  Apache License
@@ -1404,7 +1404,7 @@ go-openapi/swag  Apache License 2.0  https://github.com/go-openapi/swag/blob/mas
    limitations under the License.
 
 --------------------------------------------------------------------------------
-gogo/protobuf  Other  https://github.com/gogo/protobuf/blob/master/LICENSE
+gogo/protobuf  BSD 3-Clause "New" or "Revised" License  https://github.com/gogo/protobuf/blob/master/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2013, The GoGo Authors. All rights reserved.
 
@@ -3576,7 +3576,7 @@ kubernetes-sigs/kube-batch  Apache License 2.0  https://github.com/kubernetes-si
    limitations under the License.
 
 --------------------------------------------------------------------------------
-kubernetes-sigs/yaml  Other  https://github.com/kubernetes-sigs/yaml/blob/master/LICENSE
+kubernetes-sigs/yaml  MIT License  https://github.com/kubernetes-sigs/yaml/blob/master/LICENSE
 --------------------------------------------------------------------------------
 The MIT License (MIT)
 
@@ -4281,7 +4281,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 --------------------------------------------------------------------------------
-opencontainers/go-digest  Other  https://github.com/opencontainers/go-digest/blob/master/LICENSE
+opencontainers/go-digest  Apache License 2.0  https://github.com/opencontainers/go-digest/blob/master/LICENSE
 --------------------------------------------------------------------------------
 
                                  Apache License
@@ -5438,7 +5438,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-golang/crypto  Other  https://github.com/golang/crypto/blob/master/LICENSE
+golang/crypto  BSD 3-Clause "New" or "Revised" License  https://github.com/golang/crypto/blob/master/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2009 The Go Authors. All rights reserved.
 
@@ -5469,7 +5469,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-golang/net  Other  https://github.com/golang/net/blob/master/LICENSE
+golang/net  BSD 3-Clause "New" or "Revised" License  https://github.com/golang/net/blob/master/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2009 The Go Authors. All rights reserved.
 
@@ -5531,7 +5531,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-golang/sys  Other  https://github.com/golang/sys/blob/master/LICENSE
+golang/sys  BSD 3-Clause "New" or "Revised" License  https://github.com/golang/sys/blob/master/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2009 The Go Authors. All rights reserved.
 
@@ -5562,7 +5562,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-golang/text  Other  https://github.com/golang/text/blob/master/LICENSE
+golang/text  BSD 3-Clause "New" or "Revised" License  https://github.com/golang/text/blob/master/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2009 The Go Authors. All rights reserved.
 
@@ -5593,7 +5593,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-golang/time  Other  https://github.com/golang/time/blob/master/LICENSE
+golang/time  BSD 3-Clause "New" or "Revised" License  https://github.com/golang/time/blob/master/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2009 The Go Authors. All rights reserved.
 
@@ -5624,7 +5624,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-golang/tools  Other  https://github.com/golang/tools/blob/master/LICENSE
+golang/tools  BSD 3-Clause "New" or "Revised" License  https://github.com/golang/tools/blob/master/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2009 The Go Authors. All rights reserved.
 
@@ -5861,7 +5861,7 @@ golang/appengine  Apache License 2.0  https://github.com/golang/appengine/blob/m
    limitations under the License.
 
 --------------------------------------------------------------------------------
-go-inf/inf  Other  https://github.com/go-inf/inf/blob/master/LICENSE
+go-inf/inf  BSD 3-Clause "New" or "Revised" License  https://github.com/go-inf/inf/blob/master/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2012 Péter Surányi. Portions Copyright (c) 2009 The Go
 Authors. All rights reserved.
@@ -6099,7 +6099,7 @@ square/go-jose  Apache License 2.0  https://github.com/square/go-jose/blob/maste
    limitations under the License.
 
 --------------------------------------------------------------------------------
-go-yaml/yaml  Other  https://github.com/go-yaml/yaml/blob/v2/LICENSE
+go-yaml/yaml  Apache License 2.0  https://github.com/go-yaml/yaml/blob/v2/LICENSE
 --------------------------------------------------------------------------------
                                  Apache License
                            Version 2.0, January 2004
