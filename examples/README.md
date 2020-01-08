@@ -1,44 +1,30 @@
-## PyTorch distributed examples
+## Installation & deployment tips 
+1. You need to configure your node to utilize GPU. In order this can be done the following way: 
+    * Install [nvidia-docker2](https://github.com/NVIDIA/nvidia-docker)
+    * Connect to your MasterNode and set nvidia as the default run in `/etc/docker/daemon.json`:
+        ```
+        {
+            "default-runtime": "nvidia",
+            "runtimes": {
+                "nvidia": {
+                    "path": "/usr/bin/nvidia-container-runtime",
+                    "runtimeArgs": []
+                }
+            }
+        }
+        ```
+    * After that deploy nvidia-daemon to kubernetes: 
+        ```bash
+        kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
+        ```
+        
+2. NVIDIA GPUs can now be consumed via container level resource requirements using the resource name nvidia.com/gpu:
+      ```
+      resources:
+        limits:
+            nvidia.com/gpu: 2 # requesting 2 GPUs
+      ```
 
-Here are examples of jobs that use the operator.
+3. Building image. Each example has prebuilt images that are stored on google cloud resources (GCR). If you want to create your own image we recommend using dockerhub. Each example has its own Dockerfile that we strongly advise to use. To build your custom image follow instruction on [TechRepublic](https://www.techrepublic.com/article/how-to-create-a-docker-image-and-push-it-to-docker-hub/).
 
-1. An example of distributed CIFAR10 with pytorch on kubernetes:
-   ```
-   kubectl apply -f cifar10/
-   ```
-
-   For faster execution, pre-download the dataset to each of your cluster nodes and edit the
-   cifar10/pytorchjob_cifar.yaml file to include the below "predownload" entries in the spec containers.
-   The extra entries will need to be present for both MASTER and WORKER replica types.
-   ```
-    spec:
-      containers:
-      - image: pytorch/pytorch:latest
-        imagePullPolicy: IfNotPresent
-        name: pytorch
-        volumeMounts:
-          - name: training-result
-            mountPath: /tmp/result
-          - name: entrypoint
-            mountPath: /tmp/entrypoint
-          - name: predownload                               <- Add this line
-            mountpath: /data                                <- Add this line
-        command: [/tmp/entrypoint/dist_train_cifar.py]
-      restartPolicy: OnFailure
-      volumes:
-        - name: training-result
-          emptyDir: {}
-        - name: entrypoint
-          configMap:
-            name: dist-train-cifar
-            defaultMode: 0755
-        - name: predownload                                 <- Add this line
-          hostPath:                                         <- Add this line
-            path: [absolute_path_to_predownloaded_data]     <- Add this line and path
-      restartPolicy: OnFailure
-    ```
-
-2. A simple example of distributed MNIST with pytorch on kubernetes:
-   ```
-   kubectl apply -f mnist/
-   ```
+4. To deploy your job we recommend using official [kubeflow documentation](https://www.kubeflow.org/docs/guides/components/pytorch/). Each example has example yaml files for two versions of apis. Feel free to modify them, e.g. image or number of GPUs.

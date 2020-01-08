@@ -1,54 +1,124 @@
 
-# pytorch-operator
-#### Experimental repo notice: This repository is experimental and currently only serves as a proof of concept for running distributed training with PyTorch on Kubernetes. Current POC is based on [TFJob operator](https://github.com/kubeflow/tf-operator)
-Repository for supporting pytorch. This repo is experimental and is being used to start work related to this [proposal](https://github.com/kubeflow/community/pull/33).
+# Kubernetes Custom Resource and Operator for PyTorch jobs
+
+[![Build Status](https://travis-ci.org/kubeflow/pytorch-operator.svg?branch=master)](https://travis-ci.org/kubeflow/pytorch-operator)
+[![Go Report Card](https://goreportcard.com/badge/github.com/kubeflow/pytorch-operator)](https://goreportcard.com/report/github.com/kubeflow/pytorch-operator)
+
+## Overview
+
+This repository contains the specification and implementation of `PyTorchJob` custom resource definition. Using this custom resource, users can create and manage PyTorch jobs like other built-in resources in Kubernetes. See [CRD definition](https://github.com/kubeflow/kubeflow/blob/master/kubeflow/pytorch-job/pytorch-operator.libsonnet#L11)
 
 ## Prerequisites
 
-- [Helm and Tiller](https://github.com/kubernetes/helm/blob/master/docs/install.md)
+- Kubernetes >= 1.8
 - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl)
-## Using the PyTorch Operator
 
-Run the following to deploy the operator to the namespace of your current context:
-```
-RBAC=true #set false if you do not have an RBAC cluster
-helm install pytorch-operator-chart -n pytorch-operator --set rbac.install=${RBAC} --wait --replace
-```
-For this POC example we will use a configmap that contains our distributed training script.
-```
-kubectl create -f examples/mnist/configmap.yaml
-```
-Create a PyTorchJob resource to start training:
-```
-kubectl create -f examples/mnist/pytorchjob.yaml
-```
-You should now be able to see the job running based on the specified number of replicas.
-```
-kubectl get pods -a -l pytorch_job_name=example-job
-```
-Training should run for about 10 epochs and takes 5-10 minutes on a cpu cluster. Logs can be inspected while the job runs. (TODO(jose5918) Find a better example for distributed training)
+## Installing PyTorch Operator
 
-Tail the logs for a pod to see its training progress or final status:
+  Please refer to the installation instructions in the [Kubeflow user guide](https://www.kubeflow.org/docs/started/getting-started/). This installs `pytorchjob` CRD and `pytorch-operator` controller to manage the lifecycle of PyTorch jobs.
+
+## Creating a PyTorch Job
+
+You can create PyTorch Job by defining a PyTorchJob config file. See the manifests for the [distributed MNIST example](./examples/mnist/). You may change the config file based on your requirements.
+
 ```
-PODNAME=$(kubectl  get pods -a -l pytorch_job_name=example-job,task_index=0 -o name)
+cat examples/mnist/v1/pytorch_job_mnist_gloo.yaml
+```
+Deploy the PyTorchJob resource to start training:
+
+```
+kubectl create -f examples/mnist/v1/pytorch_job_mnist_gloo.yaml
+```
+You should now be able to see the created pods matching the specified number of replicas.
+
+```
+kubectl get pods -l pytorch-job-name=pytorch-dist-mnist-gloo
+```
+Training should run for about 10 epochs and takes 5-10 minutes on a cpu cluster. Logs can be inspected to see its training progress.
+
+```
+PODNAME=$(kubectl get pods -l pytorch-job-name=pytorch-dist-mnist-gloo,pytorch-replica-type=master -o name)
 kubectl logs -f ${PODNAME}
 ```
-Example output:
+## Monitoring a PyTorch Job
+
 ```
-Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz
-Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz
-Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz
-Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz
-Processing...
-Done!
-Rank  0 , epoch  0 :  1.2753884393269066
-Rank  0 , epoch  1 :  0.5752273188915842
-Rank  0 , epoch  2 :  0.4370715184919616
-Rank  0 , epoch  3 :  0.37090928852558136
-Rank  0 , epoch  4 :  0.3224359404430715
-Rank  0 , epoch  5 :  0.29541213348158385
-Rank  0 , epoch  6 :  0.27593734307583967
-Rank  0 , epoch  7 :  0.25898529327055536
-Rank  0 , epoch  8 :  0.24815570648862864
-Rank  0 , epoch  9 :  0.22647559368756534
+kubectl get -o yaml pytorchjobs pytorch-dist-mnist-gloo
 ```
+See the status section to monitor the job status. Here is sample output when the job is successfully completed.
+
+```
+apiVersion: v1
+items:
+- apiVersion: kubeflow.org/v1
+  kind: PyTorchJob
+  metadata:
+    creationTimestamp: 2019-01-11T00:51:48Z
+    generation: 1
+    name: pytorch-dist-mnist-gloo
+    namespace: default
+    resourceVersion: "2146573"
+    selfLink: /apis/kubeflow.org/v1/namespaces/kubeflow/pytorchjobs/pytorch-dist-mnist-gloo
+    uid: 13ad0e7f-153b-11e9-b5c1-42010a80001e
+  spec:
+    pytorchReplicaSpecs:
+      Master:
+        replicas: 1
+        restartPolicy: OnFailure
+        template:
+          spec:
+            containers:
+            - args:
+              - --backend
+              - gloo
+              image: gcr.io/kubeflow-ci/pytorch-dist-mnist-test:v1.0
+              name: pytorch
+              resources:
+                limits:
+                  nvidia.com/gpu: "1"
+      Worker:
+        replicas: 1
+        restartPolicy: OnFailure
+        template:
+          spec:
+            containers:
+            - args:
+              - --backend
+              - gloo
+              image: gcr.io/kubeflow-ci/pytorch-dist-mnist-test:v1.0
+              name: pytorch
+              resources:
+                limits:
+                  nvidia.com/gpu: "1"
+  status:
+    completionTime: 2019-01-11T01:03:15Z
+    conditions:
+    - lastTransitionTime: 2019-01-11T00:51:48Z
+      lastUpdateTime: 2019-01-11T00:51:48Z
+      message: PyTorchJob pytorch-dist-mnist-gloo is created.
+      reason: PyTorchJobCreated
+      status: "True"
+      type: Created
+    - lastTransitionTime: 2019-01-11T00:57:22Z
+      lastUpdateTime: 2019-01-11T00:57:22Z
+      message: PyTorchJob pytorch-dist-mnist-gloo is running.
+      reason: PyTorchJobRunning
+      status: "False"
+      type: Running
+    - lastTransitionTime: 2019-01-11T01:03:15Z
+      lastUpdateTime: 2019-01-11T01:03:15Z
+      message: PyTorchJob pytorch-dist-mnist-gloo is successfully completed.
+      reason: PyTorchJobSucceeded
+      status: "True"
+      type: Succeeded
+    replicaStatuses:
+      Master:
+        succeeded: 1
+      Worker:
+        succeeded: 1
+    startTime: 2019-01-11T00:57:22Z
+```
+
+## Contributing
+
+Please refer to the [developer_guide](developer_guide.md).

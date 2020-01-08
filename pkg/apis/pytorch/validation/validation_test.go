@@ -17,97 +17,98 @@ package validation
 import (
 	"testing"
 
-	torchv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha1"
+	torchv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
+	commonv1 "github.com/kubeflow/common/job_controller/api/v1"
 
-	"github.com/gogo/protobuf/proto"
 	"k8s.io/api/core/v1"
 )
 
-func TestValidate(t *testing.T) {
-	type testCase struct {
-		in             *torchv1.PyTorchJobSpec
-		expectingError bool
+func TestValidateV1PyTorchJobSpec(t *testing.T) {
+	testCases := []torchv1.PyTorchJobSpec{
+		{
+			PyTorchReplicaSpecs: nil,
+		},
+		{
+			PyTorchReplicaSpecs: map[torchv1.PyTorchReplicaType]*commonv1.ReplicaSpec{
+				torchv1.PyTorchReplicaTypeWorker: &commonv1.ReplicaSpec{
+					Template: v1.PodTemplateSpec{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{},
+						},
+					},
+				},
+			},
+		},
+		{
+			PyTorchReplicaSpecs: map[torchv1.PyTorchReplicaType]*commonv1.ReplicaSpec{
+				torchv1.PyTorchReplicaTypeWorker: &commonv1.ReplicaSpec{
+					Template: v1.PodTemplateSpec{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								v1.Container{
+									Image: "",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			PyTorchReplicaSpecs: map[torchv1.PyTorchReplicaType]*commonv1.ReplicaSpec{
+				torchv1.PyTorchReplicaTypeWorker: &commonv1.ReplicaSpec{
+					Template: v1.PodTemplateSpec{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								v1.Container{
+									Name:  "",
+									Image: "gcr.io/kubeflow-ci/pytorch-dist-mnist_test:1.0",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			PyTorchReplicaSpecs: map[torchv1.PyTorchReplicaType]*commonv1.ReplicaSpec{
+				torchv1.PyTorchReplicaTypeMaster: &commonv1.ReplicaSpec{
+					Replicas: torchv1.Int32(2),
+					Template: v1.PodTemplateSpec{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								v1.Container{
+									Name:  "pytorch",
+									Image: "gcr.io/kubeflow-ci/pytorch-dist-mnist_test:1.0",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			PyTorchReplicaSpecs: map[torchv1.PyTorchReplicaType]*commonv1.ReplicaSpec{
+				torchv1.PyTorchReplicaTypeWorker: &commonv1.ReplicaSpec{
+					Replicas: torchv1.Int32(1),
+					Template: v1.PodTemplateSpec{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								v1.Container{
+									Name:  "pytorch",
+									Image: "gcr.io/kubeflow-ci/pytorch-dist-mnist_test:1.0",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
-
-	testCases := []testCase{
-		{
-			in: &torchv1.PyTorchJobSpec{
-				ReplicaSpecs: []*torchv1.PyTorchReplicaSpec{
-					{
-						Template: &v1.PodTemplateSpec{
-							Spec: v1.PodSpec{
-								Containers: []v1.Container{
-									{
-										Name: "pytorch",
-									},
-								},
-							},
-						},
-						PyTorchReplicaType: torchv1.MASTER,
-						Replicas:           proto.Int32(1),
-					},
-				},
-				PyTorchImage: "pytorch/pytorch:v0.2",
-			},
-			expectingError: false,
-		},
-		{
-			in: &torchv1.PyTorchJobSpec{
-				ReplicaSpecs: []*torchv1.PyTorchReplicaSpec{
-					{
-						Template: &v1.PodTemplateSpec{
-							Spec: v1.PodSpec{
-								Containers: []v1.Container{
-									{
-										Name: "pytorch",
-									},
-								},
-							},
-						},
-						PyTorchReplicaType: torchv1.WORKER,
-						Replicas:           proto.Int32(1),
-					},
-				},
-				PyTorchImage: "pytorch/pytorch:v0.2",
-			},
-			expectingError: true,
-		},
-		{
-			in: &torchv1.PyTorchJobSpec{
-				ReplicaSpecs: []*torchv1.PyTorchReplicaSpec{
-					{
-						Template: &v1.PodTemplateSpec{
-							Spec: v1.PodSpec{
-								Containers: []v1.Container{
-									{
-										Name: "pytorch",
-									},
-								},
-							},
-						},
-						PyTorchReplicaType: torchv1.WORKER,
-						Replicas:           proto.Int32(1),
-					},
-				},
-				PyTorchImage: "pytorch/pytorch:v0.2",
-				TerminationPolicy: &torchv1.TerminationPolicySpec{
-					Master: &torchv1.MasterSpec{
-						ReplicaName: "WORKER",
-						ReplicaRank: 0,
-					},
-				},
-			},
-			expectingError: false,
-		},
-	}
-
 	for _, c := range testCases {
-		job := &torchv1.PyTorchJob{
-			Spec: *c.in,
-		}
-		torchv1.SetObjectDefaults_PyTorchJob(job)
-		if err := ValidatePyTorchJobSpec(&job.Spec); (err != nil) != c.expectingError {
-			t.Errorf("unexpected validation result: %v", err)
+		err := ValidateV1PyTorchJobSpec(&c)
+		if err == nil {
+			t.Error("Failed validate the v1.PyTorchJobSpec")
 		}
 	}
 }

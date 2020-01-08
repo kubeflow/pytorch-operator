@@ -32,9 +32,15 @@ echo "Create symlink to GOPATH"
 mkdir -p ${GOPATH}/src/github.com/${REPO_OWNER}
 ln -s ${PWD} ${GO_DIR}
 cd ${GO_DIR}
-echo "Build operator binary"
-go build github.com/kubeflow/pytorch-operator/cmd/pytorch-operator
-echo "building container in gcloud"
+
+echo "Building PyTorch operator in gcloud"
 gcloud version
-# gcloud components update -q
-gcloud container builds submit . --tag=${REGISTRY}/${REPO_NAME}:${VERSION} --project=${PROJECT}
+gcloud builds submit . --tag=${REGISTRY}/${REPO_NAME}:${VERSION} --project=${PROJECT}
+
+#echo "Building smoke test image"
+#SENDRECV_TEST_IMAGE_TAG="pytorch-dist-sendrecv-test:v1.0"
+#gcloud builds submit  ./examples/smoke-dist/ --tag=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --project=${PROJECT}
+
+#echo "Building MNIST test image"
+#MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist-test:v1.0"
+#gcloud builds submit  ./examples/mnist/ --tag=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --project=${PROJECT}

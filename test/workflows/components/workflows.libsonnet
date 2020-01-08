@@ -37,7 +37,7 @@
   },
 
   // overrides is a dictionary of parameters to provide in addition to defaults.
-  parts(namespace, name, overrides={}):: {
+  parts(namespace, name, overrides):: {
     // Workflow to run the e2e test.
     e2e(prow_env, bucket):
       local params = $.defaultParams + overrides;
@@ -54,7 +54,7 @@
       local srcRootDir = testDir + "/src";
       // The directory containing the kubeflow/pytorch-operator repo
       local srcDir = srcRootDir + "/kubeflow/pytorch-operator";
-      local testWorkerImage = "gcr.io/kubeflow-ci/test-worker";
+      local testWorkerImage = "gcr.io/kubeflow-ci/test-worker:v20190421-fba47fe-e3b0c4";
       local golangImage = "golang:1.9.4-stretch";
       // TODO(jose5918) Build our own helm image
       local helmImage = "volumecontroller/golang:1.9.2";
@@ -65,8 +65,11 @@
       local dataVolume = "kubeflow-test-volume";
       local versionTag = if params.versionTag != null then
         params.versionTag
-        else name;
+      else name;
       local pytorchJobImage = params.registry + "/pytorch_operator:" + versionTag;
+
+      // value of KUBECONFIG environment variable. This should be  a full path.
+      local kubeConfig = testDir + "/.kube/kubeconfig";
 
       // The namespace on the cluster we spin up to deploy into.
       local deployNamespace = "kubeflow";
@@ -74,6 +77,7 @@
       // py scripts to use.
       local k8sPy = srcDir;
       local kubeflowPy = srcRootDir + "/kubeflow/testing/py";
+      local PyTorchSDK = srcRootDir + "/kubeflow/pytorch-operator/sdk/python";
 
       local project = params.project;
       // GKE cluster to use
@@ -97,6 +101,7 @@
         // command: List to pass as the container command.
         buildTemplate(step_name, image, command):: {
           name: step_name,
+          activeDeadlineSeconds: 2100,
           container: {
             command: command,
             image: image,
@@ -105,7 +110,7 @@
               {
                 // Add the source directories to the python path.
                 name: "PYTHONPATH",
-                value: k8sPy + ":" + kubeflowPy,
+                value: k8sPy + ":" + kubeflowPy + ":" + PyTorchSDK,
               },
               {
                 // Set the GOPATH
@@ -144,6 +149,12 @@
                     key: "github_token",
                   },
                 },
+              },
+              {
+                // We use a directory in our NFS share to store our kube config.
+                // This way we can configure it on a single step and reuse it on subsequent steps.
+                name: "KUBECONFIG",
+                value: kubeConfig,
               },
             ] + prow_env,
             volumeMounts: [
@@ -192,7 +203,7 @@
               },
             },
           ],  // volumes
-          // onExit specifies the template that should always run when the workflow completes.          
+          // onExit specifies the template that should always run when the workflow completes.
           onExit: "exit-handler",
           templates: [
             {
@@ -221,8 +232,22 @@
                 ],
                 [
                   {
-                    name: "run-tests",
-                    template: "run-tests",
+                    name: "setup-kubeflow",
+                    template: "setup-kubeflow",
+                  },
+                ],
+                [
+                  {
+                    name: "run-v1-defaults",
+                    template: "run-v1-defaults",
+                  },
+                  {
+                    name: "sdk-tests",
+                    template: "sdk-tests",
+                  },
+                  {
+                    name: "run-v1-cleanpodpolicy-all",
+                    template: "run-v1-cleanpodpolicy-all",
                   },
                 ],
               ],
@@ -261,13 +286,24 @@
                 ],
               },
             },  // checkout
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("setup-cluster",testWorkerImage, [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-cluster", testWorkerImage, [
               "scripts/create-cluster.sh",
             ]),  // setup cluster
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("run-tests", helmImage, [
-              "scripts/run-tests.sh",
-            ]),  // run tests
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", testWorkerImage, [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-kubeflow", testWorkerImage, [
+              "scripts/setup-kubeflow.sh",
+            ]),  // setup kubeflow
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1-defaults", testWorkerImage, [
+              "scripts/v1/run-defaults.sh",
+            ]),  // run v1 default tests
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("sdk-tests", testWorkerImage, [
+              "/bin/sh",
+              "-xc",
+              "pip3 install -r sdk/python/requirements.txt; pytest sdk/python/test --log-cli-level=info --log-cli-format='%(levelname)s|%(asctime)s|%(pathname)s|%(lineno)d| %(message)s' --junitxml=" + artifactsDir + "/junit_sdk-test.xml",
+            ]),  // run sdk tests
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1-cleanpodpolicy-all", testWorkerImage, [
+              "scripts/v1/run-cleanpodpolicy-all.sh",
+            ]),  // run v1 cleanpodpolicy tests
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", testWorkerImage, [
               "python",
               "-m",
               "kubeflow.testing.prow_artifacts",
@@ -275,10 +311,10 @@
               "create_pr_symlink",
               "--bucket=" + bucket,
             ]),  // create-pr-symlink
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("teardown-cluster",testWorkerImage, [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("teardown-cluster", testWorkerImage, [
               "scripts/delete-cluster.sh",
-             ]),  // teardown cluster
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("copy-artifacts", testWorkerImage, [
+            ]),  // teardown cluster
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("copy-artifacts", testWorkerImage, [
               "python",
               "-m",
               "kubeflow.testing.prow_artifacts",
@@ -286,7 +322,7 @@
               "copy_artifacts",
               "--bucket=" + bucket,
             ]),  // copy-artifacts
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("build", testWorkerImage, [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("build", testWorkerImage, [
               "scripts/build.sh",
             ]),  // build
           ],  // templates
