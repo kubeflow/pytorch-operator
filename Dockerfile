@@ -11,4 +11,6 @@ FROM registry.access.redhat.com/ubi8/ubi:latest
 
 COPY --from=build-image /go/src/github.com/kubeflow/pytorch-operator/pytorch-operator.v1 /pytorch-operator.v1
 
+COPY third_party/library/license.txt /license.txt
+
 ENTRYPOINT ["/pytorch-operator", "-alsologtostderr"]
