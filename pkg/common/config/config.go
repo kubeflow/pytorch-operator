@@ -11,12 +11,12 @@ var initContainerTemplate = `
   image: alpine:3.10
   imagePullPolicy: IfNotPresent
   resources:
-	limits:
-	  cpu: 100m
-	  memory: 10Mi
-	requests:
-	  cpu: 10m
-	  memory: 1Mi
+    limits:
+      cpu: 100m
+      memory: 10Mi
+    requests:
+      cpu: 10m
+      memory: 1Mi
   command: ['sh', '-c', 'until nslookup {{.MasterAddr}}; do echo waiting for master; sleep 2; done;']`
 
 func init() {
