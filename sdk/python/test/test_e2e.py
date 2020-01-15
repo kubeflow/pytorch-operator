@@ -76,4 +76,6 @@ def test_sdk_e2e():
                                          namespace=SDK_TEST_NAMESPACE):
     raise RuntimeError("The PyTorchJob is not succeeded.")
 
+  PYTORCH_CLIENT.get_logs("pytorchjob-mnist-ci-test", namespace=SDK_TEST_NAMESPACE)
+
   PYTORCH_CLIENT.delete("pytorchjob-mnist-ci-test", namespace=SDK_TEST_NAMESPACE)

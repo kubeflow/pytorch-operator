@@ -24,3 +24,11 @@ PYTORCH_LOGLEVEL = os.environ.get('PYTORCHJOB_LOGLEVEL', 'INFO').upper()
 
 # How long to wait in seconds for requests to the ApiServer
 APISERVER_TIMEOUT = 120
+
+#PyTorchJob Labels Name
+PYTORCHJOB_CONTROLLER_LABEL = 'controller-name'
+PYTORCHJOB_GROUP_LABEL = 'group-name'
+PYTORCHJOB_NAME_LABEL = 'pytorch-job-name'
+PYTORCHJOB_TYPE_LABEL = 'pytorch-replica-type'
+PYTORCHJOB_INDEX_LABEL = 'pytorch-replica-index'
+PYTORCHJOB_ROLE_LABEL = 'job-role'
