@@ -27,4 +27,12 @@
 
 3. Building image. Each example has prebuilt images that are stored on google cloud resources (GCR). If you want to create your own image we recommend using dockerhub. Each example has its own Dockerfile that we strongly advise to use. To build your custom image follow instruction on [TechRepublic](https://www.techrepublic.com/article/how-to-create-a-docker-image-and-push-it-to-docker-hub/).
 
+or
+
+Use the pytorch Docker Image provided by Kubeflow.
+
+```
+      docker build ./pytorch_cuda_docker -t kubeflow/pytorch:1.0-cuda10.0-cudnn7-runtime
+      ```
+
 4. To deploy your job we recommend using official [kubeflow documentation](https://www.kubeflow.org/docs/guides/components/pytorch/). Each example has example yaml files for two versions of apis. Feel free to modify them, e.g. image or number of GPUs.
