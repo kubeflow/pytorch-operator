@@ -22,7 +22,7 @@ import (
 
 	kubebatchclient "github.com/kubernetes-sigs/kube-batch/pkg/client/clientset/versioned"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -33,6 +33,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/cache"
 
+	common "github.com/kubeflow/common/job_controller/api/v1"
 	"github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1/app/options"
 	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	jobclientset "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
@@ -40,7 +41,6 @@ import (
 	jobinformers "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions"
 	jobinformersv1 "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions/pytorch/v1"
 	joblisters "github.com/kubeflow/pytorch-operator/pkg/client/listers/pytorch/v1"
-	common "github.com/kubeflow/common/job_controller/api/v1"
 	"github.com/kubeflow/tf-operator/pkg/common/jobcontroller"
 	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
 	"github.com/kubeflow/tf-operator/pkg/util/k8sutil"
@@ -96,6 +96,8 @@ type PyTorchController struct {
 
 	// jobInformerSynced returns true if the job store has been synced at least once.
 	jobInformerSynced cache.InformerSynced
+
+	initContainerImage string
 }
 
 // NewPyTorchController returns a new PyTorchJob controller.
@@ -127,6 +129,7 @@ func NewPyTorchController(
 	jc := jobcontroller.NewJobController(pc, metav1.Duration{Duration: 15 * time.Second},
 		option.EnableGangScheduling, option.GangSchedulerName,
 		kubeClientSet, kubeBatchClientSet, kubeInformerFactory, pyv1.Plural)
+	pc.initContainerImage = option.InitContainerImage
 	pc.JobController = jc
 	// Set sync handler.
 	pc.syncHandler = pc.syncPyTorchJob
@@ -357,7 +360,7 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *pyv1.PyTorchJob) error {
 
 	// If the PyTorchJob is terminated, delete all pods and services.
 	if isSucceeded(job.Status) || isFailed(job.Status) {
-		if err := pc.deletePodsAndServices(job, pods,services); err != nil {
+		if err := pc.deletePodsAndServices(job, pods, services); err != nil {
 			return err
 		}
 
@@ -424,7 +427,7 @@ func (pc *PyTorchController) reconcilePyTorchJobs(job *pyv1.PyTorchJob) error {
 	}
 
 	if jobExceedsLimit {
-		if err := pc.deletePodsAndServices(job, pods,services); err != nil {
+		if err := pc.deletePodsAndServices(job, pods, services); err != nil {
 			return err
 		}
 

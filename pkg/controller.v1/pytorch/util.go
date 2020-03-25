@@ -47,7 +47,8 @@ func GetPortFromPyTorchJob(job *pyv1.PyTorchJob, rtype pyv1.PyTorchReplicaType) 
 }
 
 type InitContainerParam struct {
-	MasterAddr string
+	MasterAddr         string
+	InitContainerImage string
 }
 
 func ContainMasterSpec(job *pyv1.PyTorchJob) bool {
