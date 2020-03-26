@@ -8,7 +8,7 @@ import (
 
 var initContainerTemplate = `
 - name: init-pytorch
-  image: alpine:3.10
+  image: {{.InitContainerImage}}
   imagePullPolicy: IfNotPresent
   resources:
     limits:

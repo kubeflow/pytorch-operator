@@ -94,7 +94,10 @@ func TestGetInitContainer(t *testing.T) {
   image: busybox
   command: ['sh', '-c', 'until nslookup {{.MasterAddr}}; do echo waiting for master; sleep 2; done;']`
 
-	initContainer, err := GetInitContainer(template, InitContainerParam{"svc"})
+	initContainer, err := GetInitContainer(template, InitContainerParam{
+		MasterAddr:         "svc",
+		InitContainerImage: "busybox",
+	})
 	if err != nil {
 		t.Errorf("Expected error to be nil while got %v", err)
 	}
