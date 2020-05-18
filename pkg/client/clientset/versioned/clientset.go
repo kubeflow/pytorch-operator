@@ -26,8 +26,6 @@ import (
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	KubeflowV1() kubeflowv1.KubeflowV1Interface
-	// Deprecated: please explicitly pick a version if possible.
-	Kubeflow() kubeflowv1.KubeflowV1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
@@ -39,12 +37,6 @@ type Clientset struct {
 
 // KubeflowV1 retrieves the KubeflowV1Client
 func (c *Clientset) KubeflowV1() kubeflowv1.KubeflowV1Interface {
-	return c.kubeflowV1
-}
-
-// Deprecated: Kubeflow retrieves the default version of KubeflowClient.
-// Please explicitly pick a version.
-func (c *Clientset) Kubeflow() kubeflowv1.KubeflowV1Interface {
 	return c.kubeflowV1
 }
 
