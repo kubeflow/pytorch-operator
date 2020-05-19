@@ -55,7 +55,7 @@ func (in *PyTorchJob) DeepCopyObject() runtime.Object {
 func (in *PyTorchJobList) DeepCopyInto(out *PyTorchJobList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]PyTorchJob, len(*in))
