@@ -13,6 +13,4 @@ COPY --from=build-image /go/src/github.com/kubeflow/pytorch-operator/pytorch-ope
 
 COPY third_party/library/license.txt /license.txt
 
-RUN mkdir -p /vendor
-
 ENTRYPOINT ["/pytorch-operator.v1", "-alsologtostderr"]
