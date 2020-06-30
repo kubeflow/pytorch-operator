@@ -155,13 +155,16 @@ func (pc *PyTorchController) deletePodsAndServices(job *pyv1.PyTorchJob, pods []
 		return nil
 	}
 
-	// Delete nothing when the cleanPodPolicy is None or Running.
-	if *job.Spec.CleanPodPolicy == common.CleanPodPolicyNone ||
-		*job.Spec.CleanPodPolicy == common.CleanPodPolicyRunning {
+	// Delete nothing when the cleanPodPolicy is None.
+	if *job.Spec.CleanPodPolicy == common.CleanPodPolicyNone {
 		return nil
 	}
 
 	for _, pod := range pods {
+		// Just delete running pod when the cleanPodPolicy is Running
+		if *job.Spec.CleanPodPolicy == common.CleanPodPolicyRunning && pod.Status.Phase != v1.PodRunning {
+			continue
+		}
 		if err := pc.PodControl.DeletePod(pod.Namespace, pod.Name, job); err != nil {
 			return err
 		}

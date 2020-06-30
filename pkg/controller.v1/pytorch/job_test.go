@@ -26,11 +26,11 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/kubernetes/pkg/controller"
 
+	common "github.com/kubeflow/common/job_controller/api/v1"
 	"github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1/app/options"
 	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	jobclientset "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
 	"github.com/kubeflow/pytorch-operator/pkg/common/util/v1/testutil"
-	common "github.com/kubeflow/common/job_controller/api/v1"
 	"github.com/kubeflow/tf-operator/pkg/control"
 )
 
@@ -213,7 +213,7 @@ func TestDeletePodsAndServices(t *testing.T) {
 		activeWorkerServices int32
 		activeMasterServices int32
 
-		expectedPodDeletions int
+		expectedPodDeletions     int
 		expectedServiceDeletions int
 	}
 
@@ -235,8 +235,48 @@ func TestDeletePodsAndServices(t *testing.T) {
 			activeWorkerServices: 4,
 			activeMasterServices: 1,
 
-			expectedPodDeletions: 5,
+			expectedPodDeletions:     5,
 			expectedServiceDeletions: 1,
+		},
+		testCase{
+			description: "4 workers and 1 master running, policy is running",
+			job:         testutil.NewPyTorchJobWithCleanPolicy(1, 4, common.CleanPodPolicyRunning),
+
+			pendingWorkerPods:   0,
+			activeWorkerPods:    4,
+			succeededWorkerPods: 0,
+			failedWorkerPods:    0,
+
+			pendingMasterPods:   0,
+			activeMasterPods:    1,
+			succeededMasterPods: 0,
+			failedMasterPods:    0,
+
+			activeWorkerServices: 4,
+			activeMasterServices: 1,
+
+			expectedPodDeletions:     5,
+			expectedServiceDeletions: 1,
+		},
+		testCase{
+			description: "4 workers and 1 master succeeded, policy is running",
+			job:         testutil.NewPyTorchJobWithCleanPolicy(1, 4, common.CleanPodPolicyRunning),
+
+			pendingWorkerPods:   0,
+			activeWorkerPods:    0,
+			succeededWorkerPods: 4,
+			failedWorkerPods:    0,
+
+			pendingMasterPods:   0,
+			activeMasterPods:    0,
+			succeededMasterPods: 1,
+			failedMasterPods:    0,
+
+			activeWorkerServices: 4,
+			activeMasterServices: 1,
+
+			expectedPodDeletions:     0,
+			expectedServiceDeletions: 0,
 		},
 		testCase{
 			description: "4 workers and 1 master succeeded, policy is None",
@@ -255,7 +295,7 @@ func TestDeletePodsAndServices(t *testing.T) {
 			activeWorkerServices: 4,
 			activeMasterServices: 1,
 
-			expectedPodDeletions: 0,
+			expectedPodDeletions:     0,
 			expectedServiceDeletions: 0,
 		},
 	}
@@ -415,7 +455,6 @@ func TestCleanupPyTorchJob(t *testing.T) {
 			succeededMasterPods: 1,
 			failedMasterPods:    0,
 
-
 			activeMasterServices: 1,
 
 			expectedDeleteFinished: true,
@@ -524,10 +563,9 @@ func TestActiveDeadlineSeconds(t *testing.T) {
 		succeededMasterPods int32
 		failedMasterPods    int32
 
-		
 		activeMasterServices int32
 
-		expectedPodDeletions int
+		expectedPodDeletions     int
 		expectedServiceDeletions int
 	}
 
@@ -548,10 +586,9 @@ func TestActiveDeadlineSeconds(t *testing.T) {
 			succeededMasterPods: 0,
 			failedMasterPods:    0,
 
-			
 			activeMasterServices: 1,
 
-			expectedPodDeletions: 0,
+			expectedPodDeletions:     0,
 			expectedServiceDeletions: 0,
 		},
 		testCase{
@@ -568,10 +605,9 @@ func TestActiveDeadlineSeconds(t *testing.T) {
 			succeededMasterPods: 0,
 			failedMasterPods:    0,
 
-			
 			activeMasterServices: 1,
 
-			expectedPodDeletions: 5,
+			expectedPodDeletions:     5,
 			expectedServiceDeletions: 1,
 		},
 	}
@@ -629,7 +665,7 @@ func TestActiveDeadlineSeconds(t *testing.T) {
 		testutil.SetPodsStatuses(podIndexer, tc.job, testutil.LabelMaster, tc.pendingMasterPods, tc.activeMasterPods, tc.succeededMasterPods, tc.failedMasterPods, nil, t)
 
 		serviceIndexer := kubeInformerFactory.Core().V1().Services().Informer().GetIndexer()
-		
+
 		testutil.SetServices(serviceIndexer, tc.job, testutil.LabelMaster, tc.activeMasterServices, t)
 
 		foo, _ := ctr.getPyTorchJobFromName("default", "test-pytorchjob")
@@ -672,10 +708,9 @@ func TestBackoffForOnFailure(t *testing.T) {
 		succeededMasterPods int32
 		failedMasterPods    int32
 
-		
 		activeMasterServices int32
 
-		expectedPodDeletions int
+		expectedPodDeletions     int
 		expectedServiceDeletions int
 	}
 
@@ -698,10 +733,9 @@ func TestBackoffForOnFailure(t *testing.T) {
 			succeededMasterPods: 0,
 			failedMasterPods:    0,
 
-
 			activeMasterServices: 1,
 
-			expectedPodDeletions: 5,
+			expectedPodDeletions:     5,
 			expectedServiceDeletions: 1,
 		},
 	}
