@@ -23,5 +23,5 @@ NOTE: If you you are working on Power System, Dockerfile.ppc64le could be used.
 The below example uses the gloo backend.
 
 ```shell
-kubectl create -f ./v1beta1/pytorch_job_mnist_gloo.yaml
+kubectl create -f ./v1/pytorch_job_mnist_gloo.yaml
 ```
