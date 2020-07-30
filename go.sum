@@ -238,6 +238,7 @@ github.com/kr/text v0.1.0 h1:45sCR5RtlFHMR4UwH9sdQ5TC8v0qDQCHnXt+kaKSTVE=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
 github.com/kubeflow/common v0.1.0 h1:2o8GRPzyRZ1eA09i/wT3EhK+3glNq86+8SEqm0kN1Nk=
 github.com/kubeflow/common v0.1.0/go.mod h1:KRw7y0Y6NLz+H+DBqnzljPwIDUuaCWi4cCzCItX1gv8=
+github.com/kubeflow/tf-operator v0.5.3 h1:Ejn5vEAwHBKHU2sJTlUIRpezqIX3WeqXZ2dZx6zn6vY=
 github.com/kubeflow/tf-operator v1.0.0-rc.0.0.20190916040037-5adee6f30c86 h1:IKqVaxwYQgT830uHh/3x+22Lj+kiRcHcGq/OfORStmw=
 github.com/kubeflow/tf-operator v1.0.0-rc.0.0.20190916040037-5adee6f30c86/go.mod h1:EBtz5LQoKaHUl/5fV5vD1qXVNVNyn3TrFaH6eVoQ8SY=
 github.com/kubernetes-sigs/kube-batch v0.4.2 h1:CcFsYiHz1d9adH/jz7nFmjkdZnkPoq9oaWBLBVp5kms=
