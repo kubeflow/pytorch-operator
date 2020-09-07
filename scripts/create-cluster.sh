@@ -28,7 +28,7 @@ NAMESPACE="${DEPLOY_NAMESPACE}"
 
 echo "Activating service-account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
-echo "Creating CPU cluster"
+echo "Creating GPU cluster"
 gcloud --project ${PROJECT} beta container clusters create ${CLUSTER_NAME} \
     --zone ${ZONE} \
     --accelerator type=nvidia-tesla-k80,count=1 \
