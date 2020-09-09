@@ -23,17 +23,12 @@
 
   // default parameters.
   defaultParams:: {
-    project:: "kubeflow-ci",
-    zone:: "us-east1-d",
     // Default registry to use.
-    registry:: "gcr.io/" + $.defaultParams.project,
+    registry:: "gcr.io/kubeflow-ci",
 
     // The image tag to use.
     // Defaults to a value based on the name.
-    versionTag:: null,
-
-    // The name of the secret containing GCP credentials.
-    gcpCredentialsSecretName:: "kubeflow-testing-credentials",
+    versionTag:: null
   },
 
   // overrides is a dictionary of parameters to provide in addition to defaults.
@@ -79,7 +74,6 @@
       local kubeflowPy = srcRootDir + "/kubeflow/testing/py";
       local PyTorchSDK = srcRootDir + "/kubeflow/pytorch-operator/sdk/python";
 
-      local project = params.project;
       // GKE cluster to use
       // We need to truncate the cluster to no more than 40 characters because
       // cluster names can be a max of 40 characters.
@@ -92,7 +86,6 @@
           "z" + std.substr(name, std.length(name) - 39, 39)
         else
           name;
-      local zone = params.zone;
       local registry = params.registry;
       local chart = srcDir + "/pytorch-operator-chart";
       {
@@ -122,24 +115,12 @@
                 value: cluster,
               },
               {
-                name: "GCP_ZONE",
-                value: zone,
-              },
-              {
-                name: "GCP_PROJECT",
-                value: project,
-              },
-              {
                 name: "GCP_REGISTRY",
                 value: registry,
               },
               {
                 name: "DEPLOY_NAMESPACE",
                 value: deployNamespace,
-              },
-              {
-                name: "GOOGLE_APPLICATION_CREDENTIALS",
-                value: "/secret/gcp-credentials/key.json",
               },
               {
                 name: "GIT_TOKEN",
@@ -166,10 +147,6 @@
                 name: "github-token",
                 mountPath: "/secret/github-token",
               },
-              {
-                name: "gcp-credentials",
-                mountPath: "/secret/gcp-credentials",
-              },
             ],
           },
         },  // buildTemplate
@@ -188,12 +165,6 @@
               name: "github-token",
               secret: {
                 secretName: "github-token",
-              },
-            },
-            {
-              name: "gcp-credentials",
-              secret: {
-                secretName: params.gcpCredentialsSecretName,
               },
             },
             {
