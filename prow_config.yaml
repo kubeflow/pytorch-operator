@@ -1,7 +1,7 @@
 # This file configures the workflows to trigger in our Prow jobs.
 # see https://github.com/kubeflow/testing/blob/master/py/kubeflow/testing/run_e2e_workflow.py
 workflows:
-  - app_dir: kubeflow/pytorch-operator/test/workflows
+  - app_dir: Jeffwan/pytorch-operator/test/workflows
     component: workflows
     name: e2e
     job_types:
