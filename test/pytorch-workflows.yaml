@@ -1,0 +1,462 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  labels:
+    ksonnet.io/component: workflows
+  name: pytorch-operator-release-6aa39a41-6985-kunming
+  namespace: kubeflow-test-infra
+spec:
+  entrypoint: e2e
+  onExit: exit-handler
+  templates:
+  - name: e2e
+    steps:
+    - - name: checkout
+        template: checkout
+    - - name: build
+        template: build
+      # - name: create-pr-symlink
+      #   template: create-pr-symlink
+    - - name: setup-cluster
+        template: setup-cluster
+    - - name: setup-kubeflow
+        template: setup-kubeflow
+    - - name: run-v1-defaults
+        template: run-v1-defaults
+      - name: sdk-tests
+        template: sdk-tests
+      - name: run-v1-cleanpodpolicy-all
+        template: run-v1-cleanpodpolicy-all
+  - name: exit-handler
+    steps:
+    - - name: teardown-cluster
+        template: teardown-cluster
+    - - name: copy-artifacts
+        template: copy-artifacts
+  - container:
+      command:
+      - /usr/local/bin/checkout.sh
+      - /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src
+      env:
+      - name: JOB_NAME
+        value: pytorch-operator-release
+      - name: JOB_TYPE
+        value: pytorch-operator-release
+      - name: REPO_NAME
+        value: pytorch-operator
+      - name: REPO_OWNER
+        value: jeffwan
+      - name: BUILD_NUMBER
+        value: "6985"
+      - name: PULL_BASE_SHA
+        value: 6aa39a41
+      - name: EXTRA_REPOS
+        value: kubeflow/testing@HEAD
+      image: 527798164940.dkr.ecr.us-west-2.amazonaws.com/aws-kubeflow-ci/test-worker:latest
+      volumeMounts:
+      - mountPath: /mnt/test-data-volume
+        name: kubeflow-test-volume
+    name: checkout
+  - activeDeadlineSeconds: 2100
+    container:
+      command:
+      - /usr/local/bin/create-eks-cluster.sh
+      env:
+      - name: PYTHONPATH
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator:/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/testing/py:/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator/sdk/python
+      - name: GOPATH
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/go
+      - name: CLUSTER_NAME
+        value: z-operator-release-6aa39a41-6985-kunming
+      - name: GCP_REGISTRY
+        value: gcr.io/kubeflow-images-public
+      - name: DEPLOY_NAMESPACE
+        value: kubeflow
+      - name: GIT_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: github_token
+            name: github-token
+      - name: KUBECONFIG
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/.kube/kubeconfig
+      - name: JOB_NAME
+        value: pytorch-operator-release
+      - name: JOB_TYPE
+        value: pytorch-operator-release
+      - name: REPO_NAME
+        value: pytorch-operator
+      - name: REPO_OWNER
+        value: kubeflow
+      - name: BUILD_NUMBER
+        value: "6985"
+      - name: PULL_BASE_SHA
+        value: 6aa39a41
+      - name: EKS_CLUSTER
+        value: pytorch-operator-release-6aa39a41-6985-kunming
+      image: 527798164940.dkr.ecr.us-west-2.amazonaws.com/aws-kubeflow-ci/test-worker:latest
+      volumeMounts:
+      - mountPath: /mnt/test-data-volume
+        name: kubeflow-test-volume
+      - mountPath: /secret/github-token
+        name: github-token
+      workingDir: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator
+    name: setup-cluster
+  - activeDeadlineSeconds: 2100
+    container:
+      command:
+      - scripts/setup-kubeflow.sh
+      env:
+      - name: PYTHONPATH
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator:/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/testing/py:/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator/sdk/python
+      - name: GOPATH
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/go
+      - name: CLUSTER_NAME
+        value: z-operator-release-6aa39a41-6985-kunming
+      - name: GCP_REGISTRY
+        value: gcr.io/kubeflow-images-public
+      - name: DEPLOY_NAMESPACE
+        value: kubeflow
+      - name: GIT_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: github_token
+            name: github-token
+      - name: KUBECONFIG
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/.kube/kubeconfig
+      - name: JOB_NAME
+        value: pytorch-operator-release
+      - name: JOB_TYPE
+        value: pytorch-operator-release
+      - name: REPO_NAME
+        value: pytorch-operator
+      - name: REPO_OWNER
+        value: jeffwan
+      - name: BUILD_NUMBER
+        value: "6985"
+      - name: PULL_BASE_SHA
+        value: 6aa39a41
+      image: 527798164940.dkr.ecr.us-west-2.amazonaws.com/aws-kubeflow-ci/test-worker:latest
+      volumeMounts:
+      - mountPath: /mnt/test-data-volume
+        name: kubeflow-test-volume
+      - mountPath: /secret/github-token
+        name: github-token
+      workingDir: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator
+    name: setup-kubeflow
+  - activeDeadlineSeconds: 2100
+    container:
+      command:
+      - scripts/v1/run-defaults.sh
+      env:
+      - name: PYTHONPATH
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator:/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/testing/py:/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator/sdk/python
+      - name: GOPATH
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/go
+      - name: CLUSTER_NAME
+        value: z-operator-release-6aa39a41-6985-kunming
+      - name: GCP_REGISTRY
+        value: gcr.io/kubeflow-images-public
+      - name: DEPLOY_NAMESPACE
+        value: kubeflow
+      - name: GIT_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: github_token
+            name: github-token
+      - name: KUBECONFIG
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/.kube/kubeconfig
+      - name: JOB_NAME
+        value: pytorch-operator-release
+      - name: JOB_TYPE
+        value: pytorch-operator-release
+      - name: REPO_NAME
+        value: pytorch-operator
+      - name: REPO_OWNER
+        value: jeffwan
+      - name: BUILD_NUMBER
+        value: "6985"
+      - name: PULL_BASE_SHA
+        value: 6aa39a41
+      image: 527798164940.dkr.ecr.us-west-2.amazonaws.com/aws-kubeflow-ci/test-worker:latest
+      volumeMounts:
+      - mountPath: /mnt/test-data-volume
+        name: kubeflow-test-volume
+      - mountPath: /secret/github-token
+        name: github-token
+      workingDir: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator
+    name: run-v1-defaults
+  - activeDeadlineSeconds: 2100
+    container:
+      command:
+      - /bin/sh
+      - -xc
+      - pip3 install -r sdk/python/requirements.txt; pytest sdk/python/test --log-cli-level=info
+        --log-cli-format='%(levelname)s|%(asctime)s|%(pathname)s|%(lineno)d| %(message)s'
+        --junitxml=/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/output/artifacts/junit_sdk-test.xml
+      env:
+      - name: PYTHONPATH
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator:/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/testing/py:/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator/sdk/python
+      - name: GOPATH
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/go
+      - name: CLUSTER_NAME
+        value: z-operator-release-6aa39a41-6985-kunming
+      - name: GCP_REGISTRY
+        value: gcr.io/kubeflow-images-public
+      - name: DEPLOY_NAMESPACE
+        value: kubeflow
+      - name: GIT_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: github_token
+            name: github-token
+      - name: KUBECONFIG
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/.kube/kubeconfig
+      - name: JOB_NAME
+        value: pytorch-operator-release
+      - name: JOB_TYPE
+        value: pytorch-operator-release
+      - name: REPO_NAME
+        value: pytorch-operator
+      - name: REPO_OWNER
+        value: jeffwan
+      - name: BUILD_NUMBER
+        value: "6985"
+      - name: PULL_BASE_SHA
+        value: 6aa39a41
+      image: 527798164940.dkr.ecr.us-west-2.amazonaws.com/aws-kubeflow-ci/test-worker:latest
+      volumeMounts:
+      - mountPath: /mnt/test-data-volume
+        name: kubeflow-test-volume
+      - mountPath: /secret/github-token
+        name: github-token
+      workingDir: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator
+    name: sdk-tests
+  - activeDeadlineSeconds: 2100
+    container:
+      command:
+      - scripts/v1/run-cleanpodpolicy-all.sh
+      env:
+      - name: PYTHONPATH
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator:/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/testing/py:/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator/sdk/python
+      - name: GOPATH
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/go
+      - name: CLUSTER_NAME
+        value: z-operator-release-6aa39a41-6985-kunming
+      - name: GCP_REGISTRY
+        value: gcr.io/kubeflow-images-public
+      - name: DEPLOY_NAMESPACE
+        value: kubeflow
+      - name: GIT_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: github_token
+            name: github-token
+      - name: KUBECONFIG
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/.kube/kubeconfig
+      - name: JOB_NAME
+        value: pytorch-operator-release
+      - name: JOB_TYPE
+        value: pytorch-operator-release
+      - name: REPO_NAME
+        value: pytorch-operator
+      - name: REPO_OWNER
+        value: jeffwan
+      - name: BUILD_NUMBER
+        value: "6985"
+      - name: PULL_BASE_SHA
+        value: 6aa39a41
+      image: 527798164940.dkr.ecr.us-west-2.amazonaws.com/aws-kubeflow-ci/test-worker:latest
+      volumeMounts:
+      - mountPath: /mnt/test-data-volume
+        name: kubeflow-test-volume
+      - mountPath: /secret/github-token
+        name: github-token
+      workingDir: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator
+    name: run-v1-cleanpodpolicy-all
+  # - activeDeadlineSeconds: 2100
+  #   container:
+  #     command:
+  #     - python
+  #     - -m
+  #     - kubeflow.testing.prow_artifacts
+  #     - --artifacts_dir=/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/output
+  #     - create_pr_symlink
+  #     - --bucket=kubeflow-releasing-artifacts
+  #     env:
+  #     - name: PYTHONPATH
+  #       value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator:/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/testing/py:/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator/sdk/python
+  #     - name: GOPATH
+  #       value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/go
+  #     - name: CLUSTER_NAME
+  #       value: z-operator-release-6aa39a41-6985-kunming
+  #     - name: GCP_REGISTRY
+  #       value: gcr.io/kubeflow-images-public
+  #     - name: DEPLOY_NAMESPACE
+  #       value: kubeflow
+  #     - name: GIT_TOKEN
+  #       valueFrom:
+  #         secretKeyRef:
+  #           key: github_token
+  #           name: github-token
+  #     - name: KUBECONFIG
+  #       value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/.kube/kubeconfig
+  #     - name: JOB_NAME
+  #       value: pytorch-operator-release
+  #     - name: JOB_TYPE
+  #       value: pytorch-operator-release
+  #     - name: REPO_NAME
+  #       value: pytorch-operator
+  #     - name: REPO_OWNER
+  #       value: jeffwan
+  #     - name: BUILD_NUMBER
+  #       value: "6985"
+  #     - name: PULL_BASE_SHA
+  #       value: 6aa39a41
+  #     image: 527798164940.dkr.ecr.us-west-2.amazonaws.com/aws-kubeflow-ci/test-worker:latest
+  #     volumeMounts:
+  #     - mountPath: /mnt/test-data-volume
+  #       name: kubeflow-test-volume
+  #     - mountPath: /secret/github-token
+  #       name: github-token
+  #     workingDir: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator
+  #   name: create-pr-symlink
+  - activeDeadlineSeconds: 2100
+    container:
+      command:
+      - /usr/local/bin/delete-eks-cluster.sh
+      env:
+      - name: PYTHONPATH
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator:/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/testing/py:/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator/sdk/python
+      - name: GOPATH
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/go
+      - name: CLUSTER_NAME
+        value: z-operator-release-6aa39a41-6985-kunming
+      - name: GCP_REGISTRY
+        value: gcr.io/kubeflow-images-public
+      - name: DEPLOY_NAMESPACE
+        value: kubeflow
+      - name: GIT_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: github_token
+            name: github-token
+      - name: KUBECONFIG
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/.kube/kubeconfig
+      - name: JOB_NAME
+        value: pytorch-operator-release
+      - name: JOB_TYPE
+        value: pytorch-operator-release
+      - name: REPO_NAME
+        value: pytorch-operator
+      - name: REPO_OWNER
+        value: jeffwan
+      - name: BUILD_NUMBER
+        value: "6985"
+      - name: PULL_BASE_SHA
+        value: 6aa39a41
+      image: 527798164940.dkr.ecr.us-west-2.amazonaws.com/aws-kubeflow-ci/test-worker:latest
+      volumeMounts:
+      - mountPath: /mnt/test-data-volume
+        name: kubeflow-test-volume
+      - mountPath: /secret/github-token
+        name: github-token
+      workingDir: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator
+    name: teardown-cluster
+  - activeDeadlineSeconds: 2100
+    container:
+      command:
+      - python
+      - -m
+      - kubeflow.testing.prow_artifacts
+      - --artifacts_dir=/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/output
+      - copy_artifacts
+      - --bucket=kubeflow-releasing-artifacts
+      env:
+      - name: PYTHONPATH
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator:/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/testing/py:/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator/sdk/python
+      - name: GOPATH
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/go
+      - name: CLUSTER_NAME
+        value: z-operator-release-6aa39a41-6985-kunming
+      - name: GCP_REGISTRY
+        value: gcr.io/kubeflow-images-public
+      - name: DEPLOY_NAMESPACE
+        value: kubeflow
+      - name: GIT_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: github_token
+            name: github-token
+      - name: KUBECONFIG
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/.kube/kubeconfig
+      - name: JOB_NAME
+        value: pytorch-operator-release
+      - name: JOB_TYPE
+        value: pytorch-operator-release
+      - name: REPO_NAME
+        value: pytorch-operator
+      - name: REPO_OWNER
+        value: jeffwan
+      - name: BUILD_NUMBER
+        value: "6985"
+      - name: PULL_BASE_SHA
+        value: 6aa39a41
+      image: 527798164940.dkr.ecr.us-west-2.amazonaws.com/aws-kubeflow-ci/test-worker:latest
+      volumeMounts:
+      - mountPath: /mnt/test-data-volume
+        name: kubeflow-test-volume
+      - mountPath: /secret/github-token
+        name: github-token
+      workingDir: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator
+    name: copy-artifacts
+  - activeDeadlineSeconds: 2100
+    container:
+      command:
+      - sleep
+      - "60"
+      env:
+      - name: PYTHONPATH
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator:/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/testing/py:/mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator/sdk/python
+      - name: GOPATH
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/go
+      - name: CLUSTER_NAME
+        value: z-operator-release-6aa39a41-6985-kunming
+      - name: GCP_REGISTRY
+        value: gcr.io/kubeflow-images-public
+      - name: DEPLOY_NAMESPACE
+        value: kubeflow
+      - name: GIT_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: github_token
+            name: github-token
+      - name: KUBECONFIG
+        value: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/.kube/kubeconfig
+      - name: JOB_NAME
+        value: pytorch-operator-release
+      - name: JOB_TYPE
+        value: pytorch-operator-release
+      - name: REPO_NAME
+        value: pytorch-operator
+      - name: REPO_OWNER
+        value: jeffwan
+      - name: BUILD_NUMBER
+        value: "6985"
+      - name: PULL_BASE_SHA
+        value: 6aa39a41
+      image: 527798164940.dkr.ecr.us-west-2.amazonaws.com/aws-kubeflow-ci/test-worker:latest
+      volumeMounts:
+      - mountPath: /mnt/test-data-volume
+        name: kubeflow-test-volume
+      - mountPath: /secret/github-token
+        name: github-token
+      workingDir: /mnt/test-data-volume/pytorch-operator-release-6aa39a41-6985-kunming/src/kubeflow/pytorch-operator
+    name: build
+  volumes:
+  - name: github-token
+    secret:
+      secretName: github-token
+  - name: kubeflow-test-volume
+    persistentVolumeClaim:
+      claimName: nfs-external
