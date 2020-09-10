@@ -23,12 +23,13 @@ set -o nounset
 set -o pipefail
 
 CLUSTER_NAME="${CLUSTER_NAME}"
+REGION="${AWS_REGION:-us-west-2}"
 REGISTRY="${ECR_REGISTRY:-348134392524.dkr.ecr.us-west-2.amazonaws.com}"
 VERSION="${PULL_BASE_SHA}"
 GO_DIR=${GOPATH}/src/github.com/${REPO_OWNER}/${REPO_NAME}
 
 echo "Configuring kubeconfig.."
-aws eks update-kubeconfig --name=${CLUSTER_NAME}
+aws eks update-kubeconfig --region=${REGION} --name=${CLUSTER_NAME}
 
 echo "Update PyTorch operator manifest with new name and tag"
 #TODO(Jeffwan@): If there's a way to specify context, then we don't need to enter manifests folder
