@@ -81,9 +81,12 @@
       // We prepend a z because cluster name must start with an alphanumeric character
       // and if we cut the prefix we might end up starting with "-" or other invalid
       // character for first character.
+
+      // EKS cluster name, better to be meaningful to trace back to prow job
+      // Maximum length of cluster name is 100. We set to 80 as maximum here and truncate
       local cluster =
-        if std.length(name) > 40 then
-          "z" + std.substr(name, std.length(name) - 39, 39)
+        if std.length(name) > 80 then
+          std.substr(name, std.length(name) - 79, 79)
         else
           name;
       local registry = params.registry;
