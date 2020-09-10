@@ -22,21 +22,12 @@ set -o nounset
 set -o pipefail
 
 CLUSTER_NAME="${CLUSTER_NAME}"
-ZONE="${GCP_ZONE}"
-PROJECT="${GCP_PROJECT}"
 NAMESPACE="${DEPLOY_NAMESPACE}"
 REGISTRY="${GCP_REGISTRY}"
-VERSION=$(git describe --tags --always --dirty)
 GO_DIR=${GOPATH}/src/github.com/${REPO_OWNER}/${REPO_NAME}
-APP_NAME=test-app
-KUBEFLOW_VERSION=master
-KF_ENV=pytorch
 
-echo "Activating service-account"
-gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
-echo "Configuring kubectl"
-gcloud --project ${PROJECT} container clusters get-credentials ${CLUSTER_NAME} \
-    --zone ${ZONE}
+echo "Configuring kubeconfig.."
+aws eks update-kubeconfig --name=${CLUSTER_NAME}
 
 cd ${GO_DIR}
 

@@ -14,7 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This shell script is used to run a pytorch job with custom cleanpod policies
+# This shell script is used to build a cluster and create a namespace from our
+# argo workflow
 
 
 set -o errexit
@@ -22,19 +23,24 @@ set -o nounset
 set -o pipefail
 
 CLUSTER_NAME="${CLUSTER_NAME}"
-NAMESPACE="${DEPLOY_NAMESPACE}"
-REGISTRY="${GCP_REGISTRY}"
+REGISTRY="${ECR_REGISTRY:-348134392524.dkr.ecr.us-west-2.amazonaws.com}"
+VERSION="${PULL_BASE_SHA}"
 GO_DIR=${GOPATH}/src/github.com/${REPO_OWNER}/${REPO_NAME}
 
 echo "Configuring kubeconfig.."
 aws eks update-kubeconfig --name=${CLUSTER_NAME}
 
-cd ${GO_DIR}
+echo "Update PyTorch operator manifest with new name and tag"
+#TODO(Jeffwan@): If there's a way to specify context, then we don't need to enter manifests folder
+cd manifests/
+kustomize edit set image gcr.io/kubeflow-images-public/pytorch-operator=${REGISTRY}/${REPO_NAME}:${VERSION}
 
-echo "Running smoke test"
-SENDRECV_TEST_IMAGE_TAG="pytorch-dist-sendrecv-test:v1.0"
-go run ./test/e2e/v1/cleanpolicy/cleanpolicy_all.go --namespace=${NAMESPACE} --image=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --name=sendrecvjob-cleanall
+echo "Installing PyTorch operator manifests"
+kubectl apply -k .
+--pytorchJobImage=${REGISTRY}/${REPO_NAME}:${VERSION}
 
-echo "Running mnist test"
-MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist-test:v1.0"
-go run ./test/e2e/v1/cleanpolicy/cleanpolicy_all.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob-cleanall
+TIMEOUT=30
+until kubectl get pods -n kubeflow | grep pytorch-operator | grep 1/1 || [[ $TIMEOUT -eq 1 ]]; do
+  sleep 10
+  TIMEOUT=$(( TIMEOUT - 1 ))
+done

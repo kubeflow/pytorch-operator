@@ -135,6 +135,10 @@
                 },
               },
               {
+                name: "AWS_REGION",
+                value: "us-west-2",
+              },
+              {
                 // We use a directory in our NFS share to store our kube config.
                 // This way we can configure it on a single step and reuse it on subsequent steps.
                 name: "KUBECONFIG",
@@ -149,6 +153,10 @@
               {
                 name: "github-token",
                 mountPath: "/secret/github-token",
+              },
+              {
+                name: "aws-secret",
+                mountPath: "/root/.aws/",
               },
             ] + volume_mounts,
           },
@@ -219,8 +227,8 @@
                 ],
                 [
                   {
-                    name: "setup-kubeflow",
-                    template: "setup-kubeflow",
+                    name: "setup-pytorch-operator",
+                    template: "setup-pytorch-operator",
                   },
                 ],
                 [
@@ -276,8 +284,8 @@
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-cluster", testWorkerImage, [
               "scripts/create-cluster.sh",
             ]),  // setup cluster
-            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-kubeflow", testWorkerImage, [
-              "scripts/setup-kubeflow.sh",
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-pytorch-operator", testWorkerImage, [
+              "scripts/setup-pytorch-operator.sh",
             ]),  // setup kubeflow
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1-defaults", testWorkerImage, [
               "scripts/v1/run-defaults.sh",
@@ -314,20 +322,10 @@
               "/kaniko/executor",
               "--dockerfile=" + srcDir + "/Dockerfile",
               "--context=dir://" + srcDir,
-              "--destination=" + "348134392524.dkr.ecr.us-west-2.amazonaws.com/pytorch-operator:" + versionTag,
+              "--destination=" + "348134392524.dkr.ecr.us-west-2.amazonaws.com/pytorch-operator:$(PULL_BASE_SHA)",
               # need to add volume mounts and extra env.
             ],
-            env_vars=[
-              {
-                name: "AWS_REGION",
-                value: "us-west-2",
-              }
-            ],
             volume_mounts=[
-              {
-                name: "aws-secret",
-                mountPath: "/root/.aws/",
-              },
               {
                 name: "docker-config",
                 mountPath: "/kaniko/.docker/",
