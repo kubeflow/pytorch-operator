@@ -32,6 +32,7 @@ eksctl create cluster \
 --name ${EKS_CLUSTER_NAME} \
 --version 1.17 \
 --region us-west-2 \
+--zones us-west-2a,us-west-2b,us-west-2c \
 --nodegroup-name linux-nodes \
 --node-type m5.xlarge \
 --nodes ${DESIRED_NODE} \
