@@ -48,7 +48,7 @@
       // Source directory where all repos should be checked out
       local srcRootDir = testDir + "/src";
       // The directory containing the kubeflow/pytorch-operator repo
-      local srcDir = srcRootDir + "/kubeflow/pytorch-operator";
+      local srcDir = srcRootDir + "/Jeffwan/pytorch-operator";
       local testWorkerImage = "348134392524.dkr.ecr.us-west-2.amazonaws.com/aws-kubeflow-ci/test-worker:0.1";
       local golangImage = "golang:1.9.4-stretch";
       // TODO(jose5918) Build our own helm image
