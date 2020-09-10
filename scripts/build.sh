@@ -44,3 +44,8 @@ gcloud builds submit . --tag=${REGISTRY}/${REPO_NAME}:${VERSION} --project=${PRO
 #echo "Building MNIST test image"
 #MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist-test:v1.0"
 #gcloud builds submit  ./examples/mnist/ --tag=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --project=${PROJECT}
+
+# We need to change to use Kaniko to build images and submit to ECR.
+# Option 1. Use S3. Then we need to build a context tar gz and upload to S3
+# tar -C <path to build context> -zcvf context.tar.gz
+# Option 2. We can use NFS directory directly and Kaniko can find context and Dockerfile there. 

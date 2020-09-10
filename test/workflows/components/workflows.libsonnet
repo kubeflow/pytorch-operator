@@ -95,7 +95,7 @@
         // Build an Argo template to execute a particular command.
         // step_name: Name for the template
         // command: List to pass as the container command.
-        buildTemplate(step_name, image, command):: {
+        buildTemplate(step_name, image, command, env_vars=[], volume_mounts=[]):: {
           name: step_name,
           activeDeadlineSeconds: 2100,
           container: {
@@ -140,7 +140,7 @@
                 name: "KUBECONFIG",
                 value: kubeConfig,
               },
-            ] + prow_env,
+            ] + prow_env + env_vars,
             volumeMounts: [
               {
                 name: dataVolume,
@@ -150,7 +150,7 @@
                 name: "github-token",
                 mountPath: "/secret/github-token",
               },
-            ],
+            ] + volume_mounts,
           },
         },  // buildTemplate
 
@@ -176,6 +176,18 @@
                 claimName: nfsVolumeClaim,
               },
             },
+            {
+              name: "docker-config",
+              configMap: {
+                name: "docker-config",
+              },
+            },
+            {
+              name: "aws-secret",
+              secret: {
+                secretName: "aws-secret",
+              },
+            },
           ],  // volumes
           // onExit specifies the template that should always run when the workflow completes.
           onExit: "exit-handler",
@@ -192,10 +204,11 @@
                     name: "build",
                     template: "build",
                   },
-                  {
-                    name: "create-pr-symlink",
-                    template: "create-pr-symlink",
-                  },
+                  // Temporarily disable py symplink
+                  // {
+                  //   name: "create-pr-symlink",
+                  //   template: "create-pr-symlink",
+                  // },
                 ],
                 [  // Setup cluster needs to run after build because we depend on the chart
                   // created by the build statement.
@@ -296,9 +309,31 @@
               "copy_artifacts",
               "--bucket=" + bucket,
             ]),  // copy-artifacts
-            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("build", testWorkerImage, [
-              "scripts/build.sh",
-            ]),  // build
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("build", "gcr.io/kaniko-project/executor:v1.0.0", [
+              #"scripts/build.sh",
+              "/kaniko/executor",
+              "--dockerfile=" + srcDir + "/Dockerfile",
+              "--context=dir://" + srcDir,
+              "--destination=" + "348134392524.dkr.ecr.us-west-2.amazonaws.com/pytorch-operator:" + versionTag,
+              # need to add volume mounts and extra env.
+            ],
+            env_vars=[
+              {
+                name: "AWS_REGION",
+                value: "us-west-2",
+              }
+            ],
+            volume_mounts=[
+              {
+                name: "aws-secret",
+                mountPath: "/root/.aws/",
+              },
+              {
+                name: "docker-config",
+                mountPath: "/kaniko/.docker/",
+              },
+            ]
+            ),  // build
           ],  // templates
         },
       },  // e2e
