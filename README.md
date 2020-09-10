@@ -17,6 +17,10 @@ This repository contains the specification and implementation of `PyTorchJob` cu
 
   Please refer to the installation instructions in the [Kubeflow user guide](https://www.kubeflow.org/docs/started/getting-started/). This installs `pytorchjob` CRD and `pytorch-operator` controller to manage the lifecycle of PyTorch jobs.
 
+```
+kubectl apply -k manifests/
+```
+
 ## Creating a PyTorch Job
 
 You can create PyTorch Job by defining a PyTorchJob config file. See the manifests for the [distributed MNIST example](./examples/mnist/). You may change the config file based on your requirements.
