@@ -38,7 +38,6 @@ kustomize edit set image gcr.io/kubeflow-images-public/pytorch-operator=${REGIST
 
 echo "Installing PyTorch operator manifests"
 kubectl apply -k .
---pytorchJobImage=${REGISTRY}/${REPO_NAME}:${VERSION}
 
 TIMEOUT=30
 until kubectl get pods -n kubeflow | grep pytorch-operator | grep 1/1 || [[ $TIMEOUT -eq 1 ]]; do
