@@ -25,7 +25,7 @@ CLUSTER_NAME="${CLUSTER_NAME}"
 REGION="${AWS_REGION:-us-west-2}"
 NAMESPACE="${DEPLOY_NAMESPACE}"
 REGISTRY="${GCP_REGISTRY}"
-GO_DIR=${GOPATH}/src/github.com/${REPO_OWNER}/${REPO_NAME}
+GO_DIR=${GOPATH}/src/github.com/kubeflow/${REPO_NAME}
 
 echo "Configuring kubeconfig.."
 aws eks update-kubeconfig --region=${REGION} --name=${CLUSTER_NAME}

@@ -212,6 +212,10 @@
                     name: "build",
                     template: "build",
                   },
+                  {
+                    name: "copy-to-gopath",
+                    template: "copy-to-gopath",
+                  },
                   // Temporarily disable py symplink
                   // {
                   //   name: "create-pr-symlink",
@@ -332,6 +336,9 @@
               },
             ]
             ),  // build
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1-defaults", testWorkerImage, [
+              "scripts/copy-to-gopath.sh",
+            ]),  // copy-to-gopath
           ],  // templates
         },
       },  // e2e
