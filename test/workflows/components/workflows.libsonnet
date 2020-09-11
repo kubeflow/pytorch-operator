@@ -72,7 +72,7 @@
       // py scripts to use.
       local k8sPy = srcDir;
       local kubeflowPy = srcRootDir + "/kubeflow/testing/py";
-      local PyTorchSDK = srcRootDir + "/kubeflow/pytorch-operator/sdk/python";
+      local PyTorchSDK = srcDir + "/sdk/python";
 
       // GKE cluster to use
       // We need to truncate the cluster to no more than 40 characters because
