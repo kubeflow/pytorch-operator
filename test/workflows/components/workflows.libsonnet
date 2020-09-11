@@ -336,7 +336,7 @@
               },
             ]
             ),  // build
-            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1-defaults", testWorkerImage, [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("copy-to-gopath", testWorkerImage, [
               "scripts/copy-to-gopath.sh",
             ]),  // copy-to-gopath
           ],  // templates
