@@ -48,4 +48,4 @@ gcloud builds submit . --tag=${REGISTRY}/${REPO_NAME}:${VERSION} --project=${PRO
 # We need to change to use Kaniko to build images and submit to ECR.
 # Option 1. Use S3. Then we need to build a context tar gz and upload to S3
 # tar -C <path to build context> -zcvf context.tar.gz
-# Option 2. We can use NFS directory directly and Kaniko can find context and Dockerfile there. 
+# Option 2. We can use NFS directory directly and Kaniko can find context and Dockerfile there.

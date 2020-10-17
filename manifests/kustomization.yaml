@@ -11,5 +11,5 @@ commonLabels:
   kustomize.component: pytorch-operator
 images:
 - name: gcr.io/kubeflow-images-public/pytorch-operator
-  newName: 348134392524.dkr.ecr.us-west-2.amazonaws.com/pytorch-operator
+  newName: 527798164940.dkr.ecr.us-west-2.amazonaws.com/pytorch-operator
   newTag: "0.1"

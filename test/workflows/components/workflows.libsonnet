@@ -48,8 +48,8 @@
       // Source directory where all repos should be checked out
       local srcRootDir = testDir + "/src";
       // The directory containing the kubeflow/pytorch-operator repo
-      local srcDir = srcRootDir + "/Jeffwan/pytorch-operator";
-      local testWorkerImage = "348134392524.dkr.ecr.us-west-2.amazonaws.com/aws-kubeflow-ci/test-worker:0.1";
+      local srcDir = srcRootDir + "/kubeflow/pytorch-operator";
+      local testWorkerImage = "527798164940.dkr.ecr.us-west-2.amazonaws.com/aws-kubeflow-ci/test-worker:latest";
       local golangImage = "golang:1.9.4-stretch";
       // TODO(jose5918) Build our own helm image
       local helmImage = "volumecontroller/golang:1.9.2";
@@ -198,7 +198,7 @@
             },
           ],  // volumes
           // onExit specifies the template that should always run when the workflow completes.
-          onExit: "exit-handler",
+          //onExit: "exit-handler",
           templates: [
             {
               name: "e2e",
@@ -295,9 +295,7 @@
               "scripts/v1/run-defaults.sh",
             ]),  // run v1 default tests
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("sdk-tests", testWorkerImage, [
-              "/bin/sh",
-              "-xc",
-              "pip3 install -r sdk/python/requirements.txt; pytest sdk/python/test --log-cli-level=info --log-cli-format='%(levelname)s|%(asctime)s|%(pathname)s|%(lineno)d| %(message)s' --junitxml=" + artifactsDir + "/junit_sdk-test.xml",
+              "python3.8 -m pip install -r sdk/python/requirements.txt; pytest sdk/python/test --log-cli-level=info --log-cli-format='%(levelname)s|%(asctime)s|%(pathname)s|%(lineno)d| %(message)s' --junitxml=" + artifactsDir + "/junit_sdk-test.xml",
             ]),  // run sdk tests
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1-cleanpodpolicy-all", testWorkerImage, [
               "scripts/v1/run-cleanpodpolicy-all.sh",
@@ -316,9 +314,9 @@
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("copy-artifacts", testWorkerImage, [
               "python",
               "-m",
-              "kubeflow.testing.prow_artifacts",
+              "kubeflow.testing.cloudprovider.aws.prow_artifacts",
               "--artifacts_dir=" + outputDir,
-              "copy_artifacts",
+              "copy_artifacts_to_s3",
               "--bucket=" + bucket,
             ]),  // copy-artifacts
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("build", "gcr.io/kaniko-project/executor:v1.0.0", [
@@ -326,7 +324,7 @@
               "/kaniko/executor",
               "--dockerfile=" + srcDir + "/Dockerfile",
               "--context=dir://" + srcDir,
-              "--destination=" + "348134392524.dkr.ecr.us-west-2.amazonaws.com/pytorch-operator:$(PULL_BASE_SHA)",
+              "--destination=" + "527798164940.dkr.ecr.us-west-2.amazonaws.com/pytorch-operator:$(PULL_BASE_SHA)",
               # need to add volume mounts and extra env.
             ],
             volume_mounts=[
