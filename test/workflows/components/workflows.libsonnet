@@ -198,15 +198,17 @@
             },
           ],  // volumes
           // onExit specifies the template that should always run when the workflow completes.
-          //onExit: "exit-handler",
+          onExit: "exit-handler",
           templates: [
             {
               name: "e2e",
               steps: [
-                [{
-                  name: "checkout",
-                  template: "checkout",
-                }],
+                [
+                  {
+                    name: "checkout",
+                    template: "checkout",
+                  }
+                ],
                 [
                   {
                     name: "build",
@@ -240,15 +242,17 @@
                     name: "run-v1-defaults",
                     template: "run-v1-defaults",
                   },
-                  {
-                    name: "sdk-tests",
-                    template: "sdk-tests",
-                  },
+                  //{
+                    //name: "sdk-tests",
+                    //template: "sdk-tests",
+                  //},
+                ],
+                [
                   {
                     name: "run-v1-cleanpodpolicy-all",
                     template: "run-v1-cleanpodpolicy-all",
                   },
-                ],
+                ]
               ],
             },
             {
@@ -295,6 +299,8 @@
               "scripts/v1/run-defaults.sh",
             ]),  // run v1 default tests
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("sdk-tests", testWorkerImage, [
+              "/bin/sh",
+              "-xc",
               "python3.8 -m pip install -r sdk/python/requirements.txt; pytest sdk/python/test --log-cli-level=info --log-cli-format='%(levelname)s|%(asctime)s|%(pathname)s|%(lineno)d| %(message)s' --junitxml=" + artifactsDir + "/junit_sdk-test.xml",
             ]),  // run sdk tests
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1-cleanpodpolicy-all", testWorkerImage, [
