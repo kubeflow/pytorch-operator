@@ -138,12 +138,18 @@ func TestCopyLabelsAndAnnotation(t *testing.T) {
 	jobIndexer := ctr.jobInformer.GetIndexer()
 
 	stopCh := make(chan struct{})
-	run := func(<-chan struct{}) {
-		if err := ctr.Run(testutil.ThreadCount, stopCh); err != nil {
-			t.Errorf("Failed to run the controller: %v", err)
-		}
+
+	go func() {
+		// It is a hack to let the controller stop to run without errors.
+		// We can not just send a struct to stopCh because there are multiple
+		// receivers in controller.Run.
+		time.Sleep(testutil.SleepInterval)
+		stopCh <- struct{}{}
+	}()
+	err := ctr.Run(testutil.ThreadCount, stopCh)
+	if err != nil {
+		t.Errorf("Failed to run the controller: %v", err)
 	}
-	go run(stopCh)
 
 	ctr.updateStatusHandler = func(job *pyv1.PyTorchJob) error {
 		return nil
@@ -276,7 +282,7 @@ func TestDeletePodsAndServices(t *testing.T) {
 			activeMasterServices: 1,
 
 			expectedPodDeletions:     0,
-			expectedServiceDeletions: 0,
+			expectedServiceDeletions: 1,
 		},
 		testCase{
 			description: "4 workers and 1 master succeeded, policy is None",

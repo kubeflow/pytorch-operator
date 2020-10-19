@@ -17,6 +17,7 @@ package pytorch
 
 import (
 	"testing"
+	"time"
 
 	kubebatchclient "github.com/kubernetes-sigs/kube-batch/pkg/client/clientset/versioned"
 	v1 "k8s.io/api/core/v1"
@@ -24,11 +25,11 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/kubernetes/pkg/controller"
 
+	common "github.com/kubeflow/common/job_controller/api/v1"
 	"github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1/app/options"
 	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	jobclientset "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
 	"github.com/kubeflow/pytorch-operator/pkg/common/util/v1/testutil"
-	common "github.com/kubeflow/common/job_controller/api/v1"
 )
 
 func TestAddPod(t *testing.T) {
@@ -258,12 +259,17 @@ func TestExitCode(t *testing.T) {
 	podIndexer := kubeInformerFactory.Core().V1().Pods().Informer().GetIndexer()
 
 	stopCh := make(chan struct{})
-	run := func(<-chan struct{}) {
-		if err := ctr.Run(testutil.ThreadCount, stopCh); err != nil {
-			t.Errorf("Failed to run the controller: %v", err)
-		}
+	go func() {
+		// It is a hack to let the controller stop to run without errors.
+		// We can not just send a struct to stopCh because there are multiple
+		// receivers in controller.Run.
+		time.Sleep(testutil.SleepInterval)
+		stopCh <- struct{}{}
+	}()
+	err := ctr.Run(testutil.ThreadCount, stopCh)
+	if err != nil {
+		t.Errorf("Failed to run the controller: %v", err)
 	}
-	go run(stopCh)
 
 	ctr.updateStatusHandler = func(job *pyv1.PyTorchJob) error {
 		return nil
