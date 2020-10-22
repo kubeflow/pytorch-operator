@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2018 The Kubernetes Authors.
+# Copyright 2018 The Kubeflow Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,16 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This shell script is used to build a cluster and create a namespace from our
-# argo workflow
-
+# This shell script is used to build an image from our argo workflow
 
 set -o errexit
 set -o nounset
 set -o pipefail
 
-EKS_CLUSTER_NAME="${CLUSTER_NAME}"
+export PATH=${GOPATH}/bin:/usr/local/go/bin:${PATH}
+GO_DIR=${GOPATH}/src/github.com/kubeflow/${REPO_NAME}
 
-echo "Tearing down the cluster ${EKS_CLUSTER_NAME}"
-eksctl delete cluster ${EKS_CLUSTER_NAME}
-echo "Successfully tear down the cluster ${EKS_CLUSTER_NAME}"
+# e2e test will run in go_dir. this is a required step.
+echo "Create symlink to GOPATH"
+# TODO(@Jeffwan): it should be ${REPO_OWNER}. Change it back later.
+mkdir -p ${GOPATH}/src/github.com/kubeflow
+ln -s ${PWD} ${GO_DIR}
+cd ${GO_DIR}

@@ -23,17 +23,12 @@
 
   // default parameters.
   defaultParams:: {
-    project:: "kubeflow-ci",
-    zone:: "us-east1-d",
     // Default registry to use.
-    registry:: "gcr.io/" + $.defaultParams.project,
+    registry:: "gcr.io/kubeflow-ci",
 
     // The image tag to use.
     // Defaults to a value based on the name.
-    versionTag:: null,
-
-    // The name of the secret containing GCP credentials.
-    gcpCredentialsSecretName:: "kubeflow-testing-credentials",
+    versionTag:: null
   },
 
   // overrides is a dictionary of parameters to provide in addition to defaults.
@@ -54,7 +49,7 @@
       local srcRootDir = testDir + "/src";
       // The directory containing the kubeflow/pytorch-operator repo
       local srcDir = srcRootDir + "/kubeflow/pytorch-operator";
-      local testWorkerImage = "gcr.io/kubeflow-ci/test-worker:v20190421-fba47fe-e3b0c4";
+      local testWorkerImage = "527798164940.dkr.ecr.us-west-2.amazonaws.com/aws-kubeflow-ci/test-worker:latest";
       local golangImage = "golang:1.9.4-stretch";
       // TODO(jose5918) Build our own helm image
       local helmImage = "volumecontroller/golang:1.9.2";
@@ -77,9 +72,8 @@
       // py scripts to use.
       local k8sPy = srcDir;
       local kubeflowPy = srcRootDir + "/kubeflow/testing/py";
-      local PyTorchSDK = srcRootDir + "/kubeflow/pytorch-operator/sdk/python";
+      local PyTorchSDK = srcDir + "/sdk/python";
 
-      local project = params.project;
       // GKE cluster to use
       // We need to truncate the cluster to no more than 40 characters because
       // cluster names can be a max of 40 characters.
@@ -87,19 +81,21 @@
       // We prepend a z because cluster name must start with an alphanumeric character
       // and if we cut the prefix we might end up starting with "-" or other invalid
       // character for first character.
+
+      // EKS cluster name, better to be meaningful to trace back to prow job
+      // Maximum length of cluster name is 100. We set to 80 as maximum here and truncate
       local cluster =
-        if std.length(name) > 40 then
-          "z" + std.substr(name, std.length(name) - 39, 39)
+        if std.length(name) > 80 then
+          std.substr(name, std.length(name) - 79, 79)
         else
           name;
-      local zone = params.zone;
       local registry = params.registry;
       local chart = srcDir + "/pytorch-operator-chart";
       {
         // Build an Argo template to execute a particular command.
         // step_name: Name for the template
         // command: List to pass as the container command.
-        buildTemplate(step_name, image, command):: {
+        buildTemplate(step_name, image, command, env_vars=[], volume_mounts=[]):: {
           name: step_name,
           activeDeadlineSeconds: 2100,
           container: {
@@ -122,24 +118,12 @@
                 value: cluster,
               },
               {
-                name: "GCP_ZONE",
-                value: zone,
-              },
-              {
-                name: "GCP_PROJECT",
-                value: project,
-              },
-              {
                 name: "GCP_REGISTRY",
                 value: registry,
               },
               {
                 name: "DEPLOY_NAMESPACE",
                 value: deployNamespace,
-              },
-              {
-                name: "GOOGLE_APPLICATION_CREDENTIALS",
-                value: "/secret/gcp-credentials/key.json",
               },
               {
                 name: "GIT_TOKEN",
@@ -151,12 +135,16 @@
                 },
               },
               {
+                name: "AWS_REGION",
+                value: "us-west-2",
+              },
+              {
                 // We use a directory in our NFS share to store our kube config.
                 // This way we can configure it on a single step and reuse it on subsequent steps.
                 name: "KUBECONFIG",
                 value: kubeConfig,
               },
-            ] + prow_env,
+            ] + prow_env + env_vars,
             volumeMounts: [
               {
                 name: dataVolume,
@@ -167,10 +155,10 @@
                 mountPath: "/secret/github-token",
               },
               {
-                name: "gcp-credentials",
-                mountPath: "/secret/gcp-credentials",
+                name: "aws-secret",
+                mountPath: "/root/.aws/",
               },
-            ],
+            ] + volume_mounts,
           },
         },  // buildTemplate
 
@@ -191,15 +179,21 @@
               },
             },
             {
-              name: "gcp-credentials",
-              secret: {
-                secretName: params.gcpCredentialsSecretName,
-              },
-            },
-            {
               name: dataVolume,
               persistentVolumeClaim: {
                 claimName: nfsVolumeClaim,
+              },
+            },
+            {
+              name: "docker-config",
+              configMap: {
+                name: "docker-config",
+              },
+            },
+            {
+              name: "aws-secret",
+              secret: {
+                secretName: "aws-secret",
               },
             },
           ],  // volumes
@@ -209,19 +203,26 @@
             {
               name: "e2e",
               steps: [
-                [{
-                  name: "checkout",
-                  template: "checkout",
-                }],
+                [
+                  {
+                    name: "checkout",
+                    template: "checkout",
+                  }
+                ],
                 [
                   {
                     name: "build",
                     template: "build",
                   },
                   {
-                    name: "create-pr-symlink",
-                    template: "create-pr-symlink",
+                    name: "copy-to-gopath",
+                    template: "copy-to-gopath",
                   },
+                  // Temporarily disable py symplink
+                  // {
+                  //   name: "create-pr-symlink",
+                  //   template: "create-pr-symlink",
+                  // },
                 ],
                 [  // Setup cluster needs to run after build because we depend on the chart
                   // created by the build statement.
@@ -232,8 +233,8 @@
                 ],
                 [
                   {
-                    name: "setup-kubeflow",
-                    template: "setup-kubeflow",
+                    name: "setup-pytorch-operator",
+                    template: "setup-pytorch-operator",
                   },
                 ],
                 [
@@ -241,15 +242,17 @@
                     name: "run-v1-defaults",
                     template: "run-v1-defaults",
                   },
-                  {
-                    name: "sdk-tests",
-                    template: "sdk-tests",
-                  },
+                  //{
+                    //name: "sdk-tests",
+                    //template: "sdk-tests",
+                  //},
+                ],
+                [
                   {
                     name: "run-v1-cleanpodpolicy-all",
                     template: "run-v1-cleanpodpolicy-all",
                   },
-                ],
+                ]
               ],
             },
             {
@@ -289,8 +292,8 @@
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-cluster", testWorkerImage, [
               "scripts/create-cluster.sh",
             ]),  // setup cluster
-            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-kubeflow", testWorkerImage, [
-              "scripts/setup-kubeflow.sh",
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-pytorch-operator", testWorkerImage, [
+              "scripts/setup-pytorch-operator.sh",
             ]),  // setup kubeflow
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1-defaults", testWorkerImage, [
               "scripts/v1/run-defaults.sh",
@@ -298,7 +301,7 @@
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("sdk-tests", testWorkerImage, [
               "/bin/sh",
               "-xc",
-              "pip3 install -r sdk/python/requirements.txt; pytest sdk/python/test --log-cli-level=info --log-cli-format='%(levelname)s|%(asctime)s|%(pathname)s|%(lineno)d| %(message)s' --junitxml=" + artifactsDir + "/junit_sdk-test.xml",
+              "python3.8 -m pip install -r sdk/python/requirements.txt; pytest sdk/python/test --log-cli-level=info --log-cli-format='%(levelname)s|%(asctime)s|%(pathname)s|%(lineno)d| %(message)s' --junitxml=" + artifactsDir + "/junit_sdk-test.xml",
             ]),  // run sdk tests
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("run-v1-cleanpodpolicy-all", testWorkerImage, [
               "scripts/v1/run-cleanpodpolicy-all.sh",
@@ -317,14 +320,29 @@
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("copy-artifacts", testWorkerImage, [
               "python",
               "-m",
-              "kubeflow.testing.prow_artifacts",
+              "kubeflow.testing.cloudprovider.aws.prow_artifacts",
               "--artifacts_dir=" + outputDir,
-              "copy_artifacts",
+              "copy_artifacts_to_s3",
               "--bucket=" + bucket,
             ]),  // copy-artifacts
-            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("build", testWorkerImage, [
-              "scripts/build.sh",
-            ]),  // build
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("build", "gcr.io/kaniko-project/executor:v1.0.0", [
+              #"scripts/build.sh",
+              "/kaniko/executor",
+              "--dockerfile=" + srcDir + "/Dockerfile",
+              "--context=dir://" + srcDir,
+              "--destination=" + "527798164940.dkr.ecr.us-west-2.amazonaws.com/pytorch-operator:$(PULL_BASE_SHA)",
+              # need to add volume mounts and extra env.
+            ],
+            volume_mounts=[
+              {
+                name: "docker-config",
+                mountPath: "/kaniko/.docker/",
+              },
+            ]
+            ),  // build
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("copy-to-gopath", testWorkerImage, [
+              "scripts/copy-to-gopath.sh",
+            ]),  // copy-to-gopath
           ],  // templates
         },
       },  // e2e

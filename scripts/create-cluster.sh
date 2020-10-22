@@ -22,20 +22,20 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-CLUSTER_NAME="${CLUSTER_NAME}"
-ZONE="${GCP_ZONE}"
-PROJECT="${GCP_PROJECT}"
-NAMESPACE="${DEPLOY_NAMESPACE}"
+EKS_CLUSTER_NAME="${CLUSTER_NAME}"
+DESIRED_NODE="${DESIRED_NODE:-2}"
+MIN_NODE="${MIN_NODE:-1}"
+MAX_NODE="${MAX_NODE:-3}"
 
-echo "Activating service-account"
-gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
-echo "Creating GPU cluster"
-gcloud --project ${PROJECT} beta container clusters create ${CLUSTER_NAME} \
-    --zone ${ZONE} \
-    --accelerator type=nvidia-tesla-k80,count=1 \
-    --cluster-version 1.14
-echo "Configuring kubectl"
-gcloud --project ${PROJECT} container clusters get-credentials ${CLUSTER_NAME} \
-    --zone ${ZONE}
-echo "Create Namespace"
-kubectl create ns ${NAMESPACE}
+echo "Starting to create eks cluster"
+eksctl create cluster \
+--name ${EKS_CLUSTER_NAME} \
+--version 1.17 \
+--region us-west-2 \
+--zones us-west-2a,us-west-2b,us-west-2c \
+--nodegroup-name linux-nodes \
+--node-type m5.xlarge \
+--nodes ${DESIRED_NODE} \
+--nodes-min ${MIN_NODE} \
+--nodes-max ${MAX_NODE}
+echo "Successfully create eks cluster ${EKS_CLUSTER_NAME}"
