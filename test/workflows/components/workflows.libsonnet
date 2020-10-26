@@ -290,7 +290,7 @@
               },
             },  // checkout
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-cluster", testWorkerImage, [
-              "scripts/create-cluster.sh",
+              "/usr/local/bin/create-eks-cluster.sh",
             ]),  // setup cluster
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-pytorch-operator", testWorkerImage, [
               "scripts/setup-pytorch-operator.sh",
@@ -315,7 +315,7 @@
               "--bucket=" + bucket,
             ]),  // create-pr-symlink
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("teardown-cluster", testWorkerImage, [
-              "scripts/delete-cluster.sh",
+              "/usr/local/bin/delete-eks-cluster.sh",
             ]),  // teardown cluster
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("copy-artifacts", testWorkerImage, [
               "python",
