@@ -33,6 +33,5 @@ Use the pytorch Docker Image provided by Kubeflow.
 
 ```
       docker build ./pytorch_cuda_docker -t kubeflow/pytorch:1.0-cuda10.0-cudnn7-runtime
-      ```
 
 4. To deploy your job we recommend using official [kubeflow documentation](https://www.kubeflow.org/docs/guides/components/pytorch/). Each example has example yaml files for two versions of apis. Feel free to modify them, e.g. image or number of GPUs.
