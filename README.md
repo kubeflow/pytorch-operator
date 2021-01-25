@@ -45,7 +45,7 @@ kubectl logs -f ${PODNAME}
 ```
 kubectl get -o yaml pytorchjobs pytorch-dist-mnist-gloo
 ```
-See the status section to monitor the job status. Here is sample output when the job is successfully completed.
+See status section to monitor the job status. Here is sample output when the job is successfully completed.
 
 ```
 apiVersion: v1
