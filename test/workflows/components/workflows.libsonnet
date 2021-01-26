@@ -49,7 +49,7 @@
       local srcRootDir = testDir + "/src";
       // The directory containing the kubeflow/pytorch-operator repo
       local srcDir = srcRootDir + "/kubeflow/pytorch-operator";
-      local testWorkerImage = "527798164940.dkr.ecr.us-west-2.amazonaws.com/aws-kubeflow-ci/test-worker:latest";
+      local testWorkerImage = "public.ecr.aws/j1r0q0g6/kubeflow-testing:latest";
       local golangImage = "golang:1.9.4-stretch";
       // TODO(jose5918) Build our own helm image
       local helmImage = "volumecontroller/golang:1.9.2";
@@ -330,7 +330,7 @@
               "/kaniko/executor",
               "--dockerfile=" + srcDir + "/Dockerfile",
               "--context=dir://" + srcDir,
-              "--destination=" + "527798164940.dkr.ecr.us-west-2.amazonaws.com/pytorch-operator:$(PULL_BASE_SHA)",
+              "--destination=" + "809251082950.dkr.ecr.us-west-2.amazonaws.com/pytorch-operator:$(PULL_BASE_SHA)",
               # need to add volume mounts and extra env.
             ],
             volume_mounts=[
