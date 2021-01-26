@@ -49,7 +49,7 @@
       local srcRootDir = testDir + "/src";
       // The directory containing the kubeflow/pytorch-operator repo
       local srcDir = srcRootDir + "/kubeflow/pytorch-operator";
-      local testWorkerImage = "public.ecr.aws/j1r0q0g6/kubeflow-testing:latest";
+      local testWorkerImage = "public.ecr.aws/j1r0q0g6/kubeflow-testing:test";
       local golangImage = "golang:1.9.4-stretch";
       // TODO(jose5918) Build our own helm image
       local helmImage = "volumecontroller/golang:1.9.2";
