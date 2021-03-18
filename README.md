@@ -6,7 +6,7 @@
 
 ## Overview
 
-This repository contains the specification and implementation of `PyTorchJob` custom resource definition. Using this custom resource, users can create and manage PyTorch jobs like other built-in resources in Kubernetes. See [CRD definition](https://github.com/kubeflow/pytorch-operator/blob/master/manifests/crd.yaml)
+This repository contains the specification and implementation of `PyTorchJob` custom resource definition. Using this custom resource, users can create and manage PyTorch jobs like other built-in resources in Kubernetes. See [CRD definition](https://github.com/kubeflow/pytorch-operator/blob/master/manifests/base/crd.yaml)
 
 ## Prerequisites
 

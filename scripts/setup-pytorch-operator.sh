@@ -33,11 +33,11 @@ aws eks update-kubeconfig --region=${REGION} --name=${CLUSTER_NAME}
 
 echo "Update PyTorch operator manifest with new name and tag"
 #TODO(Jeffwan@): If there's a way to specify context, then we don't need to enter manifests folder
-cd manifests/
+cd manifests/overlays/standalone
 kustomize edit set image gcr.io/kubeflow-images-public/pytorch-operator=${REGISTRY}/${REPO_NAME}:${VERSION}
 
 echo "Installing PyTorch operator manifests"
-kubectl apply -k .
+kustomize build . | kubectl apply -f -
 
 TIMEOUT=30
 until kubectl get pods -n kubeflow | grep pytorch-operator | grep 1/1 || [[ $TIMEOUT -eq 1 ]]; do

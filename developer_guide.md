@@ -55,7 +55,7 @@ export KUBEFLOW_NAMESPACE=$(your_namespace)
 After the cluster is up, the PyTorch Operator CRD should be created on the cluster.
 
 ```bash
-kubectl create -f ./manifests/crd.yaml
+kubectl create -f ./manifests/base/crd.yaml
 ```
 
 ### Run Operator

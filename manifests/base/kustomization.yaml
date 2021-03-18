@@ -3,13 +3,15 @@ kind: Kustomization
 namespace: kubeflow
 resources:
 - crd.yaml
-- namespace.yaml
 - rbac.yaml
 - deployment.yaml
 - service.yaml
+- user-clusterroles.yaml
 commonLabels:
+  app: pytorch-operator
   kustomize.component: pytorch-operator
+  app.kubernetes.io/component: pytorch
+  app.kubernetes.io/name: pytorch-operator
 images:
 - name: gcr.io/kubeflow-images-public/pytorch-operator
-  newName: 809251082950.dkr.ecr.us-west-2.amazonaws.com/pytorch-operator
-  newTag: "0.1"
+  newTag: vmaster-g518f9c76
