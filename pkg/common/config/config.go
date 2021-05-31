@@ -8,8 +8,15 @@ import (
 
 var initContainerTemplate = `
 - name: init-pytorch
-  image: alpine:3.10
+  image: {{.InitContainerImage}}
   imagePullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: 100m
+      memory: 20Mi
+    requests:
+      cpu: 50m
+      memory: 10Mi
   command: ['sh', '-c', 'until nslookup {{.MasterAddr}}; do echo waiting for master; sleep 2; done;']`
 
 func init() {

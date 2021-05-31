@@ -2,8 +2,8 @@ package pytorch
 
 import (
 	"fmt"
-	"time"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
@@ -12,8 +12,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	common "github.com/kubeflow/common/job_controller/api/v1"
+	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
 	"github.com/kubeflow/tf-operator/pkg/util/k8sutil"
 	"github.com/prometheus/client_golang/prometheus"
@@ -150,18 +150,21 @@ func (pc *PyTorchController) updatePyTorchJob(old, cur interface{}) {
 }
 
 // deletePodsAndServices deletes all the pods and master service.
-func (pc *PyTorchController) deletePodsAndServices(job *pyv1.PyTorchJob, pods []*v1.Pod,services []*v1.Service) error {
+func (pc *PyTorchController) deletePodsAndServices(job *pyv1.PyTorchJob, pods []*v1.Pod, services []*v1.Service) error {
 	if len(pods) == 0 {
 		return nil
 	}
 
-	// Delete nothing when the cleanPodPolicy is None or Running.
-	if *job.Spec.CleanPodPolicy == common.CleanPodPolicyNone ||
-		*job.Spec.CleanPodPolicy == common.CleanPodPolicyRunning {
+	// Delete nothing when the cleanPodPolicy is None.
+	if *job.Spec.CleanPodPolicy == common.CleanPodPolicyNone {
 		return nil
 	}
 
 	for _, pod := range pods {
+		// Just delete running pod when the cleanPodPolicy is Running
+		if *job.Spec.CleanPodPolicy == common.CleanPodPolicyRunning && pod.Status.Phase != v1.PodRunning {
+			continue
+		}
 		if err := pc.PodControl.DeletePod(pod.Namespace, pod.Name, job); err != nil {
 			return err
 		}
@@ -172,7 +175,7 @@ func (pc *PyTorchController) deletePodsAndServices(job *pyv1.PyTorchJob, pods []
 	if err != nil {
 		return err
 	}
-	for _,service :=range services{
+	for _, service := range services {
 		if err := pc.ServiceControl.DeleteService(service.Namespace, service.Name, job); err != nil {
 			return err
 		}

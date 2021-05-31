@@ -22,21 +22,13 @@ set -o nounset
 set -o pipefail
 
 CLUSTER_NAME="${CLUSTER_NAME}"
-ZONE="${GCP_ZONE}"
-PROJECT="${GCP_PROJECT}"
+REGION="${AWS_REGION:-us-west-2}"
 NAMESPACE="${DEPLOY_NAMESPACE}"
 REGISTRY="${GCP_REGISTRY}"
-VERSION=$(git describe --tags --always --dirty)
-GO_DIR=${GOPATH}/src/github.com/${REPO_OWNER}/${REPO_NAME}
-APP_NAME=test-app
-KUBEFLOW_VERSION=master
-KF_ENV=pytorch
+GO_DIR=${GOPATH}/src/github.com/kubeflow/${REPO_NAME}
 
-echo "Activating service-account"
-gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
-echo "Configuring kubectl"
-gcloud --project ${PROJECT} container clusters get-credentials ${CLUSTER_NAME} \
-    --zone ${ZONE}
+echo "Configuring kubeconfig.."
+aws eks update-kubeconfig --region=${REGION} --name=${CLUSTER_NAME}
 
 cd ${GO_DIR}
 
@@ -44,6 +36,7 @@ echo "Running smoke test"
 SENDRECV_TEST_IMAGE_TAG="pytorch-dist-sendrecv-test:v1.0"
 go run ./test/e2e/v1/default/defaults.go --namespace=${NAMESPACE} --image=${REGISTRY}/${SENDRECV_TEST_IMAGE_TAG} --name=sendrecvjob-cleannone
 
-echo "Running mnist test"
-MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist-test:v1.0"
-go run ./test/e2e/v1/default/defaults.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob-cleannone
+# TODO(Jeffwan@): Enable mnist test once mnist server is back
+#echo "Running mnist test"
+#MNIST_TEST_IMAGE_TAG="pytorch-dist-mnist-test:v1.0"
+#go run ./test/e2e/v1/default/defaults.go --namespace=${NAMESPACE} --image=${REGISTRY}/${MNIST_TEST_IMAGE_TAG} --name=mnistjob-cleannone

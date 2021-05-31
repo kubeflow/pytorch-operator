@@ -25,6 +25,8 @@ PyTorchJobClient | [wait_for_condition](#wait_for_condition) | Waits until any o
 PyTorchJobClient | [get_job_status](#get_job_status) | Get the PyTorchJob status|
 PyTorchJobClient | [is_job_running](#is_job_running) | Check if the PyTorchJob running |
 PyTorchJobClient | [is_job_succeeded](#is_job_succeeded) | Check if the PyTorchJob Succeeded |
+PyTorchJobClient | [get_pod_names](#get_pod_names) | Get pod names of PyTorchJob |
+PyTorchJobClient | [get_logs](#get_logs) | Get training logs of the PyTorchJob |
 
 ## create
 > create(pytorchjob, namespace=None)
@@ -100,7 +102,7 @@ namespace | str | Namespace for pytorchjob deploying to. If the `namespace` is n
 object
 
 ## get
-> get(name=None, namespace=None, watch=False, timeout_seconds=600))
+> get(name=None, namespace=None, watch=False, timeout_seconds=600)
 
 Get the created pytorchjob in the specified namespace
 
@@ -324,3 +326,57 @@ namespace | str | The pytorchjob's namespace. Defaults to current or default nam
 
 ### Return type
 Bool
+
+## get_pod_names
+> get_pod_names(name, namespace=None, master=False, replica_type=None, replica_index=None)
+
+Get pod names of the PyTorchJob.
+
+### Example
+
+```python
+from kubeflow.pytorchjob import PyTorchJobClient
+
+pytorchjob_client = PyTorchJobClient()
+pytorchjob_client.get_pod_names('mnist', namespace='kubeflow')
+```
+
+### Parameters
+Name | Type |  Description | Notes
+------------ | ------------- | ------------- | -------------
+name  | str | The PyTorchJob name.| |
+namespace | str | The pytorchjob's namespace. Defaults to current or default namespace.| Optional |
+master  | bool | Only get pod with label 'job-role: master' pod if True. | |
+replica_type | str | User can specify one of 'master, worker' to only get one type pods. By default get all type pods.| |
+replica_index | str | User can specfy replica index to get one pod of the PyTorchJob. | |
+
+### Return type
+Set
+
+
+## get_logs
+> get_logs(name, namespace=None, master=True, replica_type=None, replica_index=None, follow=False)
+
+Get training logs of the PyTorchJob. By default only get the logs of Pod that has labels 'job-role: master', to get all pods logs, specfy the `master=False`.
+
+### Example
+
+```python
+from kubeflow.pytorchjob import PyTorchJobClient
+
+pytorchjob_client = PyTorchJobClient()
+pytorchjob_client.get_logs('mnist', namespace='kubeflow')
+```
+
+### Parameters
+Name | Type |  Description | Notes
+------------ | ------------- | ------------- | -------------
+name  | str | The PyTorchJob name.| |
+namespace | str | The pytorchjob's namespace. Defaults to current or default namespace.| Optional |
+master  | bool | Only get pod with label 'job-role: master' pod if True. | |
+replica_type  | str | User can specify one of 'master, worker' to only get one type pods. By default get all type pods.| |
+replica_index | str | User can specfy replica index to get one pod of the PyTorchJob. | |
+follow | bool | Follow the log stream of the pod. Defaults to false. | |
+
+### Return type
+Str

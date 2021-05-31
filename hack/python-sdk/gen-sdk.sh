@@ -18,7 +18,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-SWAGGER_JAR_URL="http://central.maven.org/maven2/io/swagger/swagger-codegen-cli/2.4.6/swagger-codegen-cli-2.4.6.jar"
+SWAGGER_JAR_URL="http://search.maven.org/maven2/io/swagger/swagger-codegen-cli/2.4.6/swagger-codegen-cli-2.4.6.jar"
 SWAGGER_CODEGEN_JAR="hack/python-sdk/swagger-codegen-cli.jar"
 SWAGGER_CODEGEN_CONF="hack/python-sdk/swagger_config.json"
 SWAGGER_CODEGEN_FILE="pkg/apis/pytorch/v1/swagger.json"
@@ -28,8 +28,22 @@ if [ -z "${GOPATH:-}" ]; then
     export GOPATH=$(go env GOPATH)
 fi
 
+# Grab kube-openapi version from go.sum
+OPENAPI_VERSION=$(grep 'k8s.io/kube-openapi' go.sum | awk '{print $2}' | head -1)
+OPENAPI_PKG=$(echo `go env GOPATH`"/pkg/mod/k8s.io/kube-openapi@${OPENAPI_VERSION}")
+
+if [[ ! -d ${OPENAPI_PKG} ]]; then
+    echo "${OPENAPI_PKG} is missing. Running 'go mod download'."
+    go mod download
+fi
+
+echo ">> Using ${OPENAPI_PKG}"
+
+echo "Building openapi-gen"
+go build -o openapi-gen ${OPENAPI_PKG}/cmd/openapi-gen
+
 echo "Generating OpenAPI specification ..."
-go run vendor/k8s.io/code-generator/cmd/openapi-gen/main.go --input-dirs github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1,github.com/kubeflow/common/job_controller/api/v1 --output-package github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1 --go-header-file hack/boilerplate/boilerplate.go.txt
+./openapi-gen --input-dirs github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1 --output-package github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1 --go-header-file hack/boilerplate/boilerplate.go.txt
 
 echo "Generating swagger file ..."
 go run hack/python-sdk/main.go 0.1 > ${SWAGGER_CODEGEN_FILE}

@@ -18,7 +18,7 @@ import (
 	"flag"
 	"time"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 )
 
 const DefaultResyncPeriod = 12 * time.Hour
@@ -35,6 +35,7 @@ type ServerOption struct {
 	Namespace            string
 	MonitoringPort       int
 	ResyncPeriod         time.Duration
+	InitContainerImage   string
 	// QPS indicates the maximum QPS to the master from this client.
 	// If it's zero, the created RESTClient will use DefaultQPS: 5
 	QPS int
@@ -75,6 +76,8 @@ func (s *ServerOption) AddFlags(fs *flag.FlagSet) {
 	fs.IntVar(&s.MonitoringPort, "monitoring-port", 8443, `Endpoint port for displaying monitoring metrics`)
 
 	fs.DurationVar(&s.ResyncPeriod, "resyc-period", DefaultResyncPeriod, "Resync interval of the tf-operator")
+
+	fs.StringVar(&s.InitContainerImage, "init-container-image", "alpine:3.10", "The image of the injected init container, will overwrite the value in config")
 
 	fs.IntVar(&s.QPS, "qps", 5, "QPS indicates the maximum QPS to the master from this client.")
 	fs.IntVar(&s.Burst, "burst", 10, "Maximum burst for throttle.")

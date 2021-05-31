@@ -22,12 +22,12 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 
-	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	common "github.com/kubeflow/common/job_controller/api/v1"
+	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	"github.com/kubeflow/tf-operator/pkg/common/jobcontroller"
 	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
 	train_util "github.com/kubeflow/tf-operator/pkg/util/train"
@@ -188,7 +188,10 @@ func (pc *PyTorchController) createNewPod(job *pyv1.PyTorchJob, rtype pyv1.PyTor
 	setRestartPolicy(podTemplate, spec)
 	if !masterRole {
 		masterAddr := jobcontroller.GenGeneralName(job.Name, strings.ToLower(string(pyv1.PyTorchReplicaTypeMaster)), strconv.Itoa(0))
-		err := AddInitContainerForWorkerPod(podTemplate, InitContainerParam{masterAddr})
+		err := AddInitContainerForWorkerPod(podTemplate, InitContainerParam{
+			MasterAddr:         masterAddr,
+			InitContainerImage: pc.initContainerImage,
+		})
 		if err != nil {
 			return err
 		}

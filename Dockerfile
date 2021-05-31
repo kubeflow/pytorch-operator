@@ -1,4 +1,4 @@
-FROM golang:1.12 AS build-image
+FROM golang:1.13 AS build-image
 
 ADD . /go/src/github.com/kubeflow/pytorch-operator
 
@@ -11,4 +11,6 @@ FROM registry.access.redhat.com/ubi8/ubi:latest
 
 COPY --from=build-image /go/src/github.com/kubeflow/pytorch-operator/pytorch-operator.v1 /pytorch-operator.v1
 
-ENTRYPOINT ["/pytorch-operator", "-alsologtostderr"]
+COPY third_party/library/license.txt /license.txt
+
+ENTRYPOINT ["/pytorch-operator.v1", "-alsologtostderr"]
