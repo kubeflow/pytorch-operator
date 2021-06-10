@@ -14,8 +14,8 @@ import (
 
 	common "github.com/kubeflow/common/pkg/apis/common/v1"
 	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
-	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
-	"github.com/kubeflow/tf-operator/pkg/util/k8sutil"
+	pylogger "github.com/kubeflow/common/pkg/util"
+	"github.com/kubeflow/common/pkg/util/k8sutil"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )

@@ -17,7 +17,7 @@ package testutil
 import (
 	"time"
 
-	"github.com/golang/protobuf/proto"
+// 	"github.com/golang/protobuf/proto"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -86,7 +86,7 @@ func NewPyTorchJobWithBackoffLimit(master, worker int, backoffLimit *int32) *pyv
 func NewPyTorchJobWithMaster(worker int) *pyv1.PyTorchJob {
 	job := NewPyTorchJob(worker)
 	job.Spec.PyTorchReplicaSpecs[pyv1.PyTorchReplicaTypeMaster] = &common.ReplicaSpec{
-		Replicas: proto.Int32(1),
+		Replicas: *Int32(1),
 		Template: NewPyTorchReplicaSpecTemplate(),
 	}
 	return job

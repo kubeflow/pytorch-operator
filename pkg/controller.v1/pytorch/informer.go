@@ -17,7 +17,7 @@ import (
 	jobinformers "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions"
 	jobinformersv1 "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions/pytorch/v1"
 	"github.com/kubeflow/pytorch-operator/pkg/common/util/v1/unstructured"
-	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
+	pylogger "github.com/kubeflow/common/pkg/util"
 )
 
 const (

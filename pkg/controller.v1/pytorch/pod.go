@@ -28,9 +28,9 @@ import (
 
 	common "github.com/kubeflow/common/pkg/apis/common/v1"
 	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
-	"github.com/kubeflow/tf-operator/pkg/common/jobcontroller"
-	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
-	train_util "github.com/kubeflow/tf-operator/pkg/util/train"
+	jobcontroller "github.com/kubeflow/common/pkg/controller.v1/common"
+	pylogger "github.com/kubeflow/common/pkg/util"
+	train_util "github.com/kubeflow/common/pkg/util/k8sutil"
 )
 
 const (

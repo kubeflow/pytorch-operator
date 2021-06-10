@@ -41,9 +41,9 @@ import (
 	jobinformers "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions"
 	jobinformersv1 "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions/pytorch/v1"
 	joblisters "github.com/kubeflow/pytorch-operator/pkg/client/listers/pytorch/v1"
-	"github.com/kubeflow/tf-operator/pkg/common/jobcontroller"
-	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
-	"github.com/kubeflow/tf-operator/pkg/util/k8sutil"
+	jobcontroller "github.com/kubeflow/common/pkg/controller.v1/common"
+	pylogger "github.com/kubeflow/common/pkg/util"
+	"github.com/kubeflow/common/pkg/util/k8sutil"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )

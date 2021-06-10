@@ -42,7 +42,7 @@ import (
 	"github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned/scheme"
 	jobinformers "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions"
 	controller "github.com/kubeflow/pytorch-operator/pkg/controller.v1/pytorch"
-	"github.com/kubeflow/tf-operator/pkg/util/signals"
+	"github.com/kubeflow/common/pkg/util/signals"
 	"github.com/kubeflow/tf-operator/pkg/version"
 )
 

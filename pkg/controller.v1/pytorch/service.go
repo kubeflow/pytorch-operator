@@ -27,8 +27,8 @@ import (
 
 	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	common "github.com/kubeflow/common/pkg/apis/common/v1"
-	"github.com/kubeflow/tf-operator/pkg/common/jobcontroller"
-	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
+	jobcontroller "github.com/kubeflow/common/pkg/controller.v1/common"
+	pylogger "github.com/kubeflow/common/pkg/util"
 )
 
 // reconcileServices checks and updates services for each given PyTorchReplicaSpec.

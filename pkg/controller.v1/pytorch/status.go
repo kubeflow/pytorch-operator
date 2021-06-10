@@ -26,7 +26,7 @@ import (
 
 	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	common "github.com/kubeflow/common/pkg/apis/common/v1"
-	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
+	pylogger "github.com/kubeflow/common/pkg/util"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
