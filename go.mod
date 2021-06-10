@@ -8,7 +8,7 @@ require (
 	github.com/go-openapi/spec v0.19.3
 	github.com/gogo/protobuf v1.2.1
 	github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6 // indirect
-	github.com/golang/protobuf v1.4.2
+	github.com/golang/protobuf v1.4.2tag
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/googleapis/gnostic v0.3.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
@@ -37,7 +37,7 @@ replace (
 	k8s.io/apimachinery => k8s.io/apimachinery v0.15.10-beta.0
 	k8s.io/apiserver => k8s.io/apiserver v0.15.9
 	k8s.io/cli-runtime => k8s.io/cli-runtime v0.15.9
-	k8s.io/client-go => k8s.io/client-go v0.15.9
+	k8s.io/client-go => k8s.io/client-go v0.16.9
 	k8s.io/cloud-provider => k8s.io/cloud-provider v0.15.9
 	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.15.9
 	k8s.io/code-generator => k8s.io/code-generator v0.15.13-beta.0
