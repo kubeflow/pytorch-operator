@@ -29,7 +29,7 @@ import (
 	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	jobclientset "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
 	"github.com/kubeflow/pytorch-operator/pkg/common/util/v1/testutil"
-	common "github.com/kubeflow/common/job_controller/api/v1"
+	common "github.com/kubeflow/common/pkg/apis/common/v1"
 )
 
 func TestFailed(t *testing.T) {

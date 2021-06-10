@@ -69,14 +69,14 @@ func schema_pkg_apis_pytorch_v1_PyTorchJob(ref common.ReferenceCallback) common.
 					"status": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Most recently observed status of the PyTorchJob. Read-only (modified by the system).",
-							Ref:         ref("github.com/kubeflow/common/job_controller/api/v1.JobStatus"),
+							Ref:         ref("github.com/kubeflow/common/pkg/apis/common/v1.JobStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"github.com/kubeflow/common/job_controller/api/v1.JobStatus", "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1.PyTorchJobSpec", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			"github.com/kubeflow/common/pkg/apis/common/v1.JobStatus", "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1.PyTorchJobSpec", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 
@@ -172,7 +172,7 @@ func schema_pkg_apis_pytorch_v1_PyTorchJobSpec(ref common.ReferenceCallback) com
 								Allows: true,
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
-										Ref: ref("github.com/kubeflow/common/job_controller/api/v1.ReplicaSpec"),
+										Ref: ref("github.com/kubeflow/common/pkg/apis/common/v1.ReplicaSpec"),
 									},
 								},
 							},
@@ -183,6 +183,6 @@ func schema_pkg_apis_pytorch_v1_PyTorchJobSpec(ref common.ReferenceCallback) com
 			},
 		},
 		Dependencies: []string{
-			"github.com/kubeflow/common/job_controller/api/v1.ReplicaSpec"},
+			"github.com/kubeflow/common/pkg/apis/common/v1.ReplicaSpec"},
 	}
 }

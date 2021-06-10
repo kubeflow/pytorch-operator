@@ -25,7 +25,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/kubernetes/pkg/controller"
 
-	common "github.com/kubeflow/common/job_controller/api/v1"
+	common "github.com/kubeflow/common/pkg/apis/common/v1"
 	"github.com/kubeflow/pytorch-operator/cmd/pytorch-operator.v1/app/options"
 	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	jobclientset "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
