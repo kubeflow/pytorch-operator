@@ -22,7 +22,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 
-	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
+	pyv1 "github.com/paipaoso/pytorch-operator/pkg/apis/pytorch/v1"
 )
 
 const (

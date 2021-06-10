@@ -24,7 +24,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
+	pyv1 "github.com/paipaoso/pytorch-operator/pkg/apis/pytorch/v1"
 	common "github.com/kubeflow/common/pkg/apis/common/v1"
 )
 

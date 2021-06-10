@@ -12,11 +12,11 @@ import (
 	restclientset "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 
-	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
-	"github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/validation"
-	jobinformers "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions"
-	jobinformersv1 "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions/pytorch/v1"
-	"github.com/kubeflow/pytorch-operator/pkg/common/util/v1/unstructured"
+	pyv1 "github.com/paipaoso/pytorch-operator/pkg/apis/pytorch/v1"
+	"github.com/paipaoso/pytorch-operator/pkg/apis/pytorch/validation"
+	jobinformers "github.com/paipaoso/pytorch-operator/pkg/client/informers/externalversions"
+	jobinformersv1 "github.com/paipaoso/pytorch-operator/pkg/client/informers/externalversions/pytorch/v1"
+	"github.com/paipaoso/pytorch-operator/pkg/common/util/v1/unstructured"
 	pylogger "github.com/kubeflow/common/pkg/util"
 )
 

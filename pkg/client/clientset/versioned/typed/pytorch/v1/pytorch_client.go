@@ -17,8 +17,8 @@
 package v1
 
 import (
-	v1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
-	"github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned/scheme"
+	v1 "github.com/paipaoso/pytorch-operator/pkg/apis/pytorch/v1"
+	"github.com/paipaoso/pytorch-operator/pkg/client/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 

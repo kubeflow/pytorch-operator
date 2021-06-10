@@ -14,8 +14,8 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/tools/cache"
 
-	informer "github.com/kubeflow/pytorch-operator/pkg/client/informers/externalversions/pytorch/v1"
-	lister "github.com/kubeflow/pytorch-operator/pkg/client/listers/pytorch/v1"
+	informer "github.com/paipaoso/pytorch-operator/pkg/client/informers/externalversions/pytorch/v1"
+	lister "github.com/paipaoso/pytorch-operator/pkg/client/listers/pytorch/v1"
 )
 
 type UnstructuredInformer struct {

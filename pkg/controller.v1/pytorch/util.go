@@ -20,8 +20,8 @@ import (
 	"bytes"
 	"html/template"
 
-	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
-	"github.com/kubeflow/pytorch-operator/pkg/common/config"
+	pyv1 "github.com/paipaoso/pytorch-operator/pkg/apis/pytorch/v1"
+	"github.com/paipaoso/pytorch-operator/pkg/common/config"
 	"github.com/kubernetes-sigs/yaml"
 	v1 "k8s.io/api/core/v1"
 )

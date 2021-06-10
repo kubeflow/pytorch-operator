@@ -27,7 +27,7 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 
 	common "github.com/kubeflow/common/pkg/apis/common/v1"
-	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
+	pyv1 "github.com/paipaoso/pytorch-operator/pkg/apis/pytorch/v1"
 	jobcontroller "github.com/kubeflow/common/pkg/controller.v1/common"
 	pylogger "github.com/kubeflow/common/pkg/util"
 	train_util "github.com/kubeflow/common/pkg/util/k8sutil"
