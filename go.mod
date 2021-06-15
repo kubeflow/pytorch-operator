@@ -21,7 +21,7 @@ require (
 	github.com/golangplus/fmt v0.0.0-20150411045040-2a5d6d7d2995 // indirect
 	github.com/golangplus/testing v0.0.0-20180327235837-af21d9c3145e // indirect
 	github.com/google/uuid v1.1.1 // indirect
-	github.com/googleapis/gnostic v0.3.0 // indirect
+
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/jteeuwen/go-bindata v0.0.0-20151023091102-a0ff2567cfb7 // indirect
 	github.com/kardianos/osext v0.0.0-20150410034420-8fef92e41e22 // indirect
@@ -52,7 +52,8 @@ require (
 )
 
 replace (
-github.com/kubeflow/pytorch-operator => ./github.com/paipaoso/pytorch-operator
+	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.5.6-0.20210520165051-0320d74b3646
+	github.com/kubeflow/pytorch-operator => ./github.com/paipaoso/pytorch-operator
 	k8s.io/api => k8s.io/api v0.16.9
 	k8s.io/apimachinery => k8s.io/apimachinery v0.15.10-beta.0
 	k8s.io/apiserver => k8s.io/apiserver v0.15.9
