@@ -52,6 +52,7 @@ require (
 )
 
 replace (
+github.com/kubeflow/pytorch-operator => ./github.com/paipaoso/pytorch-operator
 	k8s.io/api => k8s.io/api v0.16.9
 	k8s.io/apimachinery => k8s.io/apimachinery v0.15.10-beta.0
 	k8s.io/apiserver => k8s.io/apiserver v0.15.9
