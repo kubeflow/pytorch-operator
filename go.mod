@@ -46,12 +46,11 @@ require (
 	k8s.io/apimachinery v0.19.9
 	k8s.io/client-go v10.0.0+incompatible
 	k8s.io/klog v1.0.0
-	k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
-
 	k8s.io/utils v0.0.0-20190809000727-6c36bc71fc4a // indirect
 )
 
 replace (
+    k8s.io/kube-openapi => github.com/paipaoso/kube-openapi v0.1.0
 	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.4.0
 	github.com/kubeflow/pytorch-operator => ./github.com/paipaoso/pytorch-operator
 	k8s.io/api => k8s.io/api v0.16.9
@@ -67,7 +66,6 @@ replace (
 	k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.15.9
 	k8s.io/kube-aggregatr => k8s.io/kube-aggregator v0.15.9
 	k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.15.9
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20190228160746-b3a7cee44a30
 	k8s.io/kube-proxy => k8s.io/kube-proxy v0.15.9
 	k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.15.9
 	k8s.io/kubectl => k8s.io/kubectl v0.15.13-beta.0
