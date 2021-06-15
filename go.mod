@@ -52,7 +52,7 @@ require (
 )
 
 replace (
-	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.5.6-0.20210520165051-0320d74b3646
+	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.4.0
 	github.com/kubeflow/pytorch-operator => ./github.com/paipaoso/pytorch-operator
 	k8s.io/api => k8s.io/api v0.16.9
 	k8s.io/apimachinery => k8s.io/apimachinery v0.15.10-beta.0
