@@ -1,0 +1,59 @@
+apiVersion: "kubeflow.org/v1"
+kind: "PyTorchJob"
+metadata:
+  name: "pytorch-dist-bert-gloo"
+spec:
+  pytorchReplicaSpecs:
+    Master:
+      replicas: 1
+      imagePullPolicy: Always
+      restartPolicy: OnFailure
+      template:
+        metadata:
+          annotations:
+            sidecar.istio.io/inject: "false"
+        spec:
+          containers:
+            - name: pytorch
+              image: jagadeeshj/dist_bert:v3.13-gpu
+              args: ["--max_epochs", "2", "--gpus", "1", "--accelerator", "ddp", "--num_nodes", "2"]
+              ports:
+              - containerPort: 24456
+                name: pytorchjob-port
+              resources:
+                limits:
+                    nvidia.com/gpu: 1 # requesting 2 GPUs
+              volumeMounts:
+                - mountPath: /model
+                  name: model-volume
+          volumes:
+            - name: model-volume
+              persistentVolumeClaim:
+                claimName: fileserver-claim
+    Worker:
+      replicas: 1
+      imagePullPolicy: Always
+      restartPolicy: OnFailure
+      template:
+        metadata:
+          annotations:
+            sidecar.istio.io/inject: "false"
+        spec:
+          containers: 
+            - name: pytorch
+              image: jagadeeshj/dist_bert:v3.13-gpu
+              args: ["--max_epochs", "2", "--gpus", "1", "--accelerator", "ddp", "--num_nodes", "2"]
+              ports:
+              - containerPort: 24456
+                name: pytorchjob-port
+              resources:
+                limits:
+                    nvidia.com/gpu: 1 # requesting 2 GPUs
+              volumeMounts:
+                - mountPath: /model
+                  name: model-volume
+          volumes:
+            - name: model-volume
+              persistentVolumeClaim:
+                claimName: fileserver-claim
+                
