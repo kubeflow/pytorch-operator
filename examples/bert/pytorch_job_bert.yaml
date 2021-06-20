@@ -1,7 +1,7 @@
 apiVersion: "kubeflow.org/v1"
 kind: "PyTorchJob"
 metadata:
-  name: "pytorch-dist-bert-gloo"
+  name: "pytorch-job-bert"
 spec:
   pytorchReplicaSpecs:
     Master:
@@ -15,14 +15,15 @@ spec:
         spec:
           containers:
             - name: pytorch
-              image: jagadeeshj/dist_bert:v3.13-gpu
-              args: ["--max_epochs", "2", "--gpus", "1", "--accelerator", "ddp", "--num_nodes", "2"]
+              image: <username>/pytorch_dist_bert:latest
+              # For CPU "--accelerator", "ddp_cpu"
+              args: ["--gpus", "1", "--accelerator", "ddp", "--num_nodes", "2"]
               ports:
               - containerPort: 24456
                 name: pytorchjob-port
               resources:
                 limits:
-                    nvidia.com/gpu: 1 # requesting 2 GPUs
+                    nvidia.com/gpu: 1 # requesting 1 GPU
               volumeMounts:
                 - mountPath: /model
                   name: model-volume
@@ -41,14 +42,15 @@ spec:
         spec:
           containers: 
             - name: pytorch
-              image: jagadeeshj/dist_bert:v3.13-gpu
-              args: ["--max_epochs", "2", "--gpus", "1", "--accelerator", "ddp", "--num_nodes", "2"]
+              image: <username>/pytorch_dist_bert:latest
+              # For CPU "--accelerator", "ddp_cpu"
+              args: ["--gpus", "1", "--accelerator", "ddp", "--num_nodes", "2"]
               ports:
               - containerPort: 24456
                 name: pytorchjob-port
               resources:
                 limits:
-                    nvidia.com/gpu: 1 # requesting 2 GPUs
+                    nvidia.com/gpu: 1 # requesting 1 GPU
               volumeMounts:
                 - mountPath: /model
                   name: model-volume
