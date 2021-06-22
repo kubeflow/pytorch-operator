@@ -13,7 +13,7 @@ docker build -f Dockerfile -t <username>/pytorch-dist-bert:latest .
 docker push <username>/pytorch-dist-bert:latest
 ```
 
-**Create the mnist PyTorch job**
+**Create the BERT PyTorch job**
 
 The below example uses the gloo backend.
 

@@ -1,5 +1,3 @@
-#FROM pytorch/pytorch:latest
-
 FROM pytorch/pytorch:1.8.1-cuda10.2-cudnn7-runtime
 
 RUN apt-get update && apt-get install -y git

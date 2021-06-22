@@ -17,20 +17,19 @@ spec:
             - name: pytorch
               image: <username>/pytorch_dist_bert:latest
               # For CPU "--accelerator", "ddp_cpu"
-              args: ["--gpus", "1", "--accelerator", "ddp", "--num_nodes", "2"]
+              args: [
+                "--checkpoint_dir", "/model/checkpoint", 
+                "--model_save_path", "/model/model_path", 
+                "--gpus", "-1", 
+                "--accelerator", "ddp", 
+                "--num_nodes", "2"
+                ]
               ports:
               - containerPort: 24456
                 name: pytorchjob-port
               resources:
                 limits:
                     nvidia.com/gpu: 1 # requesting 1 GPU
-              volumeMounts:
-                - mountPath: /model
-                  name: model-volume
-          volumes:
-            - name: model-volume
-              persistentVolumeClaim:
-                claimName: fileserver-claim
     Worker:
       replicas: 1
       imagePullPolicy: Always
@@ -44,18 +43,16 @@ spec:
             - name: pytorch
               image: <username>/pytorch_dist_bert:latest
               # For CPU "--accelerator", "ddp_cpu"
-              args: ["--gpus", "1", "--accelerator", "ddp", "--num_nodes", "2"]
+              args: [
+                "--checkpoint_dir", "/model/checkpoint", 
+                "--model_save_path", "/model/model_path", 
+                "--gpus", "-1", 
+                "--accelerator", "ddp", 
+                "--num_nodes", "2"
+                ]
               ports:
               - containerPort: 24456
                 name: pytorchjob-port
               resources:
                 limits:
                     nvidia.com/gpu: 1 # requesting 1 GPU
-              volumeMounts:
-                - mountPath: /model
-                  name: model-volume
-          volumes:
-            - name: model-volume
-              persistentVolumeClaim:
-                claimName: fileserver-claim
-                
