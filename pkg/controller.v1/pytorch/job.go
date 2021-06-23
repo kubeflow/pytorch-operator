@@ -25,10 +25,13 @@ const (
 )
 
 var (
-	pytorchJobsCreatedCount = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "pytorch_operator_jobs_created_total",
-		Help: "Counts number of PyTorch jobs created",
-	})
+	pytorchJobsCreatedCount = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "pytorch_operator_jobs_created_total",
+			Help: "Counts number of PyTorch jobs created",
+		},
+		[]string{"job_namespace"},
+	)
 )
 
 // When a pod is added, set the defaults and enqueue the current pytorchjob.
@@ -107,7 +110,7 @@ func (pc *PyTorchController) addPyTorchJob(obj interface{}) {
 		return
 	}
 	pc.enqueuePyTorchJob(obj)
-	pytorchJobsCreatedCount.Inc()
+	pytorchJobsCreatedCount.WithLabelValues(job.Namespace).Inc()
 }
 
 // When a pod is updated, enqueue the current pytorchjob.
