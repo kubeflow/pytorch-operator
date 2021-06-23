@@ -9,8 +9,8 @@ The python script used to train bert with pytorch lightning.
 **Build Image**
 
 ```shell
-docker build -f Dockerfile -t <username>/pytorch-dist-bert:latest .
-docker push <username>/pytorch-dist-bert:latest
+docker build -f Dockerfile -t <username>/pytorch_dist_bert:latest .
+docker push <username>/pytorch_dist_bert:latest
 ```
 
 **Create the BERT PyTorch job**

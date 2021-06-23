@@ -28,11 +28,9 @@ spec:
         spec:
           containers:
             - name: pytorch
-              image: <username>/pytorch_dist_bert:latest
+              image: public.ecr.aws/pytorch-samples/pytorch_dist_bert:latest
               # For CPU "--accelerator", "ddp_cpu"
               args: [
-                "--checkpoint_dir", "/model/checkpoint", 
-                "--model_save_path", "/model/model_path", 
                 "--gpus", "-1", 
                 "--accelerator", "ddp", 
                 "--num_nodes", "2"
@@ -54,11 +52,9 @@ spec:
         spec:
           containers: 
             - name: pytorch
-              image: <username>/pytorch_dist_bert:latest
+              image: public.ecr.aws/pytorch-samples/pytorch_dist_bert:latest
               # For CPU "--accelerator", "ddp_cpu"
               args: [
-                "--checkpoint_dir", "/model/checkpoint", 
-                "--model_save_path", "/model/model_path", 
                 "--gpus", "-1", 
                 "--accelerator", "ddp", 
                 "--num_nodes", "2"
