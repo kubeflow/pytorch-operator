@@ -24,8 +24,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 
-	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	common "github.com/kubeflow/common/job_controller/api/v1"
+	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
 	pylogger "github.com/kubeflow/tf-operator/pkg/logger"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -45,18 +45,25 @@ const (
 )
 
 var (
-	pytorchJobsSuccessCount = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "pytorch_operator_jobs_successful_total",
-		Help: "Counts number of PyTorch jobs successful",
-	})
-	pytorchJobsFailureCount = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "pytorch_operator_jobs_failed_total",
-		Help: "Counts number of PyTorch jobs failed",
-	})
-	pytorchJobsRestartCount = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "pytorch_operator_jobs_restarted_total",
-		Help: "Counts number of PyTorch jobs restarted",
-	})
+	pytorchJobsSuccessCount = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "pytorch_operator_jobs_successful_total",
+			Help: "Counts number of PyTorch jobs successful",
+		},
+		[]string{"job_namespace"},
+	)
+	pytorchJobsFailureCount = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "pytorch_operator_jobs_failed_total",
+			Help: "Counts number of PyTorch jobs failed",
+		}, []string{"job_namespace"},
+	)
+	pytorchJobsRestartCount = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "pytorch_operator_jobs_restarted_total",
+			Help: "Counts number of PyTorch jobs restarted",
+		}, []string{"job_namespace"},
+	)
 )
 
 // updateStatus updates the status of the job.
@@ -108,7 +115,7 @@ func (pc *PyTorchController) updateStatusSingle(job *pyv1.PyTorchJob, rtype pyv1
 					pylogger.LoggerForJob(job).Infof("Append job condition error: %v", err)
 					return err
 				}
-				pytorchJobsSuccessCount.Inc()
+				pytorchJobsSuccessCount.WithLabelValues(job.Namespace).Inc()
 			}
 		}
 	} else {
@@ -125,8 +132,8 @@ func (pc *PyTorchController) updateStatusSingle(job *pyv1.PyTorchJob, rtype pyv1
 				pylogger.LoggerForJob(job).Infof("Append job condition error: %v", err)
 				return err
 			}
-			pytorchJobsFailureCount.Inc()
-			pytorchJobsRestartCount.Inc()
+			pytorchJobsFailureCount.WithLabelValues(job.Namespace).Inc()
+			pytorchJobsRestartCount.WithLabelValues(job.Namespace).Inc()
 		} else {
 			msg := fmt.Sprintf("PyTorchJob %s is failed because %d %s replica(s) failed.", job.Name, failed, rtype)
 			pc.Recorder.Event(job, v1.EventTypeNormal, pytorchJobFailedReason, msg)
@@ -139,7 +146,7 @@ func (pc *PyTorchController) updateStatusSingle(job *pyv1.PyTorchJob, rtype pyv1
 				pylogger.LoggerForJob(job).Infof("Append job condition error: %v", err)
 				return err
 			}
-			pytorchJobsFailureCount.Inc()
+			pytorchJobsFailureCount.WithLabelValues(job.Namespace).Inc()
 		}
 	}
 	return nil

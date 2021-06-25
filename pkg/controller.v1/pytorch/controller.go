@@ -64,10 +64,13 @@ var (
 	// key function but it should be just fine for non delete events.
 	KeyFunc = cache.DeletionHandlingMetaNamespaceKeyFunc
 
-	pytorchJobsDeletedCount = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "pytorch_operator_jobs_deleted_total",
-		Help: "Counts number of PyTorch jobs deleted",
-	})
+	pytorchJobsDeletedCount = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "pytorch_operator_jobs_deleted_total",
+			Help: "Counts number of PyTorch jobs deleted",
+		},
+		[]string{"job_namespace"},
+	)
 )
 
 // PyTorchController is the type for PyTorchJob Controller, which manages
@@ -243,7 +246,7 @@ func (pc *PyTorchController) processNextWorkItem() bool {
 	if err != nil {
 		if err == errNotExists {
 			logger.Infof("PyTorchJob has been deleted: %v", key)
-			pytorchJobsDeletedCount.Inc()
+			pytorchJobsDeletedCount.WithLabelValues(pytorchJob.Namespace).Inc()
 			return true
 		}
 
@@ -306,7 +309,7 @@ func (pc *PyTorchController) syncPyTorchJob(key string) (bool, error) {
 	if err != nil {
 		if err == errNotExists {
 			logger.Infof("PyTorchJob has been deleted: %v", key)
-			pytorchJobsDeletedCount.Inc()
+			pytorchJobsDeletedCount.WithLabelValues(namespace).Inc()
 			// jm.expectations.DeleteExpectations(key)
 			return true, nil
 		}
