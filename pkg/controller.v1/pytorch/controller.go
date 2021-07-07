@@ -246,7 +246,12 @@ func (pc *PyTorchController) processNextWorkItem() bool {
 	if err != nil {
 		if err == errNotExists {
 			logger.Infof("PyTorchJob has been deleted: %v", key)
-			pytorchJobsDeletedCount.WithLabelValues(pytorchJob.Namespace).Inc()
+			namespace, _, keyerr := cache.SplitMetaNamespaceKey(key)
+			if keyerr == nil && len(namespace) != 0 {
+				pytorchJobsDeletedCount.WithLabelValues(namespace).Inc()
+			} else {
+				logger.Errorf("Invalid PyTorchJob key %s: Namespace is missing %v", key, keyerr)
+			}
 			return true
 		}
 
