@@ -1,4 +1,4 @@
-// Copyright 2018 The Kubeflow Authors
+// Copyright 2021 The Kubeflow Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,11 +17,9 @@
 package fake
 
 import (
-	clientset "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned"
-	kubeflowv1alpha1 "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned/typed/kubeflow/v1alpha1"
-	fakekubeflowv1alpha1 "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned/typed/kubeflow/v1alpha1/fake"
-	kubeflowv1alpha2 "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned/typed/kubeflow/v1alpha2"
-	fakekubeflowv1alpha2 "github.com/kubeflow/pytorch-operator/pkg/client/clientset/versioned/typed/kubeflow/v1alpha2/fake"
+	clientset "github.com/paipaoso/pytorch-operator/pkg/client/clientset/versioned"
+	kubeflowv1 "github.com/paipaoso/pytorch-operator/pkg/client/clientset/versioned/typed/pytorch/v1"
+	fakekubeflowv1 "github.com/paipaoso/pytorch-operator/pkg/client/clientset/versioned/typed/pytorch/v1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -41,11 +39,20 @@ func NewSimpleClientset(objects ...runtime.Object) *Clientset {
 		}
 	}
 
-	fakePtr := testing.Fake{}
-	fakePtr.AddReactor("*", "*", testing.ObjectReaction(o))
-	fakePtr.AddWatchReactor("*", testing.DefaultWatchReactor(watch.NewFake(), nil))
+	cs := &Clientset{tracker: o}
+	cs.discovery = &fakediscovery.FakeDiscovery{Fake: &cs.Fake}
+	cs.AddReactor("*", "*", testing.ObjectReaction(o))
+	cs.AddWatchReactor("*", func(action testing.Action) (handled bool, ret watch.Interface, err error) {
+		gvr := action.GetResource()
+		ns := action.GetNamespace()
+		watch, err := o.Watch(gvr, ns)
+		if err != nil {
+			return false, nil, err
+		}
+		return true, watch, nil
+	})
 
-	return &Clientset{fakePtr, &fakediscovery.FakeDiscovery{Fake: &fakePtr}}
+	return cs
 }
 
 // Clientset implements clientset.Interface. Meant to be embedded into a
@@ -54,25 +61,20 @@ func NewSimpleClientset(objects ...runtime.Object) *Clientset {
 type Clientset struct {
 	testing.Fake
 	discovery *fakediscovery.FakeDiscovery
+	tracker   testing.ObjectTracker
 }
 
 func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 	return c.discovery
 }
 
+func (c *Clientset) Tracker() testing.ObjectTracker {
+	return c.tracker
+}
+
 var _ clientset.Interface = &Clientset{}
 
-// KubeflowV1alpha1 retrieves the KubeflowV1alpha1Client
-func (c *Clientset) KubeflowV1alpha1() kubeflowv1alpha1.KubeflowV1alpha1Interface {
-	return &fakekubeflowv1alpha1.FakeKubeflowV1alpha1{Fake: &c.Fake}
-}
-
-// Kubeflow retrieves the KubeflowV1alpha1Client
-func (c *Clientset) Kubeflow() kubeflowv1alpha1.KubeflowV1alpha1Interface {
-	return &fakekubeflowv1alpha1.FakeKubeflowV1alpha1{Fake: &c.Fake}
-}
-
-// KubeflowV1alpha2 retrieves the KubeflowV1alpha2Client
-func (c *Clientset) KubeflowV1alpha2() kubeflowv1alpha2.KubeflowV1alpha2Interface {
-	return &fakekubeflowv1alpha2.FakeKubeflowV1alpha2{Fake: &c.Fake}
+// KubeflowV1 retrieves the KubeflowV1Client
+func (c *Clientset) KubeflowV1() kubeflowv1.KubeflowV1Interface {
+	return &fakekubeflowv1.FakeKubeflowV1{Fake: &c.Fake}
 }

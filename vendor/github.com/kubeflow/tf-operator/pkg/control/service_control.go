@@ -19,7 +19,8 @@ import (
 	"sync"
 
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -123,6 +124,17 @@ func (r RealServiceControl) DeleteService(namespace, serviceID string, object ru
 	if err != nil {
 		return fmt.Errorf("object does not have ObjectMeta, %v", err)
 	}
+	service, err := r.KubeClient.CoreV1().Services(namespace).Get(serviceID, metav1.GetOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return nil
+		}
+		return err
+	}
+	if service.DeletionTimestamp != nil {
+		log.Infof("service %s/%s is terminating, skip deleting", service.Namespace, service.Name)
+		return nil
+	}
 	log.Infof("Controller %v deleting service %v/%v", accessor.GetName(), namespace, serviceID)
 	if err := r.KubeClient.CoreV1().Services(namespace).Delete(serviceID, nil); err != nil {
 		r.Recorder.Eventf(object, v1.EventTypeWarning, FailedDeleteServiceReason, "Error deleting: %v", err)
@@ -161,7 +173,7 @@ func (f *FakeServiceControl) CreateServices(namespace string, service *v1.Servic
 	defer f.Unlock()
 	f.CreateCallCount++
 	if f.CreateLimit != 0 && f.CreateCallCount > f.CreateLimit {
-		return fmt.Errorf("Not creating service, limit %d already reached (create call %d)", f.CreateLimit, f.CreateCallCount)
+		return fmt.Errorf("not creating service, limit %d already reached (create call %d)", f.CreateLimit, f.CreateCallCount)
 	}
 	f.Templates = append(f.Templates, *service)
 	if f.Err != nil {
@@ -175,7 +187,7 @@ func (f *FakeServiceControl) CreateServicesWithControllerRef(namespace string, s
 	defer f.Unlock()
 	f.CreateCallCount++
 	if f.CreateLimit != 0 && f.CreateCallCount > f.CreateLimit {
-		return fmt.Errorf("Not creating service, limit %d already reached (create call %d)", f.CreateLimit, f.CreateCallCount)
+		return fmt.Errorf("not creating service, limit %d already reached (create call %d)", f.CreateLimit, f.CreateCallCount)
 	}
 	f.Templates = append(f.Templates, *service)
 	f.ControllerRefs = append(f.ControllerRefs, *controllerRef)

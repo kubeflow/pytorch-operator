@@ -17,11 +17,11 @@ BUILD_NUMBER=$(uuidgen)
 BUILD_NUMBER=${BUILD_NUMBER:0:4}
 REPO_OWNER=kubeflow
 REPO_NAME=pytorch-operator
-ENV=releasing
+ENV=test
 DATE=`date +%Y%m%d`
 PULL_BASE_SHA=${COMMIT:0:8}
 VERSION_TAG="v${DATE}-${PULL_BASE_SHA}"
-
+BUILD_NUMBER_LOWER=$(echo "$BUILD_NUMBER" | tr '[:upper:]' '[:lower:]')
 
 PROW_VAR="JOB_NAME=${JOB_NAME},JOB_TYPE=${JOB_TYPE},REPO_NAME=${REPO_NAME}"
 PROW_VAR="${PROW_VAR},REPO_OWNER=${REPO_OWNER},BUILD_NUMBER=${BUILD_NUMBER}" 
@@ -29,8 +29,10 @@ PROW_VAR="${PROW_VAR},PULL_BASE_SHA=${PULL_BASE_SHA}"
 
 cd ${ROOT}/test/workflows
 
-ks param set --env=${ENV} workflows namespace kubeflow-releasing
-ks param set --env=${ENV} workflows name "${USER}-${JOB_NAME}-${PULL_BASE_SHA}-${BUILD_NUMBER}"
+ks param set --env=${ENV} workflows namespace kubeflow-test-infra
+ks param set --env=${ENV} workflows name "${JOB_NAME}-${PULL_BASE_SHA}-${BUILD_NUMBER_LOWER}-${USER}"
 ks param set --env=${ENV} workflows prow_env "${PROW_VAR}"
 ks param set --env=${ENV} workflows versionTag "${VERSION_TAG}"
-ks apply ${ENV} -c workflows
+ks param set --env=${ENV} workflows registry gcr.io/kubeflow-images-public
+ks param set --env=${ENV} workflows bucket kubeflow-releasing-artifacts
+# ks apply ${ENV} -c workflows

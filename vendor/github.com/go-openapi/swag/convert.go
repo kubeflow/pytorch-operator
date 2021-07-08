@@ -39,28 +39,33 @@ func IsFloat64AJSONInteger(f float64) bool {
 	diff := math.Abs(f - g)
 
 	// more info: https://floating-point-gui.de/errors/comparison/#look-out-for-edge-cases
-	if f == g { // best case
+	switch {
+	case f == g: // best case
 		return true
-	} else if f == float64(int64(f)) || f == float64(uint64(f)) { // optimistic case
+	case f == float64(int64(f)) || f == float64(uint64(f)): // optimistic case
 		return true
-	} else if f == 0 || g == 0 || diff < math.SmallestNonzeroFloat64 { // very close to 0 values
+	case f == 0 || g == 0 || diff < math.SmallestNonzeroFloat64: // very close to 0 values
 		return diff < (epsilon * math.SmallestNonzeroFloat64)
 	}
 	// check the relative error
 	return diff/math.Min(fa+ga, math.MaxFloat64) < epsilon
 }
 
-var evaluatesAsTrue = map[string]struct{}{
-	"true":     {},
-	"1":        {},
-	"yes":      {},
-	"ok":       {},
-	"y":        {},
-	"on":       {},
-	"selected": {},
-	"checked":  {},
-	"t":        {},
-	"enabled":  {},
+var evaluatesAsTrue map[string]struct{}
+
+func init() {
+	evaluatesAsTrue = map[string]struct{}{
+		"true":     {},
+		"1":        {},
+		"yes":      {},
+		"ok":       {},
+		"y":        {},
+		"on":       {},
+		"selected": {},
+		"checked":  {},
+		"t":        {},
+		"enabled":  {},
+	}
 }
 
 // ConvertBool turn a string into a boolean

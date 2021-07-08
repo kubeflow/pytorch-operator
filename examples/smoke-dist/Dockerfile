@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:0.4_cuda9_cudnn7
+FROM pytorch/pytorch:1.0-cuda10.0-cudnn7-runtime
 
 RUN mkdir -p /opt/mlkube
 COPY dist_sendrecv.py /opt/mlkube/

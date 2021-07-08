@@ -19,6 +19,7 @@ import (
 	"os"
 
 	log "github.com/sirupsen/logrus"
+	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -29,12 +30,6 @@ import (
 
 // RecommendedConfigPathEnvVar is a environment variable for path configuration
 const RecommendedConfigPathEnvVar = "KUBECONFIG"
-
-// TODO(jlewi): I think this function is used to add an owner to a resource. I think we we should use this
-// addOwnerRefToObject method to ensure all resources created for the TFJob are owned by the TFJob.
-func addOwnerRefToObject(o metav1.Object, r metav1.OwnerReference) {
-	o.SetOwnerReferences(append(o.GetOwnerReferences(), r))
-}
 
 // MustNewKubeClient returns new kubernetes client for cluster configuration
 func MustNewKubeClient() kubernetes.Interface {
@@ -96,12 +91,33 @@ func CascadeDeleteOptions(gracePeriodSeconds int64) *metav1.DeleteOptions {
 	}
 }
 
-// mergeLabels merges l2 into l1. Conflicting labels will be skipped.
-func mergeLabels(l1, l2 map[string]string) {
-	for k, v := range l2 {
-		if _, ok := l1[k]; ok {
-			continue
+// FilterActivePods returns pods that have not terminated.
+func FilterActivePods(pods []*v1.Pod) []*v1.Pod {
+	var result []*v1.Pod
+	for _, p := range pods {
+		if IsPodActive(p) {
+			result = append(result, p)
+		} else {
+			log.Infof("Ignoring inactive pod %v/%v in state %v, deletion time %v",
+				p.Namespace, p.Name, p.Status.Phase, p.DeletionTimestamp)
 		}
-		l1[k] = v
 	}
+	return result
+}
+
+func IsPodActive(p *v1.Pod) bool {
+	return v1.PodSucceeded != p.Status.Phase &&
+		v1.PodFailed != p.Status.Phase &&
+		p.DeletionTimestamp == nil
+}
+
+// filterPodCount returns pods based on their phase.
+func FilterPodCount(pods []*v1.Pod, phase v1.PodPhase) int32 {
+	var result int32
+	for i := range pods {
+		if phase == pods[i].Status.Phase {
+			result++
+		}
+	}
+	return result
 }
