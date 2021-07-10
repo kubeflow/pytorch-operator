@@ -14,7 +14,7 @@ spec:
         spec:
           containers:
             - name: pytorch
-              image: gcr.io/<your_project>/pytorch_dist_mnist:mpi
+              image: gcr.io/<your_project>/pytorch-dist-mnist:mpi
               args: ["--backend", "mpi"]
               # Comment out the below resources to use the CPU.
               resources: 
@@ -30,7 +30,7 @@ spec:
         spec:
           containers: 
             - name: pytorch
-              image: gcr.io/<your_project>/pytorch_dist_mnist:mpi
+              image: gcr.io/<your_project>/pytorch-dist-mnist:mpi
               args: ["--backend", "mpi"]
               # Comment out the below resources to use the CPU.
               resources: 

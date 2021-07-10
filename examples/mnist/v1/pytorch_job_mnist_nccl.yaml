@@ -14,7 +14,7 @@ spec:
         spec:
           containers:
             - name: pytorch
-              image: gcr.io/<your_project>/pytorch_dist_mnist:latest
+              image: gcr.io/<your_project>/pytorch-dist-mnist:latest
               args: ["--backend", "nccl"]
               resources: 
                 limits:
@@ -29,7 +29,7 @@ spec:
         spec:
           containers: 
             - name: pytorch
-              image: gcr.io/<your_project>/pytorch_dist_mnist:latest
+              image: gcr.io/<your_project>/pytorch-dist-mnist:latest
               args: ["--backend", "nccl"]
               resources: 
                 limits:
