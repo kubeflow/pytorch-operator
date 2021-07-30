@@ -17,9 +17,7 @@ RUN apt-get update && apt-get install -y git
 
 ENV PATH=/root/.local/bin:$PATH
 
-RUN pip install --user transformers torchtext pandas sklearn
-
-RUN pip install --user git+https://github.com/PyTorchLightning/pytorch-lightning@master
+RUN pip install --user transformers torchtext pandas sklearn pytorch-lightning
 
 RUN mkdir -p /workspace/bert/src/
 
