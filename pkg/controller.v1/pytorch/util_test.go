@@ -20,9 +20,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	pyv1 "github.com/paipaoso/pytorch-operator/pkg/apis/pytorch/v1"
-	"github.com/paipaoso/pytorch-operator/pkg/common/util/v1/testutil"
-	"github.com/kubeflow/tf-operator/pkg/common/jobcontroller"
+	pyv1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1"
+	"github.com/kubeflow/pytorch-operator/pkg/common/util/v1/testutil"
+	jobcontroller "github.com/kubeflow/common/pkg/controller.v1/common"
 )
 
 func TestGenOwnerReference(t *testing.T) {
