@@ -1,10 +1,11 @@
-
 # Kubernetes Custom Resource and Operator for PyTorch jobs
 
 [![Build Status](https://travis-ci.org/kubeflow/pytorch-operator.svg?branch=master)](https://travis-ci.org/kubeflow/pytorch-operator)
 [![Go Report Card](https://goreportcard.com/badge/github.com/kubeflow/pytorch-operator)](https://goreportcard.com/report/github.com/kubeflow/pytorch-operator)
 
 ## Overview
+
+**Note: This operator has been merged into [Kubeflow Training Operator](https://github.com/kubeflow/training-operator). This repository is not maintained and will be archived soon.**
 
 This repository contains the specification and implementation of `PyTorchJob` custom resource definition. Using this custom resource, users can create and manage PyTorch jobs like other built-in resources in Kubernetes. See [CRD definition](https://github.com/kubeflow/pytorch-operator/blob/master/manifests/base/crd.yaml)
 
