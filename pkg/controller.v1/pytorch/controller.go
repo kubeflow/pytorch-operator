@@ -17,6 +17,8 @@ package pytorch
 
 import (
 	"fmt"
+	"github.com/kubernetes-sigs/kube-batch/pkg/apis/scheduling/v1alpha1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"strings"
 	"time"
 
@@ -614,4 +616,32 @@ func (pc *PyTorchController) GetReplicaIndexLabelKey() string {
 
 func (pc *PyTorchController) ControllerName() string {
 	return controllerName
+}
+func (pc *PyTorchController) SyncPodGroup(job metav1.Object, minAvailableReplicas int32) (*v1alpha1.PodGroup, error) {
+
+	kubeBatchClientInterface := pc.KubeBatchClientSet
+	// Check whether podGroup exists or not
+	podGroupName := jobcontroller.GenPodGroupName(job.GetName())
+	podGroup, err := kubeBatchClientInterface.SchedulingV1alpha1().PodGroups(job.GetNamespace()).Get(podGroupName, metav1.GetOptions{})
+	if err == nil {
+		return podGroup, nil
+	}
+
+	// create podGroup for gang scheduling by kube-batch
+	minAvailable := intstr.FromInt(int(minAvailableReplicas))
+	// parse volcano Queue from pytorchjob Annotation
+	queue := job.GetAnnotations()["scheduling.volcano.sh/queue-name"]
+	createPodGroup := &v1alpha1.PodGroup{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: podGroupName,
+			OwnerReferences: []metav1.OwnerReference{
+				*pc.JobController.GenOwnerReference(job),
+			},
+		},
+		Spec: v1alpha1.PodGroupSpec{
+			MinMember: minAvailable.IntVal,
+			Queue:     queue,
+		},
+	}
+	return kubeBatchClientInterface.SchedulingV1alpha1().PodGroups(job.GetNamespace()).Create(createPodGroup)
 }
